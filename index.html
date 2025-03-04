@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>רישום ציוד להופעה</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; direction: rtl; text-align: right; margin: 20px; }
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 10px; }
+        th, td { text-align: center; }
+    </style>
+</head>
+<body>
+    <h2>רישום ציוד להופעה</h2>
+    <label>שם הסאונדמן: <input type="text" id="soundman_name"></label><br><br>
+    <label>מספר אישי: <input type="text" id="soundman_id"></label><br><br>
+    <label>בחר ציוד:</label>
+    <select id="equipment_select">
+        <option value="">בחר ציוד...</option>
+    </select>
+    <button onclick="addEquipment()">הוסף</button>
+    <br><br>
+    <table id="equipment_table">
+        <thead>
+            <tr>
+                <th>מק"ט</th>
+                <th>מוצר</th>
+                <th>הסר</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <br>
+    <button onclick="exportToCSV()">ייצוא ל-CSV</button>
+
+    <script>
+        const equipmentList = [
+           { code: "0001", name: "SHURE SM 58" },
+            { code: "0002", name: "SHURE SM 58" },
+            { code: "0003", name: "SHURE SM 58" },
+            { code: "0004", name: "SHURE SM 58" },
+            { code: "0005", name: "SHURE SM 58" },
+            { code: "0006", name: "SHURE SM 58" },
+            { code: "0007", name: "SHURE SM 58" },
+            { code: "0008", name: "SHURE SM 58" },
+            { code: "0009", name: "SHURE SM 58" },
+            { code: "0010", name: "SHURE SM 58" },
+            { code: "0011", name: "SHURE SM 58" },
+            { code: "0012", name: "SHURE SM 58" },
+            { code: "0013", name: "SHURE SM 58" },
+            { code: "0014", name: "SHURE SM 58" },
+            { code: "0015", name: "SHURE SM 58" },
+            { code: "0016", name: "SHURE SM 58" },
+            { code: "0017", name: "SHURE SM 58" },
+            { code: "0018", name: "SHURE SM 58" },
+            { code: "0019", name: "SHURE SM 58" },
+            { code: "0020", name: "SHURE SM 58" },
+            { code: "0021", name: "SHURE SM 57" },
+            { code: "0022", name: "SHURE SM 57" },
+            { code: "0023", name: "SHURE SM 57" },
+            { code: "0024", name: "SHURE SM 57" },
+            { code: "0025", name: "SHURE SM 57" },
+            { code: "0026", name: "SHURE SM 57" },
+            { code: "0027", name: "SHURE SM 57" },
+            { code: "0028", name: "SHURE SM 57" },
+            { code: "0029", name: "SHURE SM 57" },
+            { code: "0030", name: "SHURE SM 57" },
+            { code: "0031", name: "SHURE SM 57" },
+            { code: "0032", name: "SHURE SM 57" },
+            { code: "0033", name: "SHURE SM 57" },
+            { code: "0034", name: "SHURE SM 57" },
+            { code: "0035", name: "SHURE SM 57" },
+            { code: "0036", name: "KICK MIC" },
+            { code: "0037", name: "KICK MIC" },
+            { code: "0038", name: "KICK MIC" },
+            { code: "0039", name: "KICK MIC" },
+            { code: "0040", name: "OH" },
+            { code: "0041", name: "OH" },
+            { code: "0042", name: "OH" },
+            { code: "0043", name: "OH" },
+            { code: "0044", name: "OH" },
+            { code: "0045", name: "OH" },
+            { code: "0046", name: "OH" },
+            { code: "0047", name: "OH" },
+            { code: "0048", name: "OH" },
+            { code: "0049", name: "QU 24" },
+            { code: "0050", name: "QU 24" },
+            { code: "0051", name: "QU 24" },
+            { code: "0052", name: "QU 24" },
+            { code: "0053", name: "QU 16" },
+            { code: "0054", name: "QU 16" },
+            { code: "0055", name: "QU 16" },
+            { code: "0056", name: "QU 16" },
+            { code: "0057", name: "CASE INST 1" },
+            { code: "0058", name: "CASE INST 2" },
+            { code: "0059", name: "CASE INST 3" },
+            { code: "0060", name: "CASE INST 4" },
+            { code: "0061", name: "CASE PB 1" },
+            { code: "0062", name: "CASE PB 2" },
+            { code: "0063", name: "CASE PB 3" },
+            { code: "0064", name: "CASE PB 4" },
+            { code: "0065", name: "GLD" },
+            { code: "0066", name: "JST" },
+            { code: "0067", name: "JST" },
+            { code: "0068", name: "JST" },
+            { code: "0069", name: "JST" },
+            { code: "0070", name: "MAKLET MP" },
+            { code: "0071", name: "MAKLET MP" },
+            { code: "0072", name: "MAKLET MP" },
+            { code: "0073", name: "MAKLET MP" },
+            { code: "0074", name: "HANDY" },
+            { code: "0075", name: "HANDY" },
+            { code: "0076", name: "HANDY" },
+            { code: "0077", name: "HANDY" }
+        ];
+
+        const select = document.getElementById("equipment_select");
+        equipmentList.forEach(item => {
+            let option = document.createElement("option");
+            option.value = item.code;
+            option.textContent = `${item.code} - ${item.name}`;
+            select.appendChild(option);
+        });
+
+        function addEquipment() {
+            let selectedCode = select.value;
+            if (!selectedCode) return;
+            let selectedItem = equipmentList.find(item => item.code === selectedCode);
+            let table = document.getElementById("equipment_table").getElementsByTagName("tbody")[0];
+            let row = table.insertRow();
+            let cell1 = row.insertCell(0);
+            let cell2 = row.insertCell(1);
+            let cell3 = row.insertCell(2);
+            cell1.textContent = selectedItem.code;
+            cell2.textContent = selectedItem.name;
+            let deleteButton = document.createElement("button");
+            deleteButton.textContent = "הסר";
+            deleteButton.onclick = function() { row.remove(); };
+            cell3.appendChild(deleteButton);
+        }
+
+        function exportToCSV() {
+            let table = document.getElementById("equipment_table");
+            let rows = Array.from(table.rows).slice(1);
+            let soundmanName = document.getElementById("soundman_name").value;
+            let soundmanId = document.getElementById("soundman_id").value;
+            let date = new Date().toISOString().split('T')[0];
+
+            let csvContent = `שם הסאונדמן,מספר אישי\n${soundmanName},${soundmanId}\n\nמק"ט,מוצר\n`;
+            csvContent += rows.map(row => Array.from(row.cells).slice(0, 2).map(cell => cell.innerText).join(",")).join("\n");
+
+            let blob = new Blob([csvContent], { type: "text/csv" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `רשימת ציוד:${date}.csv`;
+            link.click();
+        }
+    </script>
+</body>
+</html>
