@@ -6,34 +6,105 @@
     <title>רישום ציוד להופעה</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; direction: rtl; text-align: right; margin: 20px; }
-        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 10px; }
-        th, td { text-align: center; }
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        .remove-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <h2>רישום ציוד להופעה</h2>
-    <label>שם הסאונדמן: <input type="text" id="soundman_name"></label><br><br>
-    <label>מספר אישי: <input type="text" id="soundman_id"></label><br><br>
-    <label>בחר ציוד:</label>
-    <select id="equipment_select">
-        <option value="">בחר ציוד...</option>
-    </select>
-    <button onclick="addEquipment()">הוסף</button>
-    <br><br>
-    <table id="equipment_table">
-        <thead>
-            <tr>
-                <th>מק"ט</th>
-                <th>מוצר</th>
-                <th>הסר</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <br>
-    <button onclick="exportToCSV()">ייצוא ל-CSV</button>
-
+    <div class="container">
+        <h2>רישום ציוד להופעה</h2>
+        <label>שם הסאונדמן:</label>
+        <input type="text" id="soundman_name" placeholder="הכנס שם">
+        <label>מספר אישי:</label>
+        <input type="text" id="soundman_id" placeholder="הכנס מספר אישי">
+        <label>בחר ציוד:</label>
+        <select id="equipment_select">
+            <option value="">בחר ציוד...</option>
+        </select>
+        <button onclick="addEquipment()">הוסף</button>
+        <table id="equipment_table">
+            <thead>
+                <tr>
+                    <th>מק"ט</th>
+                    <th>מוצר</th>
+                    <th>הסר</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button onclick="exportToCSV()">ייצוא ל-CSV</button>
+    </div>
     <script>
         const equipmentList = [
            { code: "0001", name: "SHURE SM 58" },
@@ -114,7 +185,7 @@
             { code: "0076", name: "HANDY" },
             { code: "0077", name: "HANDY" }
         ];
-
+        
         const select = document.getElementById("equipment_select");
         equipmentList.forEach(item => {
             let option = document.createElement("option");
@@ -136,6 +207,7 @@
             cell2.textContent = selectedItem.name;
             let deleteButton = document.createElement("button");
             deleteButton.textContent = "הסר";
+            deleteButton.className = "remove-btn";
             deleteButton.onclick = function() { row.remove(); };
             cell3.appendChild(deleteButton);
         }
@@ -146,10 +218,8 @@
             let soundmanName = document.getElementById("soundman_name").value;
             let soundmanId = document.getElementById("soundman_id").value;
             let date = new Date().toISOString().split('T')[0];
-
             let csvContent = `שם הסאונדמן,מספר אישי\n${soundmanName},${soundmanId}\n\nמק"ט,מוצר\n`;
             csvContent += rows.map(row => Array.from(row.cells).slice(0, 2).map(cell => cell.innerText).join(",")).join("\n");
-
             let blob = new Blob([csvContent], { type: "text/csv" });
             let link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
