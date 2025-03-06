@@ -138,6 +138,8 @@
             <tbody></tbody>
         </table>
         <button onclick="exportToCSV()">ייצוא ל-CSV</button>
+        <button onclick="exportToExcel()">ייצוא לאקסל</button>
+
     </div>
     <script>
         const equipmentList = [
@@ -261,5 +263,37 @@
             link.click();
         }
     </script>
+    <script>
+    function exportToExcel() {
+        let table = document.getElementById("equipment_table");
+        let rows = Array.from(table.rows).slice(1); // מתעלם מהכותרת
+
+        let soundmanName = document.getElementById("soundman_name").value || "לא צויין";
+        let soundmanId = document.getElementById("soundman_id").value || "לא צויין";
+
+        // יצירת נתוני הגיליון
+        let data = [
+            ["שם הסאונדמן", "מספר אישי"],
+            [soundmanName, soundmanId],
+            [],
+            ["מק\"ט", "מוצר"]
+        ];
+
+        rows.forEach(row => {
+            let cells = Array.from(row.cells);
+            data.push([cells[0].innerText, cells[1].innerText]); // מוסיף רק את מק"ט והמוצר (ללא "הסר")
+        });
+
+        // יצירת גיליון עבודה
+        let wb = XLSX.utils.book_new();
+        let ws = XLSX.utils.aoa_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, "רשימת ציוד");
+
+        // הורדת הקובץ
+        let date = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `רשימת_ציוד_${date}.xlsx`);
+    }
+</script>
+
 </body>
 </html>
