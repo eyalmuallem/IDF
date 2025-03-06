@@ -6,6 +6,25 @@
     <title>רישום ציוד להופעה</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
     <style>
+    .logo-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+.logo-container img {
+    height: 60px;
+}
+
+.logo-center {
+    margin: 0 auto;
+    display: block;
+    .logo-left {
+    order: 3; /* לוגו בצד שמאל */
+}
+}
+
         body {
             font-family: Arial, sans-serif;
             direction: rtl;
@@ -78,11 +97,26 @@
             padding: 5px;
             border-radius: 5px;
             cursor: pointer;
-        }
+            .logo-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
     </style>
 </head>
 <body>
     <div class="container">
+      <div class="logo-container">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR54ryCD7eiD-RGgYDvUUgEenJDBQ3BiejDrw&s" alt="לוגו צד ימין">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/IDF_Symbol.svg" alt="לוגו מרכזי" class="logo-center">
+   </a>
+    
+        <img src="https://i.postimg.cc/1ztZhdr2/IMG-8120.jpg" alt="לוגו צד שמאל" class="logo-left">
+    </a>
+</div>
+
         <h2>רישום ציוד להופעה</h2>
         <label>שם הסאונדמן:</label>
         <input type="text" id="soundman_name" placeholder="הכנס שם">
