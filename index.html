@@ -35,7 +35,7 @@
         
         .container {
             max-width: 600px;
-            background: white;
+            background: WHITE;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -122,6 +122,9 @@
         <input type="text" id="soundman_name" placeholder="הכנס שם">
         <label>מספר אישי:</label>
         <input type="text" id="soundman_id" placeholder="הכנס מספר אישי">
+        <label>הרכב יוצא:</label>
+<input type="text" id="band_name" placeholder="הכנס את שם ההרכב">
+
         <label>בחר ציוד:</label>
         <select id="equipment_select">
             <option value="">בחר ציוד...</option>
@@ -230,22 +233,37 @@
             select.appendChild(option);
         });
 
-        function addEquipment() {
-            let selectedCode = select.value;
-            if (!selectedCode) return;
-            let selectedItem = equipmentList.find(item => item.code === selectedCode);
-            let table = document.getElementById("equipment_table").getElementsByTagName("tbody")[0];
-            let row = table.insertRow();
-            let cell1 = row.insertCell(0);
-            let cell2 = row.insertCell(1);
-            let cell3 = row.insertCell(2);
-            cell1.textContent = selectedItem.code;
-            cell2.textContent = selectedItem.name;
-            let deleteButton = document.createElement("button");
-            deleteButton.textContent = "הסר";
-            deleteButton.className = "remove-btn";
-            deleteButton.onclick = function() { row.remove(); };
-            cell3.appendChild(deleteButton);
+function addEquipment() {
+    let selectedCode = select.value;
+    if (!selectedCode) return;
+    
+    let table = document.getElementById("equipment_table").getElementsByTagName("tbody")[0];
+    
+    // בדיקה אם המק"ט כבר קיים בטבלה
+    let existingRows = Array.from(table.getElementsByTagName("tr"));
+    let alreadyExists = existingRows.some(row => row.cells[0]?.innerText === selectedCode);
+    
+    if (alreadyExists) {
+        alert("הפריט כבר נוסף לרשימה!");
+        return;
+    }
+
+    let selectedItem = equipmentList.find(item => item.code === selectedCode);
+    let row = table.insertRow();
+    let cell1 = row.insertCell(0);
+    let cell2 = row.insertCell(1);
+    let cell3 = row.insertCell(2);
+    
+    cell1.textContent = selectedItem.code;
+    cell2.textContent = selectedItem.name;
+    
+    let deleteButton = document.createElement("button");
+    deleteButton.textContent = "הסר";
+    deleteButton.className = "remove-btn";
+    deleteButton.onclick = function() { row.remove(); };
+    
+    cell3.appendChild(deleteButton);
+
         }
 
         function exportToCSV() {
@@ -253,9 +271,11 @@
             let rows = Array.from(table.rows).slice(1);
             let soundmanName = document.getElementById("soundman_name").value;
             let soundmanId = document.getElementById("soundman_id").value;
+            let bandName = document.getElementById("band_name").value;
+
             let date = new Date().toISOString().split('T')[0];
-            let csvContent = `שם הסאונדמן,מספר אישי\n${soundmanName},${soundmanId}\n\nמק"ט,מוצר\n`;
-            csvContent += rows.map(row => Array.from(row.cells).slice(0, 2).map(cell => cell.innerText).join(",")).join("\n");
+           let csvContent = `שם הסאונדמן,מספר אישי,הרכב יוצא\n${soundmanName},${soundmanId},${bandName}\n\nמק"ט,מוצר\n`;
+
             let blob = new Blob([csvContent], { type: "text/csv" });
             let link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
@@ -270,14 +290,18 @@
 
         let soundmanName = document.getElementById("soundman_name").value || "לא צויין";
         let soundmanId = document.getElementById("soundman_id").value || "לא צויין";
+        let bandName = document.getElementById("band_name").value || "לא צויין";
 
-        // יצירת נתוני הגיליון
-        let data = [
-            ["שם הסאונדמן", "מספר אישי"],
-            [soundmanName, soundmanId],
-            [],
-            ["מק\"ט", "מוצר"]
-        ];
+
+           
+       let data = [
+    ["שם הסאונדמן", "מספר אישי", "הרכב יוצא"],
+    [soundmanName, soundmanId, bandName],
+    [],
+    ["מק\"ט", "מוצר"]
+];
+
+        
 
         rows.forEach(row => {
             let cells = Array.from(row.cells);
