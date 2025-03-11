@@ -267,56 +267,63 @@ function addEquipment() {
         }
 
         function exportToCSV() {
-            let table = document.getElementById("equipment_table");
-            let rows = Array.from(table.rows).slice(1);
-            let soundmanName = document.getElementById("soundman_name").value;
-            let soundmanId = document.getElementById("soundman_id").value;
-            let bandName = document.getElementById("band_name").value;
+    let table = document.getElementById("equipment_table");
+    let rows = Array.from(table.rows).slice(1);
+    
+    let soundmanName = document.getElementById("soundman_name").value || "לא צויין";
+    let soundmanId = document.getElementById("soundman_id").value || "לא צויין";
+    let bandName = document.getElementById("band_name").value || "לא צויין";
 
-            let date = new Date().toISOString().split('T')[0];
-           let csvContent = `שם הסאונדמן,מספר אישי,הרכב יוצא\n${soundmanName},${soundmanId},${bandName}\n\nמק"ט,מוצר\n`;
+    let date = new Date().toISOString().split('T')[0]; // תאריך בפורמט YYYY-MM-DD
 
-            let blob = new Blob([csvContent], { type: "text/csv" });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `רשימת ציוד:${date}.csv`;
-            link.click();
-        }
+    let csvContent = `שם הסאונדמן,מספר אישי,הרכב יוצא,תאריך\n${soundmanName},${soundmanId},${bandName},${date}\n\nמק"ט,מוצר,תאריך\n`;
+
+    rows.forEach(row => {
+        let cells = Array.from(row.cells);
+        csvContent += `${cells[0].innerText},${cells[1].innerText},${date}\n`; // הוספת עמודת תאריך
+    });
+
+    let fileName = `מפרט טכני - ${date} - ${bandName}.csv`;
+
+    let blob = new Blob([csvContent], { type: "text/csv" });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+}
+
     </script>
     <script>
     function exportToExcel() {
-        let table = document.getElementById("equipment_table");
-        let rows = Array.from(table.rows).slice(1); // מתעלם מהכותרת
+    let table = document.getElementById("equipment_table");
+    let rows = Array.from(table.rows).slice(1);
 
-        let soundmanName = document.getElementById("soundman_name").value || "לא צויין";
-        let soundmanId = document.getElementById("soundman_id").value || "לא צויין";
-        let bandName = document.getElementById("band_name").value || "לא צויין";
+    let soundmanName = document.getElementById("soundman_name").value || "לא צויין";
+    let soundmanId = document.getElementById("soundman_id").value || "לא צויין";
+    let bandName = document.getElementById("band_name").value || "לא צויין";
 
+    let date = new Date().toISOString().split('T')[0]; // תאריך בפורמט YYYY-MM-DD
 
-           
-       let data = [
-    ["שם הסאונדמן", "מספר אישי", "הרכב יוצא"],
-    [soundmanName, soundmanId, bandName],
-    [],
-    ["מק\"ט", "מוצר"]
-];
+    let data = [
+        ["שם הסאונדמן", "מספר אישי", "הרכב יוצא", "תאריך"],
+        [soundmanName, soundmanId, bandName, date],
+        [],
+        ["מק\"ט", "מוצר", "תאריך"]
+    ];
 
-        
+    rows.forEach(row => {
+        let cells = Array.from(row.cells);
+        data.push([cells[0].innerText, cells[1].innerText, date]); // הוספת עמודת תאריך
+    });
 
-        rows.forEach(row => {
-            let cells = Array.from(row.cells);
-            data.push([cells[0].innerText, cells[1].innerText]); // מוסיף רק את מק"ט והמוצר (ללא "הסר")
-        });
+    let wb = XLSX.utils.book_new();
+    let ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, " מפרט טכני");
 
-        // יצירת גיליון עבודה
-        let wb = XLSX.utils.book_new();
-        let ws = XLSX.utils.aoa_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, "רשימת ציוד");
+    let fileName = `מפרט טכני  - ${date} - ${bandName}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+}
 
-        // הורדת הקובץ
-        let date = new Date().toISOString().split('T')[0];
-        XLSX.writeFile(wb, `רשימת_ציוד_${date}.xlsx`);
-    }
 </script>
 
 </body>
