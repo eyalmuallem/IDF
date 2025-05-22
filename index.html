@@ -129,6 +129,9 @@
         <select id="equipment_select">
             <option value="">בחר ציוד...</option>
         </select>
+        <label>הכנס מק"ט ישירות (סורק ברקוד):</label>
+<input type="text" id="code_input" placeholder="הקלד מקט או סרוק ברקוד">
+
         <button onclick="addEquipment()">הוסף</button>
         <table id="equipment_table">
             <thead>
@@ -265,6 +268,19 @@ function addEquipment() {
     cell3.appendChild(deleteButton);
 
         }
+        document.getElementById("code_input").addEventListener("change", function() {
+    let code = this.value.trim();
+    this.value = ""; // נקה את השדה לאחר ההקלדה
+
+    let foundItem = equipmentList.find(item => item.code === code);
+    if (foundItem) {
+        select.value = code;
+        addEquipment();
+    } else {
+        alert("מקט לא מוכר: " + code);
+    }
+});
+
 
         function exportToCSV() {
     let table = document.getElementById("equipment_table");
