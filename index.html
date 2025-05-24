@@ -99,13 +99,31 @@
             border: none;
             padding: 5px;
             border-radius: 5px;
-            cursor: pointer;
+            cursor: pointer;}
             .logo-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
 }
+#scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: red;
+    animation: scan-move 2s infinite ease-in-out;
+    z-index: 10;
+    display: none;
+}
+
+@keyframes scan-move {
+    0%   { top: 0; }
+    50%  { top: calc(100% - 2px); }
+    100% { top: 0; }
+}
+
 
 
     </style>
@@ -119,6 +137,9 @@
     
         <img src="https://i.postimg.cc/1ztZhdr2/IMG-8120.jpg" alt="לוגו צד שמאל" class="logo-left">
     </a>
+    <audio id="ding-sound" src="https://www.orangefreesounds.com/wp-content/uploads/2021/12/Barcode-scanner-beep-sound.mp3" preload="auto"></audio>
+    
+
 </div>
 
         <h2>רישום ציוד להופעה</h2>
@@ -136,7 +157,10 @@
         <label>הכנס מק"ט ישירות (סורק ברקוד):</label>
 <input type="text" id="code_input" placeholder="הקלד מקט או סרוק ברקוד">
 <button onclick="startScan()">📷 סרוק ברקוד</button>
-<div id="reader" style="width: 100%; margin-top: 10px;"></div>
+<div id="reader-wrapper" style="position: relative; width: 100%; margin-top: 10px;">
+  <div id="reader" style="width: 100%;"></div>
+  <div id="scan-line" style="display: none;"></div>
+</div>
 
 
         <button onclick="addEquipment()">הוסף</button>
@@ -290,26 +314,34 @@ function addEquipment() {
 function startScan() {
     const html5QrCode = new Html5Qrcode("reader");
 
+    // הצגת קו סריקה
+    document.getElementById("scan-line").style.display = "block";
+
     html5QrCode.start(
-        { facingMode: "environment" }, // מצלמה אחורית
+        { facingMode: "environment" },
         {
             fps: 10,
-            qrbox: 250
+            qrbox: { width: 300, height: 100 } // מסגרת מלבנית
         },
         (decodedText, decodedResult) => {
-            html5QrCode.stop();
-            document.getElementById("reader").innerHTML = ""; // מנקה את המצלמה
+            html5QrCode.stop().then(() => {
+                document.getElementById("reader").innerHTML = "";
+                document.getElementById("scan-line").style.display = "none"; // הסתרת הקו
+            });
 
+            document.getElementById("ding-sound").play();
             document.getElementById("code_input").value = decodedText;
-            document.getElementById("code_input").dispatchEvent(new Event('change')); // מפעיל את ההוספה
+            document.getElementById("code_input").dispatchEvent(new Event('change'));
         },
         (errorMessage) => {
-            // התעלמות מטעויות קטנות
+            // אפשר להתעלם משגיאות סריקה רגעיות
         }
     ).catch(err => {
         alert("שגיאה בהפעלת מצלמה: " + err);
+        document.getElementById("scan-line").style.display = "none"; // במקרה של שגיאה - להסתיר גם
     });
 }
+
 
 
 
