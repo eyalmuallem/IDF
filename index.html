@@ -123,6 +123,20 @@
     50%  { top: calc(100% - 2px); }
     100% { top: 0; }
 }
+#close-btn {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 20;
+    padding: 0;
+}
 
 
 
@@ -157,10 +171,13 @@
         <label>הכנס מק"ט ישירות (סורק ברקוד):</label>
 <input type="text" id="code_input" placeholder="הקלד מקט או סרוק ברקוד">
 <button onclick="startScan()">📷 סרוק ברקוד</button>
-<div id="reader-wrapper" style="position: relative; width: 100%; margin-top: 10px;">
-  <div id="reader" style="width: 100%;"></div>
+<div id="reader-wrapper" style="position: relative; width: 300px; height: 100px; margin: auto; overflow: hidden; display: none;">
+  <div id="reader" style="width: 100%; height: 100%;"></div>
   <div id="scan-line" style="display: none;"></div>
+  <button id="close-btn" onclick="stopScan()">❌</button>
 </div>
+
+
 
 
         <button onclick="addEquipment()">הוסף</button>
@@ -179,6 +196,7 @@
 
     </div>
     <script>
+    
        const equipmentList = [
     { code: "#0001", name: "SHURE SM 58" },
     { code: "#0002", name: "SHURE SM 58" },
@@ -311,11 +329,14 @@ function addEquipment() {
         alert("מקט לא מוכר: " + code);
     }
 });
-function startScan() {
-    const html5QrCode = new Html5Qrcode("reader");
 
-    // הצגת קו סריקה
+let html5QrCode;
+
+function startScan() {
+    document.getElementById("reader-wrapper").style.display = "block";
     document.getElementById("scan-line").style.display = "block";
+
+    html5QrCode = new Html5Qrcode("reader"); // בלי let/const
 
     html5QrCode.start(
         { facingMode: "environment" },
@@ -324,22 +345,31 @@ function startScan() {
             qrbox: { width: 300, height: 100 } // מסגרת מלבנית
         },
         (decodedText, decodedResult) => {
-            html5QrCode.stop().then(() => {
-                document.getElementById("reader").innerHTML = "";
-                document.getElementById("scan-line").style.display = "none"; // הסתרת הקו
-            });
-
+            stopScan(); // סוגר הכל אוטומטית
             document.getElementById("ding-sound").play();
             document.getElementById("code_input").value = decodedText;
             document.getElementById("code_input").dispatchEvent(new Event('change'));
         },
         (errorMessage) => {
-            // אפשר להתעלם משגיאות סריקה רגעיות
+            // שגיאות זניחות בזמן סריקה
         }
     ).catch(err => {
         alert("שגיאה בהפעלת מצלמה: " + err);
-        document.getElementById("scan-line").style.display = "none"; // במקרה של שגיאה - להסתיר גם
+        document.getElementById("scan-line").style.display = "none";
+        document.getElementById("reader-wrapper").style.display = "none";
     });
+}
+
+function stopScan() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById("reader").innerHTML = "";
+            document.getElementById("reader-wrapper").style.display = "none";
+            document.getElementById("scan-line").style.display = "none";
+        }).catch((err) => {
+            console.error("שגיאה בסגירת הסורק:", err);
+        });
+    }
 }
 
 
