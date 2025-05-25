@@ -339,12 +339,10 @@ function startScan() {
     html5QrCode = new Html5Qrcode("reader");
 
     html5QrCode.start(
-        { facingMode: "environment" }, // ✅ מצלמה אחורית
+        { facingMode: "environment" }, // מצלמה אחורית
         {
-            fps: 15,                    // ✅ קצב רענון גבוה יחסית
-            qrbox: { width: 250, height: 80 },  // ✅ מסגרת קטנה שמתאימה לברקודים קטנים
-            disableFlip: true,          // ✅ לא צריך היפוך בטלפון
-            aspectRatio: 4/3            // ✅ יחס אידיאלי למצלמות סלולר
+            fps: 10,                     // קצב רענון נוח
+            qrbox: 250                   // מסגרת ריבועית קלאסית
         },
         (decodedText, decodedResult) => {
             stopScan();
@@ -353,7 +351,7 @@ function startScan() {
             document.getElementById("code_input").dispatchEvent(new Event('change'));
         },
         (errorMessage) => {
-            // אפשר להתעלם משגיאות זמניות
+            // אפשר להתעלם משגיאות רגעיות
         }
     ).catch(err => {
         alert("שגיאה בהפעלת מצלמה: " + err);
