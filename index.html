@@ -336,23 +336,24 @@ function startScan() {
     document.getElementById("reader-wrapper").style.display = "block";
     document.getElementById("scan-line").style.display = "block";
 
-    html5QrCode = new Html5Qrcode("reader"); // בלי let/const
+    html5QrCode = new Html5Qrcode("reader");
 
     html5QrCode.start(
-        { facingMode: "environment" },
+        { facingMode: "environment" }, // ✅ מצלמה אחורית
         {
-            fps: 10,
-          qrbox: { width: 250, height: 80 }
- // מסגרת מלבנית
+            fps: 15,                    // ✅ קצב רענון גבוה יחסית
+            qrbox: { width: 250, height: 80 },  // ✅ מסגרת קטנה שמתאימה לברקודים קטנים
+            disableFlip: true,          // ✅ לא צריך היפוך בטלפון
+            aspectRatio: 4/3            // ✅ יחס אידיאלי למצלמות סלולר
         },
         (decodedText, decodedResult) => {
-            stopScan(); // סוגר הכל אוטומטית
+            stopScan();
             document.getElementById("ding-sound").play();
-            document.getElementById("code_input").value = decodedText;
+            document.getElementById("code_input").value = decodedText.replace(/\*/g, '');
             document.getElementById("code_input").dispatchEvent(new Event('change'));
         },
         (errorMessage) => {
-            // שגיאות זניחות בזמן סריקה
+            // אפשר להתעלם משגיאות זמניות
         }
     ).catch(err => {
         alert("שגיאה בהפעלת מצלמה: " + err);
@@ -360,6 +361,7 @@ function startScan() {
         document.getElementById("reader-wrapper").style.display = "none";
     });
 }
+
 
 function stopScan() {
     if (html5QrCode) {
