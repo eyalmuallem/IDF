@@ -123,6 +123,86 @@
     50%  { top: calc(100% - 2px); }
     100% { top: 0; }
 }
+@media print {
+    body {
+        background: white;
+        margin: 0;
+    }
+
+    /* מסתיר כפתורים, סורק ושדות קלט */
+    button,
+    input,
+    select,
+    #reader-wrapper,
+    audio {
+        display: none !important;
+    }
+
+    .container {
+        box-shadow: none;
+        max-width: 100%;
+        margin: 0;
+        padding: 10px;
+    }
+
+    table {
+        page-break-inside: avoid;
+        font-size: 14px;
+    }
+
+    th {
+        background: #ddd !important;
+        color: black !important;
+    }
+
+    h2 {
+        margin-bottom: 10px;
+    }
+}
+#print-details {
+    margin-bottom: 15px;
+}
+
+@media print {
+    /* מסתיר שדות קלט וכפתורים */
+    input,
+    select,
+    button,
+    #reader-wrapper,
+    audio {
+        display: none !important;
+    }
+
+    /* מסתיר את עמודת "הסר" */
+    th:last-child,
+    td:last-child {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+    }
+
+    .container {
+        box-shadow: none;
+        max-width: 100%;
+    }
+}
+/* ברירת מחדל – לא מוצג במסך */
+#print-details {
+    display: none;
+}
+
+/* בהדפסה – כן מוצג */
+@media print {
+    #print-details {
+        display: block !important;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+}
+
+
 
 
 
@@ -149,6 +229,12 @@
         <input type="text" id="soundman_id" placeholder="הכנס מספר אישי">
         <label>הרכב יוצא:</label>
 <input type="text" id="band_name" placeholder="הכנס את שם ההרכב">
+<div id="print-details">
+    <p><strong>שם הסאונדמן:</strong> <span id="p_soundman"></span></p>
+    <p><strong>מספר אישי:</strong> <span id="p_id"></span></p>
+    <p><strong>הרכב יוצא:</strong> <span id="p_band"></span></p>
+</div>
+
 
         <label>בחר ציוד:</label>
         <select id="equipment_select">
@@ -176,6 +262,8 @@
         </table>
         <button onclick="exportToCSV()">ייצוא ל-CSV</button>
         <button onclick="exportToExcel()">ייצוא לאקסל</button>
+        <button onclick="printList()">🖨️ הדפס רשימה</button>
+
 
     </div>
     <script>
@@ -408,6 +496,23 @@ function startScan() {
 }
 
 </script>
+<script>
+
+function printList() {
+    document.getElementById("p_soundman").textContent =
+        document.getElementById("soundman_name").value;
+
+    document.getElementById("p_id").textContent =
+        document.getElementById("soundman_id").value;
+
+    document.getElementById("p_band").textContent =
+        document.getElementById("band_name").value;
+
+    window.print();
+}
+
+</script>
+
 
 </body>
 </html>
