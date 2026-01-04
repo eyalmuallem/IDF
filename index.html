@@ -234,10 +234,18 @@
         <input type="text" id="soundman_id" placeholder="הכנס מספר אישי">
         <label>הרכב יוצא:</label>
 <input type="text" id="band_name" placeholder="הכנס את שם ההרכב">
+<label>תאריך משיכת ציוד:</label>
+<input type="text" id="pickup_date" placeholder="הכנס תאריך משיכה">
+
+<label>תאריך החזרת ציוד:</label>
+<input type="text" id="return_date" placeholder="הכנס תאריך החזרה">
 <div id="print-details">
     <p><strong>שם החותם:</strong> <span id="p_soundman"></span></p>
     <p><strong>מספר אישי:</strong> <span id="p_id"></span></p>
     <p><strong>הרכב יוצא:</strong> <span id="p_band"></span></p>
+    <p><strong>תאריך משיכת ציוד:</strong> <span id="p_pickup"></span></p>
+<p><strong>תאריך החזרת ציוד:</strong> <span id="p_return"></span></p>
+
 </div>
 
 
@@ -513,8 +521,15 @@ function printList() {
     document.getElementById("p_band").textContent =
         document.getElementById("band_name").value;
 
+    document.getElementById("p_pickup").textContent =
+        document.getElementById("pickup_date").value;
+
+    document.getElementById("p_return").textContent =
+        document.getElementById("return_date").value;
+
     window.print();
 }
+
 
 </script>
 
