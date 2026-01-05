@@ -240,12 +240,16 @@
 
 <label>תאריך החזרת ציוד:</label>
 <input type="text" id="return_date" placeholder="הכנס תאריך החזרה">
+<label>שעת החזרת ציוד צפויה:</label>
+<input type="text" id="returno_time" placeholder="הכנס שעת החזרה">
+
 <div id="print-details">
     <p><strong>שם החותם:</strong> <span id="p_soundman"></span></p>
     <p><strong>מספר אישי:</strong> <span id="p_id"></span></p>
     <p><strong>שם האירוע היוצא:</strong> <span id="p_band"></span></p>
     <p><strong>תאריך משיכת ציוד:</strong> <span id="p_pickup"></span></p>
 <p><strong>תאריך החזרת ציוד:</strong> <span id="p_return"></span></p>
+<p><strong>שעת החזרת ציוד צפויה :</strong> <span id="p_returno"></span></p>
 
 </div>
 
@@ -527,6 +531,10 @@ function printList() {
 
     document.getElementById("p_return").textContent =
         document.getElementById("return_date").value;
+        
+       document.getElementById("p_returno").textContent =
+        document.getElementById("returno_time").value;
+
 
     window.print();
 }
