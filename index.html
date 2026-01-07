@@ -207,6 +207,14 @@
         display: none !important;
     }
 }
+@media print {
+    #print-doc-id-bottom {
+        display: block !important;
+        font-size: 12px;
+        color: #555;
+        text-align: right;
+    }
+}
 
 
 
@@ -229,6 +237,7 @@
 </div>
 
         <h2>רישום ציוד להופעה</h2>
+        
         <label>שם החותם:</label>
         <input type="text" id="soundman_name" placeholder="הכנס שם">
         <label>מספר אישי:</label>
@@ -242,6 +251,8 @@
 <input type="text" id="return_date" placeholder="הכנס תאריך החזרה">
 <label>שעת החזרת ציוד צפויה:</label>
 <input type="text" id="returno_time" placeholder="הכנס שעת החזרה">
+<label>הערות המחתים:</label>
+<input type="text" id="signer_notes" placeholder="הערות / חריגים">
 
 <div id="print-details">
     <p><strong>שם החותם:</strong> <span id="p_soundman"></span></p>
@@ -250,6 +261,10 @@
     <p><strong>תאריך משיכת ציוד:</strong> <span id="p_pickup"></span></p>
 <p><strong>תאריך החזרת ציוד:</strong> <span id="p_return"></span></p>
 <p><strong>שעת החזרת ציוד צפויה :</strong> <span id="p_returno"></span></p>
+<p><strong>הערות המחתים:</strong> <span id="p_notes"></span></p>
+
+
+
 
 </div>
 
@@ -278,6 +293,10 @@
             </thead>
             <tbody></tbody>
         </table>
+        <div id="print-doc-id-bottom" style="display:none; margin-top:15px;">
+    <strong>מס׳ מסמך:</strong> <span id="p_doc_id"></span>
+</div>
+
         <button onclick="exportToCSV()">ייצוא ל-CSV</button>
         <button onclick="exportToExcel()">ייצוא לאקסל</button>
         <button onclick="printList()">🖨️ הדפס רשימה</button>
@@ -404,14 +423,30 @@
   { code: "#0097", name: "פק אינרים 1" },
   { code: "#0098", name: "פק אינרים 1" },
   { code: "#0099", name: "פק אינרים 1" },
+  
  { code: "#0100", name: "פק אינרים 2" },
  { code: "#0101", name: "פק אינרים 2" },
  { code: "#0102", name: "פק אינרים 2" },
  { code: "#0103", name: "פק אינרים 2" },
  
-  { code: "#0104", name: "MAKLET MP" },
-  { code: "#0105", name: "MAKLET MP" },
-  { code: "#0106", name: "MAKLET MP" }
+ { code: "#0104", name: "MILAN 10" },
+{ code: "#0105", name: "MILAN 10" },
+{ code: "#0106", name: "MILAN 10" },
+{ code: "#0107", name: "MILAN 12" },
+
+{ code: "#0108", name: "MILAN 12" },
+{ code: "#0109", name: "MILAN 12" },
+{ code: "#0110", name: "MILAN 12" },
+{ code: "#0111", name: "MILAN 15" },
+{ code: "#0112", name: "MILAN 15" },
+{ code: "#0113", name: "MILAN 15" },
+{ code: "#0114", name: "MILAN 15" },
+
+ 
+ 
+  { code: "#0115", name: "MAKLET MP" },
+  { code: "#0116", name: "MAKLET MP" },
+  { code: "#0117", name: "MAKLET MP" }
 
 
 ];
@@ -562,6 +597,29 @@ function startScan() {
 
 </script>
 <script>
+function generateDocumentId() {
+    const now = new Date();
+
+    // תאריך YYYYMMDD
+    const date = now.toISOString().slice(0,10).replace(/-/g,'');
+
+    // שעה HHMM
+    const time = now.toTimeString().slice(0,5).replace(':','');
+
+    // מספר אישי – לוקחים רק 4 ספרות אחרונות
+    const personalIdInput = document.getElementById("soundman_id").value || "0000";
+    const personalSuffix = personalIdInput.slice(-4);
+
+    // אותיות אקראיות באנגלית
+    const letters = Math.random().toString(36).substring(2,4).toUpperCase();
+
+    return `EQ-${personalSuffix}-${date}-${time}-${letters}`;
+}
+
+</script>
+
+
+<script>
 
 function printList() {
     document.getElementById("p_soundman").textContent =
@@ -581,7 +639,11 @@ function printList() {
         
        document.getElementById("p_returno").textContent =
         document.getElementById("returno_time").value;
+document.getElementById("p_notes").textContent =
+    document.getElementById("signer_notes").value;
 
+const docId = generateDocumentId();
+document.getElementById("p_doc_id").textContent = docId;
 
     window.print();
 }
