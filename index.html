@@ -6,8 +6,8 @@
     <title>רישום ציוד להופעה</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js">
     </script>
-    <script src="https://unpkg.com/html5-qrcode">
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <style>
     .logo-container {
     display: flex;
@@ -215,6 +215,25 @@
         text-align: right;
     }
 }
+/* QR לא מוצג במסך */
+#print-qr {
+  display: none;
+}
+
+/* QR מוצג רק בהדפסה */
+@media print {
+  #print-qr {
+    display: block !important;
+  }
+}
+@media print {
+  #print-qr {
+    display: block !important;
+    width: fit-content;
+    margin: 20px auto;   /* ← זה המרכז */
+    text-align: center;
+  }
+}
 
 
 
@@ -235,6 +254,8 @@
     
 
 </div>
+
+
 
         <h2>רישום ציוד להופעה</h2>
         
@@ -295,6 +316,8 @@
         </table>
         <div id="print-doc-id-bottom" style="display:none; margin-top:15px;">
     <strong>מס׳ מסמך:</strong> <span id="p_doc_id"></span>
+    <div id="print-qr" style="display:none; margin-top:15px;"></div>
+
 </div>
 
         <button onclick="exportToCSV()">ייצוא ל-CSV</button>
@@ -303,6 +326,40 @@
 
 
     </div>
+    <!-- עמוד אימות (נפתח רק מסריקת QR) -->
+<div id="verify-page" style="
+  display:none;
+  max-width:480px;
+  margin:40px auto;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 0 15px rgba(0,0,0,0.15);
+  font-family:Arial;
+  background:white;
+">
+
+  <h2 style="text-align:center; color:#2c7be5;">✔ מסמך מאומת</h2>
+
+  <p style="text-align:center; color:#666;">
+    זהו עמוד אימות של מסמך משיכת ציוד
+  </p>
+
+  <hr>
+
+  <p><strong>מספר מסמך:</strong> <span id="v_doc"></span></p>
+  <p><strong>מספר אישי:</strong> <span id="v_id"></span></p>
+  <p><strong>שם אירוע:</strong> <span id="v_event"></span></p>
+  <p><strong>כמות פריטים:</strong> <span id="v_count"></span></p>
+  <p><strong>שם החותם:</strong> <span id="v_name"></span></p>
+
+
+  <hr>
+
+  <p style="font-size:12px; color:#888; text-align:center;">
+    הנתונים הוצגו מתוך QR מקורי שהופק בעת ההדפסה
+  </p>
+</div>
+
     <script>
        const equipmentList = [
   { code: "#0001", name: "סט תופים - נח״ל" },
@@ -616,38 +673,86 @@ function generateDocumentId() {
 }
 
 </script>
+<script>
+function getItemsCount() {
+  return document.querySelectorAll("#equipment_table tbody tr").length;
+}
+</script>
 
 
 <script>
-
 function printList() {
-    document.getElementById("p_soundman").textContent =
-        document.getElementById("soundman_name").value;
 
-    document.getElementById("p_id").textContent =
-        document.getElementById("soundman_id").value;
+  // מילוי פרטי הדפסה (כמו שהיה)
+  document.getElementById("p_soundman").textContent =
+    document.getElementById("soundman_name").value || "";
 
-    document.getElementById("p_band").textContent =
-        document.getElementById("band_name").value;
+  document.getElementById("p_id").textContent =
+    document.getElementById("soundman_id").value || "";
 
-    document.getElementById("p_pickup").textContent =
-        document.getElementById("pickup_date").value;
+  document.getElementById("p_band").textContent =
+    document.getElementById("band_name").value || "";
 
-    document.getElementById("p_return").textContent =
-        document.getElementById("return_date").value;
-        
-       document.getElementById("p_returno").textContent =
-        document.getElementById("returno_time").value;
-document.getElementById("p_notes").textContent =
-    document.getElementById("signer_notes").value;
+  document.getElementById("p_pickup").textContent =
+    document.getElementById("pickup_date").value || "";
 
-const docId = generateDocumentId();
-document.getElementById("p_doc_id").textContent = docId;
+  document.getElementById("p_return").textContent =
+    document.getElementById("return_date").value || "";
 
-    window.print();
+  document.getElementById("p_returno").textContent =
+    document.getElementById("returno_time").value || "";
+
+  document.getElementById("p_notes").textContent =
+    document.getElementById("signer_notes").value || "";
+
+  // מזהה מסמך
+  const docId = generateDocumentId();
+  document.getElementById("p_doc_id").textContent = docId;
+
+  // בניית QR קצר (דל!)
+  const params = new URLSearchParams({
+  verify: "1",
+  doc: docId,
+  id: document.getElementById("soundman_id").value || "",
+    name: document.getElementById("soundman_name").value || "",
+  ev: document.getElementById("band_name").value || "",
+  n: getItemsCount()
+});
+
+const qrText = location.origin + location.pathname + "?" + params.toString();
+
+
+  // יצירת QR
+  const qrContainer = document.getElementById("print-qr");
+  qrContainer.innerHTML = "";
+
+  new QRCode(qrContainer, {
+    text: qrText,
+    width: 95,
+    height: 95,
+    correctLevel: QRCode.CorrectLevel.L
+  });
+
+  // הדפסה
+  setTimeout(() => window.print(), 100);
 }
+</script>
 
 
+</script>
+<script>
+const params = new URLSearchParams(window.location.search);
+
+if (params.get("verify") === "1") {
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("verify-page").style.display = "block";
+
+  document.getElementById("v_doc").textContent   = params.get("doc") || "—";
+  document.getElementById("v_id").textContent    = params.get("id") || "—";
+  document.getElementById("v_event").textContent = params.get("ev") || "—";
+  document.getElementById("v_name").textContent = params.get("name") || "—";
+  document.getElementById("v_count").textContent = params.get("n") || "0";
+}
 </script>
 
 
