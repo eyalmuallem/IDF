@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<title>דשבורד ציוד</title>
+
+<style>
+body {
+  font-family: Arial;
+  direction: rtl;
+  background:#f4f6f8;
+  padding:20px;
+}
+
+table {
+  width:100%;
+  border-collapse: collapse;
+  background:white;
+}
+
+th, td {
+  padding:10px;
+  border:1px solid #ddd;
+  text-align:center;
+}
+
+th {
+  background:#1f2937;
+  color:white;
+}
+
+.IN { background:#dcfce7; }
+.OUT { background:#fee2e2; }
+
+.controls {
+  margin-bottom:15px;
+}
+
+.controls input,
+.controls button {
+  margin-left:8px;
+  padding:6px 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📊 דשבורד בקרה – ציוד</h2>
+
+<div class="controls">
+  <label>תאריך לצפייה:</label>
+  <input type="date" id="viewDate">
+  <button onclick="loadData()">👁️ צפה</button>
+  <button onclick="loadData(true)">🔄 רענן</button>
+</div>
+
+<table id="tbl">
+  <thead>
+    <tr>
+      <th>מס׳ מסמך</th>
+      <th>סטטוס</th>
+      <th>שם האירוע</th>
+      <th>שם החותם</th>
+      <th>תאריך</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+const GID = "0";
+const URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${GID}`;
+
+// המרה מ-dd/mm/yyyy ל-yyyy-mm-dd להשוואה
+function normalizeDate(ddmmyyyy) {
+  if (!ddmmyyyy || !ddmmyyyy.includes("/")) return null;
+  const [dd, mm, yyyy] = ddmmyyyy.split("/");
+  return `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
+}
+
+function loadData(ignoreFilter = false) {
+  fetch(URL)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const rows = json.table.rows || [];
+      const tbody = document.querySelector("#tbl tbody");
+      tbody.innerHTML = "";
+
+      const selectedDate = document.getElementById("viewDate").value;
+
+      rows.slice(1).forEach(r => {
+        const status = r.c?.[1]?.v || "";
+        const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
+        const rowDate = normalizeDate(dateFormatted);
+
+        if (!ignoreFilter && selectedDate) {
+          if (!rowDate || rowDate !== selectedDate) return;
+        }
+
+        const tr = document.createElement("tr");
+        tr.className = status;
+
+        tr.innerHTML = `
+          <td>${r.c?.[0]?.v || ""}</td>
+          <td>${status}</td>
+          <td>${r.c?.[2]?.v || ""}</td>
+          <td>${r.c?.[3]?.v || ""}</td>
+          <td>${dateFormatted}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    });
+}
+
+// טעינה ראשונית – הכול
+loadData(true);
+</script>
+
+</body>
+</html>
