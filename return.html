@@ -1,41 +1,89 @@
 <!DOCTYPE html>
 <html lang="he">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>החזרת ציוד</title>
+<style>
+  body{font-family:Arial;direction:rtl;background:#f4f4f4;margin:0;padding:20px}
+  .box{max-width:420px;background:#fff;margin:30px auto;padding:20px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.12)}
+  h2{margin:0 0 10px;text-align:center}
+  label{display:block;margin-top:12px;font-weight:bold}
+  input{width:100%;padding:12px;font-size:18px;border:1px solid #ccc;border-radius:8px;margin-top:6px}
+  button{width:100%;padding:12px;font-size:18px;border:0;border-radius:10px;margin-top:14px;background:#16a34a;color:#fff;cursor:pointer}
+  button:active{transform:scale(.99)}
+  .msg{margin-top:14px;min-height:24px;text-align:center;font-size:16px}
+  .ok{color:#16a34a}
+  .err{color:#dc2626}
+</style>
 </head>
-<body style="font-family:Arial;direction:rtl;text-align:center">
+<body>
+  <div class="box">
+    <h2>📦 החזרת ציוד</h2>
 
-<h2>📦 החזרת ציוד</h2>
+    <label>מספר מסמך</label>
+    <input id="doc" placeholder="EQ-1234" />
 
-<p>מספר מסמך:</p>
-<input id="doc" style="font-size:18px;padding:10px">
+    <label>מי מחזיר (אופציונלי)</label>
+    <input id="by" placeholder="שם מחסנאי / מחסן" />
 
-<br><br>
+    <button id="btn">✔️ סמן כהוחזר</button>
 
-<button onclick="send()" style="font-size:18px;padding:10px 20px">
-✔️ הוחזר
-</button>
-
-<p id="msg"></p>
+    <div id="msg" class="msg"></div>
+  </div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbz83Q3lVu-pI81mcKbdA0qH0xj9RA9itDTQqr0z8cxUPuYiE89yT2ce79q2HP8OdS2q/exec";
 
-function send() {
-  const doc = document.getElementById("doc").value.trim();
-  if (!doc) return alert("תכתוב מספר מסמך");
+const docEl = document.getElementById("doc");
+const byEl  = document.getElementById("by");
+const msgEl = document.getElementById("msg");
+const btn   = document.getElementById("btn");
 
-  fetch(API, {
-    method: "POST",
-    body: JSON.stringify({ doc: doc, status: "IN", by: "מחסן" })
-  }).then(() => {
-    document.getElementById("msg").innerText =
-      "✔️ " + doc + " סומן כהוחזר";
-    document.getElementById("doc").value = "";
-  });
+function setMsg(text, cls) {
+  msgEl.className = "msg " + (cls || "");
+  msgEl.textContent = text;
 }
-</script>
 
+function sendReturn() {
+  const doc = docEl.value.trim();
+  const by  = (byEl.value.trim() || "מחסן");
+
+  if (!doc) {
+    setMsg("נא להזין מספר מסמך", "err");
+    docEl.focus();
+    return;
+  }
+
+  btn.disabled = true;
+  setMsg("שולח עדכון…", "");
+
+  // ✅ שולחים ב-GET (Beacon) כדי לעקוף CORS
+  const url =
+    API +
+    "?action=return" +
+    "&doc=" + encodeURIComponent(doc) +
+    "&by="  + encodeURIComponent(by) +
+    "&_="   + Date.now();
+
+  const img = new Image();
+  img.onload = () => {
+    setMsg("✔️ סומן כהוחזר: " + doc, "ok");
+    docEl.value = "";
+    btn.disabled = false;
+    docEl.focus();
+  };
+  img.onerror = () => {
+    // גם אם יש חסימת טעינת תמונה, הרבה פעמים השורה עדיין נרשמת.
+    // אבל נציג הודעה ברורה כדי שתדע לבדוק.
+    setMsg("⚠️ נשלח, אבל לא התקבלה תשובה. בדוק אם נוספה שורה בשיטס.", "err");
+    btn.disabled = false;
+  };
+  img.src = url;
+}
+
+btn.addEventListener("click", sendReturn);
+docEl.addEventListener("keydown", (e) => { if (e.key === "Enter") sendReturn(); });
+</script>
 </body>
 </html>
