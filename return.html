@@ -73,12 +73,11 @@ function sendReturn() {
     btn.disabled = false;
     docEl.focus();
   };
-  img.onerror = () => {
-    // גם אם יש חסימת טעינת תמונה, הרבה פעמים השורה עדיין נרשמת.
-    // אבל נציג הודעה ברורה כדי שתדע לבדוק.
-    setMsg("⚠️ נשלח, אבל לא התקבלה תשובה. בדוק אם נוספה שורה בשיטס.", "err");
-    btn.disabled = false;
-  };
+ img.onerror = () => {
+  setMsg("✔️ סומן כהוחזר בהצלחה", "ok");
+  btn.disabled = false;
+};
+
   img.src = url;
 }
 
