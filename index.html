@@ -744,6 +744,14 @@ function printList() {
   // מזהה מסמך
   const docId = generateDocumentId();
   document.getElementById("p_doc_id").textContent = docId;
+  // רישום יציאה (OUT) לשיטס
+fetch(
+  `${API_URL}?action=out`
+  + `&doc=${encodeURIComponent(docId)}`
+  + `&event=${encodeURIComponent(document.getElementById("band_name").value)}`
+  + `&signer=${encodeURIComponent(document.getElementById("soundman_name").value)}`
+).catch(() => {});
+
 
   // בניית QR קצר (דל!)
   const params = new URLSearchParams({
@@ -789,6 +797,10 @@ if (params.get("verify") === "1") {
   document.getElementById("v_name").textContent = params.get("name") || "—";
   document.getElementById("v_count").textContent = params.get("n") || "0";
 }
+</script>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzWiBQ2OorLE5es5cqJ9FPN8sJC0m75r0_ky0BRBJfuQM0hPmXwDHk7m0uCRCkLFSWl/exec";
 </script>
 
 
