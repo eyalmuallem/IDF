@@ -22,10 +22,7 @@
     <h2>📦 החזרת ציוד</h2>
 
     <label>מספר מסמך</label>
-    <input id="doc" placeholder="EQ-1234" />
-
-    <label>מי מחזיר (אופציונלי)</label>
-    <input id="by" placeholder="שם מחסנאי / מחסן" />
+    <input id="doc" placeholder="EQ-1234" autofocus />
 
     <button id="btn">✔️ סמן כהוחזר</button>
 
@@ -36,7 +33,6 @@
 const API = "https://script.google.com/macros/s/AKfycbzWiBQ2OorLE5es5cqJ9FPN8sJC0m75r0_ky0BRBJfuQM0hPmXwDHk7m0uCRCkLFSWl/exec";
 
 const docEl = document.getElementById("doc");
-const byEl  = document.getElementById("by");
 const msgEl = document.getElementById("msg");
 const btn   = document.getElementById("btn");
 
@@ -47,7 +43,7 @@ function setMsg(text, cls) {
 
 function sendReturn() {
   const doc = docEl.value.trim();
-  const by  = (byEl.value.trim() || "מחסן");
+  const by  = "מחסן"; // ערך קבוע
 
   if (!doc) {
     setMsg("נא להזין מספר מסמך", "err");
@@ -58,13 +54,12 @@ function sendReturn() {
   btn.disabled = true;
   setMsg("שולח עדכון…", "");
 
-  // ✅ שולחים ב-GET (Beacon) כדי לעקוף CORS
   const url =
-  API +
-  "?action=in" +
-  "&doc=" + encodeURIComponent(doc) +
-  "&by="  + encodeURIComponent(by) +
-  "&_="   + Date.now();
+    API +
+    "?action=in" +
+    "&doc=" + encodeURIComponent(doc) +
+    "&by="  + encodeURIComponent(by) +
+    "&_="   + Date.now();
 
   const img = new Image();
   img.onload = () => {
@@ -73,16 +68,19 @@ function sendReturn() {
     btn.disabled = false;
     docEl.focus();
   };
- img.onerror = () => {
-  setMsg("✔️ סומן כהוחזר בהצלחה", "ok");
-  btn.disabled = false;
-};
+  img.onerror = () => {
+    setMsg("✔️ סומן כהוחזר בהצלחה", "ok");
+    btn.disabled = false;
+    docEl.focus();
+  };
 
   img.src = url;
 }
 
 btn.addEventListener("click", sendReturn);
-docEl.addEventListener("keydown", (e) => { if (e.key === "Enter") sendReturn(); });
+docEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendReturn();
+});
 </script>
 </body>
 </html>
