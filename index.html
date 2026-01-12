@@ -694,25 +694,25 @@ function startScan() {
 </script>
 <script>
 function generateDocumentId() {
-    const now = new Date();
+  // 2 אותיות רנדומליות בהתחלה
+  const lettersStart = Math.random().toString(36).substring(2,4).toUpperCase();
 
-    // תאריך YYYYMMDD
-    const date = now.toISOString().slice(0,10).replace(/-/g,'');
+  // 3 ספרות אחרונות מהמספר האישי (או 000)
+  const personalId = document.getElementById("soundman_id").value || "000";
+  const idPart = personalId.slice(-3).padStart(3, "0");
 
-    // שעה HHMM
-    const time = now.toTimeString().slice(0,5).replace(':','');
+  // 2 ספרות רנדומליות
+  const randNums = Math.floor(Math.random() * 100)
+    .toString()
+    .padStart(2, "0");
 
-    // מספר אישי – לוקחים רק 4 ספרות אחרונות
-    const personalIdInput = document.getElementById("soundman_id").value || "0000";
-    const personalSuffix = personalIdInput.slice(-4);
+  // 2 אותיות רנדומליות בסוף
+  const lettersEnd = Math.random().toString(36).substring(2,4).toUpperCase();
 
-    // אותיות אקראיות באנגלית
-    const letters = Math.random().toString(36).substring(2,4).toUpperCase();
-
-    return `EQ-${personalSuffix}-${date}-${time}-${letters}`;
+  return lettersStart + idPart + randNums + lettersEnd;
 }
-
 </script>
+
 <script>
 function getItemsCount() {
   return document.querySelectorAll("#equipment_table tbody tr").length;
