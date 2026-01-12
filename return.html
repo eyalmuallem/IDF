@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<title>החזרת ציוד</title>
+</head>
+<body style="font-family:Arial;direction:rtl;text-align:center">
+
+<h2>📦 החזרת ציוד</h2>
+
+<p>מספר מסמך:</p>
+<input id="doc" style="font-size:18px;padding:10px">
+
+<br><br>
+
+<button onclick="send()" style="font-size:18px;padding:10px 20px">
+✔️ הוחזר
+</button>
+
+<p id="msg"></p>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbz83Q3lVu-pI81mcKbdA0qH0xj9RA9itDTQqr0z8cxUPuYiE89yT2ce79q2HP8OdS2q/exec";
+
+function send() {
+  const doc = document.getElementById("doc").value.trim();
+  if (!doc) return alert("תכתוב מספר מסמך");
+
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({ doc: doc, status: "IN", by: "מחסן" })
+  }).then(() => {
+    document.getElementById("msg").innerText =
+      "✔️ " + doc + " סומן כהוחזר";
+    document.getElementById("doc").value = "";
+  });
+}
+</script>
+
+</body>
+</html>
