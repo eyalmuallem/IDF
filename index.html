@@ -748,6 +748,16 @@ function printList() {
   // מזהה מסמך
   const docId = generateDocumentId();
   document.getElementById("p_doc_id").textContent = docId;
+  // 📋 העתקת מספר מסמך ללוח אוטומטית
+navigator.clipboard.writeText(docId).catch(() => {
+  const temp = document.createElement("textarea");
+  temp.value = docId;
+  document.body.appendChild(temp);
+  temp.select();
+  document.execCommand("copy");
+  document.body.removeChild(temp);
+});
+
   // רישום יציאה (OUT) לשיטס
 fetch(
   `${API_URL}?action=out`
