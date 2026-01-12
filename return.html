@@ -60,11 +60,11 @@ function sendReturn() {
 
   // ✅ שולחים ב-GET (Beacon) כדי לעקוף CORS
   const url =
-    API +
-    "?action=return" +
-    "&doc=" + encodeURIComponent(doc) +
-    "&by="  + encodeURIComponent(by) +
-    "&_="   + Date.now();
+  API +
+  "?action=in" +
+  "&doc=" + encodeURIComponent(doc) +
+  "&by="  + encodeURIComponent(by) +
+  "&_="   + Date.now();
 
   const img = new Image();
   img.onload = () => {
