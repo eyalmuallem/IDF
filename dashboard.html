@@ -5,74 +5,180 @@
 <title>דשבורד ציוד</title>
 
 <style>
+:root{
+  --bg:#f3f4f6;
+  --card:#ffffff;
+  --primary:#1f2937;
+  --secondary:#374151;
+  --accent:#2563eb;
+  --border:#e5e7eb;
+}
+
 body {
-  font-family: Arial;
+  margin:0;
+  font-family: Arial, sans-serif;
   direction: rtl;
-  background:#f4f6f8;
-  padding:20px;
+  background: var(--bg);
+  color:#111827;
+}
+
+/* ===== Header ===== */
+.header {
+  background: var(--primary);
+  color: white;
+  padding: 16px 24px;
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+}
+
+.header h1 {
+  margin:0;
+  font-size:20px;
+  font-weight:600;
+}
+
+.datetime {
+  font-size:14px;
+  opacity:0.9;
+}
+
+/* ===== Page container ===== */
+.container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* ===== Controls card ===== */
+.controls {
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.04);
+}
+
+.controls label {
+  font-size:14px;
+  color:var(--secondary);
+}
+
+.controls input {
+  padding:6px 10px;
+  border:1px solid var(--border);
+  border-radius:6px;
+}
+
+.controls button {
+  background: var(--accent);
+  color:white;
+  border:none;
+  border-radius:6px;
+  padding:8px 14px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.controls button.secondary {
+  background:#6b7280;
+}
+
+.controls button:hover {
+  opacity:0.9;
+}
+
+/* ===== Table ===== */
+.table-card {
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 4px 10px rgba(0,0,0,0.04);
 }
 
 table {
   width:100%;
   border-collapse: collapse;
-  background:white;
 }
 
 th, td {
-  padding:10px;
-  border:1px solid #ddd;
+  padding:12px;
+  border-bottom:1px solid var(--border);
   text-align:center;
+  font-size:14px;
 }
 
 th {
-  background:#1f2937;
-  color:white;
+  background:#f9fafb;
+  color:#374151;
+  font-weight:600;
 }
 
-.IN { background:#dcfce7; }
-.OUT { background:#fee2e2; }
-
-.controls {
-  margin-bottom:15px;
+tr:hover {
+  background:#f3f4f6;
 }
 
-.controls input,
-.controls button {
-  margin-left:8px;
-  padding:6px 10px;
+.IN { background:#ecfdf5; }
+.OUT { background:#fef2f2; }
+
+.footer-note {
+  margin-top:10px;
+  font-size:12px;
+  color:#6b7280;
 }
 </style>
 </head>
 
 <body>
 
-<h2>📊 דשבורד בקרה – ציוד</h2>
-
-<div class="controls">
-  <label>תאריך לצפייה:</label>
-  <input type="date" id="viewDate">
-  <button onclick="loadData()">👁️ צפה</button>
-  <button onclick="loadData(true)">🔄 רענן</button>
+<!-- ===== Header ===== -->
+<div class="header">
+  <h1>📊 דשבורד בקרה – ציוד</h1>
+  <div class="datetime" id="datetime"></div>
 </div>
 
-<table id="tbl">
-  <thead>
-    <tr>
-      <th>מס׳ מסמך</th>
-      <th>סטטוס</th>
-      <th>שם האירוע</th>
-      <th>שם החותם</th>
-      <th>תאריך</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<div class="container">
+
+  <!-- ===== Controls ===== -->
+  <div class="controls">
+    <label>תאריך לצפייה:</label>
+    <input type="date" id="viewDate">
+    <button onclick="loadData()">👁️ צפה</button>
+    <button class="secondary" onclick="loadData(true)">🔄 רענן</button>
+  </div>
+
+  <!-- ===== Table ===== -->
+  <div class="table-card">
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>מס׳ מסמך</th>
+          <th>סטטוס</th>
+          <th>שם האירוע</th>
+          <th>שם החותם</th>
+          <th>תאריך</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="footer-note">
+    נתונים בזמן אמת  
+  </div>
+
+</div>
 
 <script>
 const GID = "0";
 const URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${GID}`;
 
-// המרה מ-dd/mm/yyyy ל-yyyy-mm-dd להשוואה
+// dd/mm/yyyy → yyyy-mm-dd
 function normalizeDate(ddmmyyyy) {
   if (!ddmmyyyy || !ddmmyyyy.includes("/")) return null;
   const [dd, mm, yyyy] = ddmmyyyy.split("/");
@@ -114,8 +220,21 @@ function loadData(ignoreFilter = false) {
     });
 }
 
-// טעינה ראשונית – הכול
+// ===== Clock =====
+function updateDateTime() {
+  const now = new Date();
+  document.getElementById("datetime").innerText =
+    now.toLocaleDateString("he-IL") + " | " + now.toLocaleTimeString("he-IL");
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+// טעינה ראשונית
 loadData(true);
+setInterval(() => {
+  loadData(true);
+}, 10000);
+
 </script>
 
 </body>
