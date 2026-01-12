@@ -797,7 +797,19 @@ const qrText = location.origin + location.pathname + "?" + params.toString();
   });
 
   // הדפסה
-  window.print();
+  const loader = document.getElementById("print-loader");
+  loader.style.display = "block";
+
+  // נותן לדפדפן זמן לצייר את המודאל (קריטי לאייפון)
+  setTimeout(() => {
+    window.print();
+
+    // fallback – אם Safari לא יורה afterprint
+    setTimeout(() => {
+      loader.style.display = "none";
+    }, 1200);
+
+  }, 120);
 
 
 }
@@ -822,13 +834,7 @@ if (params.get("verify") === "1") {
 <script>
 const printLoader = document.getElementById("print-loader");
 
-window.addEventListener("beforeprint", () => {
-  printLoader.style.display = "block";
-});
 
-window.addEventListener("afterprint", () => {
-  printLoader.style.display = "none";
-});
 </script>
 
 <script>
