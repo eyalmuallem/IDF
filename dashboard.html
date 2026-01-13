@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>דשבורד ציוד</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
@@ -45,10 +46,11 @@ body {
 
 /* ===== Page container ===== */
 .container {
-  padding: 24px;
-  max-width: 1200px;
-  margin: auto;
+  padding: 24px 32px;
+  width: 100%;
 }
+
+
 
 /* ===== Controls card ===== */
 .controls {
@@ -91,6 +93,23 @@ body {
 .controls button:hover {
   opacity:0.9;
 }
+.controls button.primary {
+  background: var(--accent);
+  box-shadow: 0 2px 4px rgba(37,99,235,0.15);
+}
+
+.controls button.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid var(--border);
+}
+
+.controls button.outline {
+  background: transparent;
+  color: var(--secondary);
+  border: 1px dashed var(--border);
+}
+
 
 /* ===== Table ===== */
 .table-card {
@@ -131,6 +150,10 @@ tr:hover {
   font-size:12px;
   color:#6b7280;
 }
+* {
+  box-sizing: border-box;
+}
+
 </style>
 </head>
 
@@ -142,15 +165,20 @@ tr:hover {
   <div class="datetime" id="datetime"></div>
 </div>
 
-<div class="container">
+
+
 
   <!-- ===== Controls ===== -->
   <div class="controls">
-    <label>תאריך לצפייה:</label>
-    <input type="date" id="viewDate">
-    <button onclick="loadData()">👁️ צפה</button>
-    <button class="secondary" onclick="loadData(true)">🔄 רענן</button>
-  </div>
+  <label>תאריך לצפייה:</label>
+  <input type="date" id="viewDate">
+  <button class="primary" onclick="loadData()">צפה</button>
+<button class="secondary" onclick="loadData(true)">רענן</button>
+<button class="outline" onclick="toggleStats()" id="statsBtn">סטטיסטיקות</button>
+
+</div>
+
+
 
   <!-- ===== Table ===== -->
   <div class="table-card">
@@ -171,6 +199,9 @@ tr:hover {
   <div class="footer-note">
     נתונים בזמן אמת  
   </div>
+   <div id="statsContainer" class="table-card" style="margin-top:20px; display:none;">
+  <canvas id="weeklyChart" height="60"></canvas>
+</div>
 
 </div>
 
@@ -184,6 +215,79 @@ function normalizeDate(ddmmyyyy) {
   const [dd, mm, yyyy] = ddmmyyyy.split("/");
   return `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
 }
+let weeklyChart;
+
+function updateWeeklyChart(rows) {
+  const counts = {};
+  const labels = [];
+
+  // 7 ימים אחורה
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split("T")[0];
+    counts[key] = 0;
+    labels.push(
+  d.getDate().toString().padStart(2,"0") + "/" +
+  (d.getMonth()+1).toString().padStart(2,"0")
+);
+
+  }
+
+  rows.slice(1).forEach(r => {
+    const status = r.c?.[1]?.v;
+    if (status !== "OUT") return;
+
+    const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
+    const rowDate = normalizeDate(dateFormatted);
+    if (rowDate in counts) counts[rowDate]++;
+  });
+
+  const data = Object.values(counts);
+
+  if (weeklyChart) weeklyChart.destroy();
+
+  weeklyChart = new Chart(document.getElementById("weeklyChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "הופעות שיצאו (OUT)",
+        data,
+        borderColor: "#2563eb",
+       
+       backgroundColor: "rgba(37,99,235,0.7)",
+borderColor: "#2563eb",
+borderWidth: 1,
+barThickness: 20
+
+        
+      }]
+    },
+    options: {
+      animation: false,
+
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+}
+ function toggleStats() {
+  const box = document.getElementById("statsContainer");
+  const btn = document.getElementById("statsBtn");
+
+  const isHidden = box.style.display === "none";
+
+  box.style.display = isHidden ? "block" : "none";
+  btn.innerText = isHidden ? " הסתר סטטיסטיקות" : " הצג סטטיסטיקות";
+
+  // אם פותחים – נוודא שהגרף מעודכן
+  if (isHidden) {
+    loadData();
+  }
+}
+
+
 
 function loadData(ignoreFilter = false) {
   fetch(URL)
@@ -195,6 +299,7 @@ function loadData(ignoreFilter = false) {
       tbody.innerHTML = "";
 
       const selectedDate = document.getElementById("viewDate").value;
+updateWeeklyChart(rows);
 
       rows.slice(1).forEach(r => {
         const status = r.c?.[1]?.v || "";
@@ -244,6 +349,7 @@ setInterval(() => {
 
 
 </script>
+
 
 </body>
 </html>
