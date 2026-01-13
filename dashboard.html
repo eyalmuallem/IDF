@@ -178,13 +178,19 @@ th, td {
   font-size:14px;
 }
 
-th {
-  background:#f9fafb;
-  color:#374151;
-  font-weight:600;
-  letter-spacing:.02em;
-  text-transform: uppercase;
+thead tr {
+  background: linear-gradient(180deg, #1f2937, #111827);
 }
+
+th {
+  color: #e5e7eb;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
 
 tr:hover {
   background:#f8fafc;
@@ -253,6 +259,10 @@ tr.OUT:hover {
   opacity:.7;
 }
 
+/* מניעת hover/tap על כותרת הטבלה (בעיקר iOS) */
+thead tr:hover {
+  background: linear-gradient(180deg, #1f2937, #111827) !important;
+}
 
 
 </style>
