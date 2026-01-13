@@ -200,9 +200,21 @@ tr:hover {
   <div class="footer-note">
     נתונים בזמן אמת  
   </div>
-   <div id="statsContainer" class="table-card" style="margin-top:20px; display:none;">
+   <div id="statsContainer" class="table-card" style="margin-top:20px; display:none; padding:16px;">
+
+  <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+    <label>מ־</label>
+    <input type="date" id="statsFrom">
+
+    <label>עד</label>
+    <input type="date" id="statsTo">
+
+    <button class="secondary" onclick="updateStatsRange()">הצג</button>
+  </div>
+
   <canvas id="weeklyChart" height="60"></canvas>
 </div>
+
 
 </div>
 
@@ -219,21 +231,40 @@ function normalizeDate(ddmmyyyy) {
 let weeklyChart;
 
 function updateWeeklyChart(rows) {
+  const fromInput = document.getElementById("statsFrom")?.value;
+const toInput   = document.getElementById("statsTo")?.value;
+
+const fromDate = fromInput ? new Date(fromInput) : null;
+const toDate   = toInput   ? new Date(toInput)   : null;
+
   const counts = {};
   const labels = [];
 
-  // 7 ימים אחורה
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().split("T")[0];
-    counts[key] = 0;
-    labels.push(
-  d.getDate().toString().padStart(2,"0") + "/" +
-  (d.getMonth()+1).toString().padStart(2,"0")
-);
+    // ברירת מחדל: 7 ימים אחרונים אם לא בחרו טווח
+  const end = toDate ? new Date(toDate) : new Date();
+  const start = fromDate ? new Date(fromDate) : new Date(end);
 
+  if (!fromDate) start.setDate(end.getDate() - 6);
+
+  // לנרמל לשעה 00:00 כדי שהשוואות יעבדו חלק
+  start.setHours(0,0,0,0);
+  end.setHours(0,0,0,0);
+
+  // בונים counts + labels לכל יום בטווח
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+   const key =
+  d.getFullYear() + "-" +
+  String(d.getMonth() + 1).padStart(2, "0") + "-" +
+  String(d.getDate()).padStart(2, "0");
+
+    counts[key] = 0;
+
+    labels.push(
+      d.getDate().toString().padStart(2,"0") + "/" +
+      (d.getMonth()+1).toString().padStart(2,"0")
+    );
   }
+
 
   rows.slice(1).forEach(r => {
   const status = r.c?.[1]?.v;
@@ -242,9 +273,11 @@ function updateWeeklyChart(rows) {
   const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
   const rowDate = normalizeDate(dateFormatted);
 
-  if (rowDate in counts) {
-    counts[rowDate]++;
-  }
+if (rowDate && (rowDate in counts)) {
+  counts[rowDate]++;
+}
+
+
 });
 
 
@@ -339,6 +372,17 @@ function updateDateTime() {
 // ברירת מחדל: היום
 document.getElementById("viewDate").value =
   new Date().toISOString().split("T")[0];
+  // ===== ברירת מחדל לסטטיסטיקות: 7 ימים אחרונים =====
+const today = new Date();
+const weekAgo = new Date();
+weekAgo.setDate(today.getDate() - 6);
+
+document.getElementById("statsFrom").value =
+  weekAgo.toISOString().split("T")[0];
+
+document.getElementById("statsTo").value =
+  today.toISOString().split("T")[0];
+
 
 // טעינה ראשונית עם פילטר של היום
 loadData();
@@ -351,6 +395,16 @@ updateDateTime();
 setInterval(() => {
   loadData();
 }, 10000);
+
+function updateStatsRange() {
+  fetch(URL)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const rows = json.table.rows || [];
+      updateWeeklyChart(rows);
+    });
+}
 
 
 </script>
