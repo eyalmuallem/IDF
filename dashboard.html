@@ -6,24 +6,37 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+/* =========================
+   🎨 DESIGN SYSTEM
+========================= */
 :root{
   --bg:#f3f4f6;
   --card:#ffffff;
   --primary:#1f2937;
   --secondary:#374151;
   --accent:#2563eb;
+  --accent-dark:#1e40af;
   --border:#e5e7eb;
+}
+
+/* =========================
+   🌍 GLOBAL
+========================= */
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin:0;
   font-family: Arial, sans-serif;
   direction: rtl;
-  background: var(--bg);
+  background: linear-gradient(180deg, #f3f4f6 0%, #eef2f7 100%);
   color:#111827;
 }
 
-/* ===== Header ===== */
+/* =========================
+   🧭 HEADER
+========================= */
 .header {
   background: var(--primary);
   color: white;
@@ -31,6 +44,10 @@ body {
   display:flex;
   justify-content: space-between;
   align-items:center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .header h1 {
@@ -41,29 +58,31 @@ body {
 
 .datetime {
   font-size:14px;
-  opacity:0.9;
+  opacity:0.85;
+  font-variant-numeric: tabular-nums;
 }
 
-/* ===== Page container ===== */
+/* =========================
+   📦 PAGE LAYOUT
+========================= */
 .container {
   padding: 24px 32px;
   width: 100%;
 }
 
-
-
-
-/* ===== Controls card ===== */
+/* =========================
+   🎛 CONTROLS
+========================= */
 .controls {
-  background: var(--card);
+  background: rgba(255,255,255,0.94);
   border:1px solid var(--border);
-  border-radius:10px;
+  border-radius:12px;
   padding:16px;
   display:flex;
   align-items:center;
   gap:12px;
   margin-bottom:20px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.04);
+  box-shadow:0 4px 14px rgba(0,0,0,0.06);
 }
 
 .controls label {
@@ -72,55 +91,73 @@ body {
 }
 
 .controls input {
-  padding:6px 10px;
+  padding:7px 10px;
   border:1px solid var(--border);
-  border-radius:6px;
+  border-radius:8px;
+  background:#fff;
 }
 
+/* =========================
+   🔘 BUTTONS
+========================= */
 .controls button {
-  background: var(--accent);
-  color:white;
-  border:none;
-  border-radius:6px;
-  padding:8px 14px;
+  border-radius:8px;
+  padding:8px 16px;
   cursor:pointer;
   font-size:14px;
+  border:none;
+  transition: all .2s ease;
 }
 
-.controls button.secondary {
-  background:#6b7280;
-}
-
-.controls button:hover {
-  opacity:0.9;
-}
+/* Primary */
 .controls button.primary {
-  background: var(--accent);
-  box-shadow: 0 2px 4px rgba(37,99,235,0.15);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color:#fff;
+  box-shadow: 0 2px 4px rgba(37,99,235,0.2);
 }
 
+.controls button.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(37,99,235,.35);
+}
+
+/* Secondary */
 .controls button.secondary {
   background: #f3f4f6;
   color: #374151;
   border: 1px solid var(--border);
 }
 
+.controls button.secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Outline */
 .controls button.outline {
   background: transparent;
   color: var(--secondary);
   border: 1px dashed var(--border);
 }
 
-
-/* ===== Table ===== */
-.table-card {
-  background: var(--card);
-  border:1px solid var(--border);
-  border-radius:10px;
-  overflow:hidden;
-  box-shadow:0 4px 10px rgba(0,0,0,0.04);
+.controls button.outline:hover {
+  background:#eef2f7;
 }
 
+/* =========================
+   📊 TABLE CARD
+========================= */
+.table-card {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
+  border-radius:12px;
+  border:1px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,0.06);
+  overflow:hidden;
+}
+
+/* =========================
+   📋 TABLE
+========================= */
 table {
   width:100%;
   border-collapse: collapse;
@@ -128,7 +165,7 @@ table {
 
 th, td {
   padding:12px;
-  border-bottom:1px solid var(--border);
+  border-bottom:1px solid #eef2f7;
   text-align:center;
   font-size:14px;
 }
@@ -137,23 +174,78 @@ th {
   background:#f9fafb;
   color:#374151;
   font-weight:600;
+  letter-spacing:.02em;
+  text-transform: uppercase;
 }
 
 tr:hover {
-  background:#f3f4f6;
+  background:#f8fafc;
 }
 
-.IN { background:#ecfdf5; }
-.OUT { background:#fef2f2; }
+/* =========================
+   ✅ STATUS COLORS
+========================= */
+/* ===== STATUS ROW BACKGROUND ===== */
+tr.IN {
+  background: linear-gradient(
+    90deg,
+    rgba(16,185,129,0.10),
+    rgba(16,185,129,0.04)
+  );
+}
 
+tr.OUT {
+  background: linear-gradient(
+    90deg,
+    rgba(239,68,68,0.12),
+    rgba(239,68,68,0.05)
+  );
+}
+
+/* חיזוק הסטטוס עצמו */
+tr.IN td:nth-child(2),
+tr.OUT td:nth-child(2) {
+  color: #111827; /* שחור אחיד */
+  font-weight: 500;
+}
+
+
+/* hover עדין שלא שובר את הצבע */
+tr.IN:hover,
+tr.OUT:hover {
+  filter: brightness(0.97);
+}
+
+
+/* =========================
+   📉 STATS ANIMATION
+========================= */
+#statsContainer {
+  animation: fadeUp .25s ease;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity:0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity:1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   🧾 FOOTER
+========================= */
 .footer-note {
   margin-top:10px;
   font-size:12px;
   color:#6b7280;
+  opacity:.7;
 }
-* {
-  box-sizing: border-box;
-}
+
+
 
 </style>
 </head>
@@ -211,6 +303,8 @@ tr:hover {
 
     <button class="secondary" onclick="updateStatsRange()">הצג</button>
   </div>
+  <button class="outline" onclick="toggleTrend()">קו מגמה</button>
+
 
   <canvas id="weeklyChart" height="60"></canvas>
 </div>
@@ -228,7 +322,21 @@ function normalizeDate(ddmmyyyy) {
   const [dd, mm, yyyy] = ddmmyyyy.split("/");
   return `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
 }
+
 let weeklyChart;
+let showTrend = false;
+
+
+function calculateTrend(data, window = 3) {
+  return data.map((_, i) => {
+    const start = Math.max(0, i - window + 1);
+    const slice = data.slice(start, i + 1);
+    const avg = slice.reduce((a,b)=>a+b,0) / slice.length;
+    return Number(avg.toFixed(2));
+  });
+}
+
+
 
 function updateWeeklyChart(rows) {
   const fromInput = document.getElementById("statsFrom")?.value;
@@ -285,30 +393,52 @@ if (rowDate && (rowDate in counts)) {
 
   if (weeklyChart) weeklyChart.destroy();
 
-  weeklyChart = new Chart(document.getElementById("weeklyChart"), {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "הופעות שיצאו ",
+
+
+
+ weeklyChart = new Chart(document.getElementById("weeklyChart"), {
+  type: "bar",
+  data: {
+    labels,
+    datasets: [
+      {
+        type: "bar",
         data,
-        borderColor: "#2563eb",
-       
-       backgroundColor: "rgba(37,99,235,0.7)",
-borderColor: "#2563eb",
-borderWidth: 1,
-barThickness: 20
-
-        
-      }]
-    },
-    options: {
-      animation: false,
-
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
+        backgroundColor: "rgba(37,99,235,0.6)",
+        borderRadius: 4,
+        barThickness: 18
+      },
+      {
+        type: "line",
+        data: calculateTrend(data),
+        borderColor: "#9ca3af",
+        borderWidth: 2,
+        tension: 0,
+        pointRadius: 0,
+        hidden: !showTrend
+      }
+    ]
+  },
+  options: {
+    animation: false,
+    maintainAspectRatio: true,
+    aspectRatio: 4,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: {
+        grid: { display: true, color: "rgba(0,0,0,0.04)", drawBorder: false },
+        ticks: { color: "#9ca3af" }
+      },
+      y: {
+        beginAtZero: true,
+        grid: { color: "rgba(0,0,0,0.06)", borderDash: [4, 4], drawBorder: false },
+        ticks: { color: "#9ca3af", precision: 0 }
+      }
     }
-  });
+  }
+});
+
+
 }
  function toggleStats() {
   const box = document.getElementById("statsContainer");
@@ -405,6 +535,20 @@ function updateStatsRange() {
       updateWeeklyChart(rows);
     });
 }
+function toggleTrend() {
+  showTrend = !showTrend;
+
+  if (weeklyChart) {
+    weeklyChart.data.datasets[1].hidden = !showTrend;
+    weeklyChart.update();
+  }
+
+  // אופציונלי: להחליף טקסט בכפתור עצמו
+  const btn = document.querySelector('#statsContainer button.outline');
+  if (btn) btn.innerText = showTrend ? "הסתר קו מגמה" : "קו מגמה";
+}
+
+
 
 
 </script>
