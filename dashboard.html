@@ -236,13 +236,17 @@ function updateWeeklyChart(rows) {
   }
 
   rows.slice(1).forEach(r => {
-    const status = r.c?.[1]?.v;
-    if (status !== "OUT") return;
+  const status = r.c?.[1]?.v;
+  if (status !== "IN" && status !== "OUT") return;
 
-    const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
-    const rowDate = normalizeDate(dateFormatted);
-    if (rowDate in counts) counts[rowDate]++;
-  });
+  const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
+  const rowDate = normalizeDate(dateFormatted);
+
+  if (rowDate in counts) {
+    counts[rowDate]++;
+  }
+});
+
 
   const data = Object.values(counts);
 
@@ -253,7 +257,7 @@ function updateWeeklyChart(rows) {
     data: {
       labels,
       datasets: [{
-        label: "הופעות שיצאו (OUT)",
+        label: "הופעות שיצאו ",
         data,
         borderColor: "#2563eb",
        
