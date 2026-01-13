@@ -226,14 +226,22 @@ function updateDateTime() {
   document.getElementById("datetime").innerText =
     now.toLocaleDateString("he-IL") + " | " + now.toLocaleTimeString("he-IL");
 }
+// ברירת מחדל: היום
+document.getElementById("viewDate").value =
+  new Date().toISOString().split("T")[0];
+
+// טעינה ראשונית עם פילטר של היום
+loadData();
+
+
 setInterval(updateDateTime, 1000);
 updateDateTime();
 
 // טעינה ראשונית
-loadData(true);
 setInterval(() => {
-  loadData(true);
+  loadData();
 }, 10000);
+
 
 </script>
 
