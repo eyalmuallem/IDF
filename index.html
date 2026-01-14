@@ -720,11 +720,15 @@ function getItemsCount() {
 </script>
 <script>
 window._printSession = 0;
+window._isPrinting = false;
+
 </script>
 
 
 <script>
 function printList() {
+  if (window._isPrinting) return; // ⛔ כבר בתהליך
+  window._isPrinting = true;
 
   // 1️⃣ מילוי פרטי הדפסה
   document.getElementById("p_soundman").textContent =
@@ -789,7 +793,11 @@ function printList() {
   ).catch(() => {});
 
   window.print();
+  setTimeout(() => {
+    window._isPrinting = false;
+  }, 3000);
 }
+
 
 function afterPrintBackground() {
   const data = window._lastDoc;
