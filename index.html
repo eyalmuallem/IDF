@@ -241,6 +241,7 @@
 
 
 
+
     </style>
 </head>
 <body>
@@ -322,15 +323,15 @@
 </div>
 
     <div id="print-qr" style="display:none; margin-top:15px;"></div>
+    <div class="actions">
+  <button onclick="exportToCSV()">ייצוא ל-CSV</button>
+  <button onclick="exportToExcel()">ייצוא לאקסל</button>
+  <button onclick="printList()">🖨️ הדפס רשימה</button>
+</div>
+
 
 </div>
 
-        <button onclick="exportToCSV()">ייצוא ל-CSV</button>
-        <button onclick="exportToExcel()">ייצוא לאקסל</button>
-        <button onclick="printList()">🖨️ הדפס רשימה</button>
-
-
-    </div>
     <!-- עמוד אימות (נפתח רק מסריקת QR) -->
 <div id="verify-page" style="
   display:none;
