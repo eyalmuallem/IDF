@@ -286,8 +286,11 @@ thead tr:hover {
   <label>תאריך לצפייה:</label>
   <input type="date" id="viewDate">
   <button class="primary" onclick="loadData()">צפה</button>
-<button class="secondary" onclick="loadData(true)">רענן</button>
+<button class="secondary" onclick="loadData(showOnlyOut)">רענן</button>
 <button class="outline" onclick="toggleStats()" id="statsBtn">סטטיסטיקות</button>
+<button class="outline" onclick="toggleOutOnly()" id="outBtn">
+  הצג אירועים שלא חזרו
+</button>
 
 </div>
 
@@ -333,6 +336,8 @@ thead tr:hover {
 </div>
 
 <script>
+  let showOnlyOut = false;
+
 const GID = "0";
 const URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${GID}`;
 
@@ -491,6 +496,9 @@ updateWeeklyChart(rows);
 
       rows.slice(1).forEach(r => {
         const status = r.c?.[1]?.v || "";
+        // פילטר: רק OUT
+if (showOnlyOut && status !== "OUT") return;
+
         const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
         const rowDate = normalizeDate(dateFormatted);
 
@@ -543,8 +551,9 @@ updateDateTime();
 
 // טעינה ראשונית
 setInterval(() => {
-  loadData();
+  loadData(showOnlyOut); 
 }, 10000);
+
 
 function updateStatsRange() {
   fetch(URL)
@@ -567,6 +576,20 @@ function toggleTrend() {
   const btn = document.querySelector('#statsContainer button.outline');
   if (btn) btn.innerText = showTrend ? "הסתר קו מגמה" : "קו מגמה";
 }
+function toggleOutOnly() {
+  showOnlyOut = !showOnlyOut;
+
+  const btn = document.getElementById("outBtn");
+
+  if (showOnlyOut) {
+    btn.innerText = "הצג את כל האירועים";
+    loadData(true);   // OUT בלבד, בלי תאריך
+  } else {
+    btn.innerText = "הצג אירועים שלא חזרו";
+    loadData(false);  // חזרה לדיפולט = היום
+  }
+}
+
 
 
 
