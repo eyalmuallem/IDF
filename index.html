@@ -718,69 +718,51 @@ function getItemsCount() {
   return document.querySelectorAll("#equipment_table tbody tr").length;
 }
 </script>
+<script>
+window._printSession = 0;
+</script>
 
 
 <script>
 function printList() {
 
-  // מילוי פרטי הדפסה (כמו שהיה)
+  // 1️⃣ מילוי פרטי הדפסה
   document.getElementById("p_soundman").textContent =
-    document.getElementById("soundman_name").value || "";
-
+    document.getElementById("soundman_name").value || "—";
   document.getElementById("p_id").textContent =
-    document.getElementById("soundman_id").value || "";
-
+    document.getElementById("soundman_id").value || "—";
   document.getElementById("p_band").textContent =
-    document.getElementById("band_name").value || "";
-
+    document.getElementById("band_name").value || "—";
   document.getElementById("p_pickup").textContent =
-    document.getElementById("pickup_date").value || "";
-
+    document.getElementById("pickup_date").value || "—";
   document.getElementById("p_return").textContent =
-    document.getElementById("return_date").value || "";
-
+    document.getElementById("return_date").value || "—";
   document.getElementById("p_returno").textContent =
-    document.getElementById("returno_time").value || "";
-
+    document.getElementById("returno_time").value || "—";
   document.getElementById("p_notes").textContent =
     document.getElementById("signer_notes").value || "";
 
-  // מזהה מסמך
+  // 🔁 פתיחת סשן הדפסה חדש
+  window._printSession++;
+  const sessionId = window._printSession;
+
+  // 🔑 יצירת מספר מסמך (פעם אחת!)
   const docId = generateDocumentId();
   document.getElementById("p_doc_id").textContent = docId;
-  // 📋 העתקת מספר מסמך ללוח אוטומטית
-navigator.clipboard.writeText(docId).catch(() => {
-  const temp = document.createElement("textarea");
-  temp.value = docId;
-  document.body.appendChild(temp);
-  temp.select();
-  document.execCommand("copy");
-  document.body.removeChild(temp);
-});
 
-  // רישום יציאה (OUT) לשיטס
-fetch(
-  `${API_URL}?action=out`
-  + `&doc=${encodeURIComponent(docId)}`
-  + `&event=${encodeURIComponent(document.getElementById("band_name").value)}`
-  + `&signer=${encodeURIComponent(document.getElementById("soundman_name").value)}`
-).catch(() => {});
-
-
-  // בניית QR קצר (דל!)
+  // 🔳 יצירת QR
   const params = new URLSearchParams({
-  verify: "1",
-  doc: docId,
-  id: document.getElementById("soundman_id").value || "",
+    verify: "1",
+    doc: docId,
+    id: document.getElementById("soundman_id").value || "",
     name: document.getElementById("soundman_name").value || "",
-  ev: document.getElementById("band_name").value || "",
-  n: getItemsCount()
-});
+    ev: document.getElementById("band_name").value || "",
+    n: getItemsCount()
+  });
 
-const qrText = location.origin + location.pathname + "?" + params.toString();
+  const qrText =
+    location.origin + location.pathname + "?" + params.toString();
 
-
-  // יצירת QR
   const qrContainer = document.getElementById("print-qr");
   qrContainer.innerHTML = "";
 
@@ -791,10 +773,50 @@ const qrText = location.origin + location.pathname + "?" + params.toString();
     correctLevel: QRCode.CorrectLevel.L
   });
 
-  // הדפסה
-window.print();
+  // 🧠 שמירה לסשן
+  window._lastDoc = {
+    docId,
+    sessionId,
+    sent: false
+  };
+
+  // 📡 שליחה לשיטס — לפני הדפסה (חד-משמעי)
+  fetch(
+    `${API_URL}?action=out`
+    + `&doc=${encodeURIComponent(docId)}`
+    + `&event=${encodeURIComponent(document.getElementById("band_name").value)}`
+    + `&signer=${encodeURIComponent(document.getElementById("soundman_name").value)}`
+  ).catch(() => {});
+
+  window.print();
 }
-</script>
+
+function afterPrintBackground() {
+  const data = window._lastDoc;
+  if (!data) return;
+
+  // ❌ אם זה לא הסשן האחרון – מתעלמים
+  if (data.sessionId !== window._printSession) return;
+
+  // ❌ הגנה משליחה כפולה
+  if (data.sent) return;
+  data.sent = true;
+
+  const docId = data.docId;
+
+  // 📋 העתקה ללוח
+  navigator.clipboard?.writeText(docId).catch(() => {});
+
+  // 📡 שליחה לשיטס
+  fetch(
+    `${API_URL}?action=out`
+    + `&doc=${encodeURIComponent(docId)}`
+    + `&event=${encodeURIComponent(document.getElementById("band_name").value)}`
+    + `&signer=${encodeURIComponent(document.getElementById("soundman_name").value)}`
+  ).catch(() => {});
+}
+
+
 
 
 </script>
@@ -817,6 +839,6 @@ if (params.get("verify") === "1") {
 const API_URL = "https://script.google.com/macros/s/AKfycbzWiBQ2OorLE5es5cqJ9FPN8sJC0m75r0_ky0BRBJfuQM0hPmXwDHk7m0uCRCkLFSWl/exec";
 </script>
 
-
+</script>
 </body>
 </html>
