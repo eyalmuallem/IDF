@@ -4,83 +4,187 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>החזרת ציוד</title>
+
 <style>
-  body{font-family:Arial;direction:rtl;background:#f4f4f4;margin:0;padding:20px}
-  .box{max-width:420px;background:#fff;margin:30px auto;padding:20px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.12)}
-  h2{margin:0 0 10px;text-align:center}
-  label{display:block;margin-top:12px;font-weight:bold}
-  input{width:100%;padding:12px;font-size:18px;border:1px solid #ccc;border-radius:8px;margin-top:6px}
-  button{width:100%;padding:12px;font-size:18px;border:0;border-radius:10px;margin-top:14px;background:#16a34a;color:#fff;cursor:pointer}
-  button:active{transform:scale(.99)}
-  .msg{margin-top:14px;min-height:24px;text-align:center;font-size:16px}
-  .ok{color:#16a34a}
-  .err{color:#dc2626}
+body{
+  font-family:Arial;
+  direction:rtl;
+  background:#f4f4f4;
+  margin:0;
+  padding:20px;
+}
+.box{
+  max-width:440px;
+  background:#fff;
+  margin:40px auto;
+  padding:22px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.12);
+}
+h2{
+  margin:0 0 14px;
+  text-align:center;
+}
+label{
+  display:block;
+  margin-top:14px;
+  font-weight:bold;
+}
+select{
+  width:100%;
+  padding:12px;
+  font-size:16px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  margin-top:6px;
+}
+button{
+  width:100%;
+  padding:14px;
+  font-size:18px;
+  border:0;
+  border-radius:12px;
+  margin-top:18px;
+  background:#16a34a;
+  color:#fff;
+  cursor:pointer;
+}
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+.msg{
+  margin-top:16px;
+  min-height:24px;
+  text-align:center;
+  font-size:16px;
+}
+.ok{color:#16a34a;}
+.err{color:#dc2626;}
 </style>
 </head>
+
 <body>
-  <div class="box">
-    <h2>📦 החזרת ציוד</h2>
 
-    <label>מספר מסמך</label>
-    <input id="doc" placeholder="EQ-1234" autofocus />
+<div class="box">
+  <h2>📦 החזרת ציוד</h2>
 
-    <button id="btn">✔️ סמן כהוחזר</button>
+  <label>בחר אירוע פתוח (OUT)</label>
+  <select id="returnSelect">
+    <option value="">טוען אירועים…</option>
+  </select>
 
-    <div id="msg" class="msg"></div>
-  </div>
+  <button id="btn">✔️ סמן כהוחזר</button>
+
+  <div id="msg" class="msg"></div>
+</div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzWiBQ2OorLE5es5cqJ9FPN8sJC0m75r0_ky0BRBJfuQM0hPmXwDHk7m0uCRCkLFSWl/exec";
+/* ===== CONFIG ===== */
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzWiBQ2OorLE5es5cqJ9FPN8sJC0m75r0_ky0BRBJfuQM0hPmXwDHk7m0uCRCkLFSWl/exec";
 
-const docEl = document.getElementById("doc");
-const msgEl = document.getElementById("msg");
-const btn   = document.getElementById("btn");
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=0";
 
-function setMsg(text, cls) {
-  msgEl.className = "msg " + (cls || "");
-  msgEl.textContent = text;
+const sel = document.getElementById("returnSelect");
+const btn = document.getElementById("btn");
+const msg = document.getElementById("msg");
+
+/* ===== HELPERS ===== */
+function setMsg(text, cls="") {
+  msg.className = "msg " + cls;
+  msg.textContent = text;
 }
 
-function sendReturn() {
-  const doc = docEl.value.trim();
-  const by  = "מחסן"; // ערך קבוע
+/* ===== LOAD OPEN EVENTS (OUT) ===== */
+function loadOpenEvents() {
+  const currentSelection = sel.value; // שמירת בחירה
 
+  fetch(SHEET_URL)
+    .then(r => r.text())
+    .then(t => {
+      const json = JSON.parse(t.substring(47).slice(0, -2));
+      const rows = json.table.rows || [];
+
+      sel.innerHTML = `<option value="">בחר אירוע…</option>`;
+
+      let foundCurrent = false;
+      let count = 0;
+
+      rows.slice(1).forEach(r => {
+        const status = r.c?.[1]?.v;
+        if (status !== "OUT") return;
+
+        const doc    = r.c?.[0]?.v || "";
+        const event  = r.c?.[2]?.v || "";
+        const signer = r.c?.[3]?.v || "";
+        const date   = r.c?.[4]?.f || r.c?.[4]?.v || "";
+
+        const opt = document.createElement("option");
+        opt.value = doc;
+        opt.textContent = `${event} | ${signer} | ${date}`;
+
+        if (doc === currentSelection) {
+          opt.selected = true;
+          foundCurrent = true;
+        }
+
+        sel.appendChild(opt);
+        count++;
+      });
+
+      if (!count) {
+        sel.innerHTML = `<option value="">אין אירועים פתוחים 🎉</option>`;
+      }
+
+      if (currentSelection && !foundCurrent) {
+        setMsg("ℹ️ האירוע שנבחר כבר הוחזר", "");
+      }
+    })
+    .catch(() => {
+      sel.innerHTML = `<option value="">שגיאה בטעינת נתונים</option>`;
+    });
+}
+
+/* ===== SEND RETURN ===== */
+function sendReturn() {
+  const doc = sel.value;
   if (!doc) {
-    setMsg("נא להזין מספר מסמך", "err");
-    docEl.focus();
+    setMsg("נא לבחור אירוע", "err");
     return;
   }
 
   btn.disabled = true;
-  setMsg("שולח עדכון…", "");
+  setMsg("שולח עדכון…");
 
   const url =
-    API +
+    API_URL +
     "?action=in" +
     "&doc=" + encodeURIComponent(doc) +
-    "&by="  + encodeURIComponent(by) +
+    "&by="  + encodeURIComponent("מחסן") +
     "&_="   + Date.now();
 
   const img = new Image();
-  img.onload = () => {
-    setMsg("✔️ סומן כהוחזר: " + doc, "ok");
-    docEl.value = "";
+  img.onload = img.onerror = () => {
+    setMsg("✔️ סומן כהוחזר", "ok");
     btn.disabled = false;
-    docEl.focus();
+    loadOpenEvents();
   };
-  img.onerror = () => {
-    setMsg("✔️ סומן כהוחזר בהצלחה", "ok");
-    btn.disabled = false;
-    docEl.focus();
-  };
-
   img.src = url;
 }
 
+/* ===== EVENTS ===== */
 btn.addEventListener("click", sendReturn);
-docEl.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendReturn();
-});
+
+/* ===== INIT ===== */
+loadOpenEvents();
+
+/* ===== AUTO REFRESH (שקט) ===== */
+setInterval(() => {
+  loadOpenEvents();
+}, 12000); // כל 12 שניות
 </script>
+
 </body>
 </html>
