@@ -329,8 +329,12 @@ thead tr:hover {
   </div>
   <button class="outline" onclick="toggleTrend()">קו מגמה</button>
 
+<h4 style="margin:8px 0 6px;"> כמות אירועים סה״כ לפי תאריך</h4>
 
   <canvas id="weeklyChart" height="60"></canvas>
+  <h4 style="margin:16px 0 6px;"> עומס לפי טווחי שעות (3 שעות)</h4>
+<canvas id="hourlyChart" height="60"></canvas>
+
 </div>
 
 
@@ -350,7 +354,9 @@ function normalizeDate(ddmmyyyy) {
 }
 
 let weeklyChart;
+let hourlyChart;
 let showTrend = false;
+
 
 
 function calculateTrend(data, window = 3) {
@@ -359,6 +365,81 @@ function calculateTrend(data, window = 3) {
     const slice = data.slice(start, i + 1);
     const avg = slice.reduce((a,b)=>a+b,0) / slice.length;
     return Number(avg.toFixed(2));
+  });
+}
+function updateHourlyChart(rows) {
+  const fromInput = document.getElementById("statsFrom")?.value;
+  const toInput   = document.getElementById("statsTo")?.value;
+
+  const fromDate = fromInput ? new Date(fromInput) : null;
+  const toDate   = toInput   ? new Date(toInput)   : null;
+
+  // 8 טווחים של 3 שעות
+  const buckets = Array(8).fill(0);
+  const labels = [
+    "00–03",
+    "03–06",
+    "06–09",
+    "09–12",
+    "12–15",
+    "15–18",
+    "18–21",
+    "21–24"
+  ];
+
+  rows.slice(1).forEach(r => {
+    const status = r.c?.[1]?.v;
+    if (status !== "IN" && status !== "OUT") return;
+
+    const dateStr = r.c?.[4]?.f || r.c?.[4]?.v;
+    const timeStr = r.c?.[5]?.f || r.c?.[5]?.v;
+    if (!dateStr || !timeStr) return;
+
+    const [dd, mm, yyyy] = dateStr.split("/");
+    const [hh] = timeStr.split(":");
+
+    const hour = parseInt(hh, 10);
+    if (isNaN(hour)) return;
+
+    const rowDate = new Date(`${yyyy}-${mm}-${dd}`);
+
+    if (fromDate && rowDate < fromDate) return;
+    if (toDate && rowDate > toDate) return;
+
+    const bucketIndex = Math.floor(hour / 3);
+    if (bucketIndex >= 0 && bucketIndex < buckets.length) {
+      buckets[bucketIndex]++;
+    }
+  });
+
+  if (hourlyChart) hourlyChart.destroy();
+
+  hourlyChart = new Chart(document.getElementById("hourlyChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        data: buckets,
+        backgroundColor: "rgba(16,185,129,0.6)",
+        borderRadius: 4,
+        barThickness: 26
+      }]
+    },
+    options: {
+      animation: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          title: { display: true, text: "טווח שעות" },
+          ticks: { color: "#6b7280" }
+        },
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: "כמות אירועים" },
+          ticks: { precision: 0 }
+        }
+      }
+    }
   });
 }
 
@@ -494,6 +575,9 @@ function loadData(ignoreFilter = false) {
 
       const selectedDate = document.getElementById("viewDate").value;
 updateWeeklyChart(rows);
+updateHourlyChart(rows);
+
+
 
       rows.slice(1).forEach(r => {
         const status = r.c?.[1]?.v || "";
@@ -555,8 +639,12 @@ updateDateTime();
 
 // טעינה ראשונית
 setInterval(() => {
-  loadData(showOnlyOut); 
+  const statsOpen = document.getElementById("statsContainer").style.display === "block";
+  if (!statsOpen) {
+    loadData(showOnlyOut);
+  }
 }, 10000);
+
 
 
 function updateStatsRange() {
@@ -566,8 +654,10 @@ function updateStatsRange() {
       const json = JSON.parse(text.substring(47).slice(0, -2));
       const rows = json.table.rows || [];
       updateWeeklyChart(rows);
+      updateHourlyChart(rows);
     });
 }
+
 function toggleTrend() {
   showTrend = !showTrend;
 
