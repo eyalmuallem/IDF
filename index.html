@@ -6,7 +6,6 @@
     <title>רישום ציוד להופעה</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js">
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 
 
@@ -217,26 +216,6 @@
         text-align: right;
     }
 }
-/* QR לא מוצג במסך */
-#print-qr {
-  display: none;
-}
-
-/* QR מוצג רק בהדפסה */
-@media print {
-  #print-qr {
-    display: block !important;
-  }
-}
-@media print {
-  #print-qr {
-    display: block !important;
-    width: fit-content;
-    margin: 20px auto;   /* ← זה המרכז */
-    text-align: center;
-  }
-}
-
 
 
 
@@ -245,6 +224,11 @@
     </style>
 </head>
 <body>
+  <script>
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzWiBQ2OorLE5es5cqJ9FPN8sJC0m75r0_ky0BRBJfuQM0hPmXwDHk7m0uCRCkLFSWl/exec";
+</script>
+
     <div class="container">
       <div class="logo-container">
     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR54ryCD7eiD-RGgYDvUUgEenJDBQ3BiejDrw&s" alt="לוגו צד ימין">
@@ -322,7 +306,7 @@
   <span id="p_doc_id" style="font-size:12px; font-weight:bold; user-select:all;"></span>
 </div>
 
-    <div id="print-qr" style="display:none; margin-top:15px;"></div>
+    
     <div class="actions">
   <button onclick="exportToCSV()">ייצוא ל-CSV</button>
   <button onclick="exportToExcel()">ייצוא לאקסל</button>
@@ -332,44 +316,11 @@
 
 </div>
 
-    <!-- עמוד אימות (נפתח רק מסריקת QR) -->
-<div id="verify-page" style="
-  display:none;
-  max-width:480px;
-  margin:40px auto;
-  padding:25px;
-  border-radius:12px;
-  box-shadow:0 0 15px rgba(0,0,0,0.15);
-  font-family:Arial;
-  background:white;
-">
 
-  <h2 style="text-align:center; color:#2c7be5;">✔ מסמך מאומת</h2>
-
-  <p style="text-align:center; color:#666;">
-    זהו עמוד אימות של מסמך משיכת ציוד
-  </p>
-
-  <hr>
-
-  <p><strong>מספר מסמך:</strong> <span id="v_doc"></span></p>
-  <p><strong>מספר אישי:</strong> <span id="v_id"></span></p>
-  <p><strong>שם אירוע:</strong> <span id="v_event"></span></p>
-  <p><strong>כמות פריטים:</strong> <span id="v_count"></span></p>
-  <p><strong>שם החותם:</strong> <span id="v_name"></span></p>
-
-
-  <hr>
-
-  <p style="font-size:12px; color:#888; text-align:center;">
-    הנתונים הוצגו מתוך QR מקורי שהופק בעת ההדפסה
-  </p>
-</div>
 
     <script>
       const equipmentList = [
 
-/* ===== סטים ===== */
 { code: "#0001", name: "סט תופים - נח״ל" },
 { code: "#0002", name: "סט תופים - שריון" },
 { code: "#0003", name: "סט תופים - חינוך כלים" },
@@ -580,8 +531,6 @@
 { code: "#0164", name: "XLR קצר 9" },
 { code: "#0165", name: "XLR קצר 10" }
 
-
-
 ];
 
 
@@ -761,92 +710,66 @@ function getItemsCount() {
 window._isPrinting = false;
 
 </script>
+<script>
+/* ===== CACHE INPUTS (Safari critical) ===== */
+const soundman_name = document.getElementById("soundman_name");
+const soundman_id   = document.getElementById("soundman_id");
+const band_name     = document.getElementById("band_name");
+const pickup_date   = document.getElementById("pickup_date");
+const return_date   = document.getElementById("return_date");
+const returno_time  = document.getElementById("returno_time");
+const signer_notes  = document.getElementById("signer_notes");
+</script>
 
-
+<script>
+/* ===== CACHE ELEMENTS (Safari safe) ===== */
+const p_soundman = document.getElementById("p_soundman");
+const p_id       = document.getElementById("p_id");
+const p_band     = document.getElementById("p_band");
+const p_pickup   = document.getElementById("p_pickup");
+const p_return   = document.getElementById("p_return");
+const p_returno  = document.getElementById("p_returno");
+const p_notes    = document.getElementById("p_notes");
+const p_doc_id   = document.getElementById("p_doc_id");
+</script>
 <script>
 function printList() {
-  if (window._isPrinting) return; // ⛔ כבר בתהליך
+  if (window._isPrinting) return;
   window._isPrinting = true;
 
-  // 1️⃣ מילוי פרטי הדפסה
-  document.getElementById("p_soundman").textContent =
-    document.getElementById("soundman_name").value || "—";
-  document.getElementById("p_id").textContent =
-    document.getElementById("soundman_id").value || "—";
-  document.getElementById("p_band").textContent =
-    document.getElementById("band_name").value || "—";
-  document.getElementById("p_pickup").textContent =
-    document.getElementById("pickup_date").value || "—";
-  document.getElementById("p_return").textContent =
-    document.getElementById("return_date").value || "—";
-  document.getElementById("p_returno").textContent =
-    document.getElementById("returno_time").value || "—";
-  document.getElementById("p_notes").textContent =
-    document.getElementById("signer_notes").value || "";
+  document.activeElement?.blur();
 
- 
+  p_soundman.textContent = soundman_name.value || "—";
+  p_id.textContent       = soundman_id.value || "—";
+  p_band.textContent     = band_name.value || "—";
+  p_pickup.textContent  = pickup_date.value || "—";
+  p_return.textContent  = return_date.value || "—";
+  p_returno.textContent = returno_time.value || "—";
+  p_notes.textContent   = signer_notes.value || "";
 
-  // 🔑 יצירת מספר מסמך (פעם אחת!)
   const docId = generateDocumentId();
-  document.getElementById("p_doc_id").textContent = docId;
+  p_doc_id.textContent = docId;
 
-  // 🔳 יצירת QR
-  const params = new URLSearchParams({
-    verify: "1",
-    doc: docId,
-    id: document.getElementById("soundman_id").value || "",
-    name: document.getElementById("soundman_name").value || "",
-    ev: document.getElementById("band_name").value || "",
-    n: getItemsCount()
-  });
+ const img = new Image();
+img.src =
+  API_URL +
+  "?action=out" +
+  "&doc=" + encodeURIComponent(docId) +
+  "&event=" + encodeURIComponent(band_name.value) +
+  "&signer=" + encodeURIComponent(soundman_name.value) +
+  "&_=" + Date.now();
 
-  const qrText =
-    location.origin + location.pathname + "?" + params.toString();
 
-  const qrContainer = document.getElementById("print-qr");
-  qrContainer.innerHTML = "";
+  setTimeout(() => {
+    window.print();
+  }, 50);
 
-  new QRCode(qrContainer, {
-    text: qrText,
-    width: 95,
-    height: 95,
-    correctLevel: QRCode.CorrectLevel.L
-  });
-
- 
-
-  // 📡 שליחה לשיטס — לפני הדפסה (חד-משמעי)
-  fetch(
-    `${API_URL}?action=out`
-    + `&doc=${encodeURIComponent(docId)}`
-    + `&event=${encodeURIComponent(document.getElementById("band_name").value)}`
-    + `&signer=${encodeURIComponent(document.getElementById("soundman_name").value)}`
-  ).catch(() => {});
-
-  window.print();
   setTimeout(() => {
     window._isPrinting = false;
-  }, 3000);
+  }, 1000);
 }
+
+
 </script>
-<script>
-const params = new URLSearchParams(window.location.search);
-
-if (params.get("verify") === "1") {
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("verify-page").style.display = "block";
-
-  document.getElementById("v_doc").textContent   = params.get("doc") || "—";
-  document.getElementById("v_id").textContent    = params.get("id") || "—";
-  document.getElementById("v_event").textContent = params.get("ev") || "—";
-  document.getElementById("v_name").textContent = params.get("name") || "—";
-  document.getElementById("v_count").textContent = params.get("n") || "0";
-}
-</script>
-
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzWiBQ2OorLE5es5cqJ9FPN8sJC0m75r0_ky0BRBJfuQM0hPmXwDHk7m0uCRCkLFSWl/exec";
-</script>
-
 </body>
 </html>
