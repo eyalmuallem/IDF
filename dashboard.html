@@ -306,6 +306,7 @@ thead tr:hover {
           <th>שם האירוע</th>
           <th>שם החותם</th>
           <th>תאריך</th>
+          <th>שעה</th> 
         </tr>
       </thead>
       <tbody></tbody>
@@ -500,6 +501,8 @@ updateWeeklyChart(rows);
 if (showOnlyOut && status !== "OUT") return;
 
         const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
+        const timeFormatted = r.c?.[5]?.f || r.c?.[5]?.v || "";
+
         const rowDate = normalizeDate(dateFormatted);
 
         if (!ignoreFilter && selectedDate) {
@@ -515,6 +518,7 @@ if (showOnlyOut && status !== "OUT") return;
           <td>${r.c?.[2]?.v || ""}</td>
           <td>${r.c?.[3]?.v || ""}</td>
           <td>${dateFormatted}</td>
+          <td>${timeFormatted}</td>
         `;
         tbody.appendChild(tr);
       });
