@@ -7,77 +7,108 @@
 
 <style>
 body{
+  margin:0;
   font-family:Arial;
   direction:rtl;
-  background:#f4f4f4;
+  background:#f1f5f9;
+  color:#111827;
+}
+
+/* Header */
+.header{
+  background:#0f172a;
+  color:#fff;
+  padding:22px 32px;
+}
+.header h1{
   margin:0;
-  padding:20px;
+  font-size:22px;
+  font-weight:600;
 }
-.box{
-  max-width:440px;
-  background:#fff;
-  margin:40px auto;
-  padding:22px;
-  border-radius:14px;
-  box-shadow:0 10px 25px rgba(0,0,0,.12);
+
+/* Page */
+.page{
+  padding:40px 32px;
+  max-width:900px;
+  margin:0 auto;
 }
-h2{
-  margin:0 0 14px;
-  text-align:center;
+
+/* Main panel */
+.panel{
+  background:#ffffff;
+  padding:32px;
+  border-radius:10px;
+  box-shadow:0 4px 20px rgba(0,0,0,.06);
 }
+
+/* Form */
 label{
   display:block;
-  margin-top:14px;
-  font-weight:bold;
+  font-weight:600;
+  margin-bottom:8px;
 }
+
 select{
   width:100%;
-  padding:12px;
+  padding:14px;
   font-size:16px;
-  border:1px solid #ccc;
+  border:1px solid #d1d5db;
   border-radius:8px;
-  margin-top:6px;
+  margin-bottom:20px;
 }
+
 button{
   width:100%;
   padding:14px;
-  font-size:18px;
+  font-size:16px;
   border:0;
-  border-radius:12px;
-  margin-top:18px;
-  background:#16a34a;
+  border-radius:8px;
+  background:#2563eb;
   color:#fff;
   cursor:pointer;
 }
+
 button:disabled{
   opacity:.6;
   cursor:not-allowed;
 }
+
+/* Messages */
 .msg{
-  margin-top:16px;
+  margin-top:18px;
   min-height:24px;
-  text-align:center;
-  font-size:16px;
+  font-size:15px;
 }
-.ok{color:#16a34a;}
-.err{color:#dc2626;}
+
+.ok{ color:#15803d; }
+.err{ color:#b91c1c; }
+
 </style>
 </head>
 
 <body>
 
-<div class="box">
-  <h2>📦 החזרת ציוד</h2>
+<header class="header">
+  <h1>מערכת החזרת ציוד</h1>
+</header>
 
-  <label>בחר אירוע פתוח (OUT)</label>
-  <select id="returnSelect">
-    <option value="">טוען אירועים…</option>
-  </select>
+<main class="page">
+  <section class="panel">
 
-  <button id="btn">✔️ סמן כהוחזר</button>
+    <label>אירועים פתוחים</label>
+    <select id="returnSelect">
+      <option value="">טוען אירועים…</option>
+    </select>
 
-  <div id="msg" class="msg"></div>
-</div>
+    <button id="btn">סמן כהוחזר</button>
+
+    <div id="msg" class="msg"></div>
+
+  </section>
+</main>
+
+</body>
+
 
 <script>
 /* ===== CONFIG ===== */
