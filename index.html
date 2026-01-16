@@ -277,15 +277,12 @@ const API_URL =
         <label>שם האירוע:</label>
 <input type="text" id="band_name" placeholder="הכנס את שם האירוע">
 <label>תאריך משיכת ציוד:</label>
-<input type="date" id="pickup_date">
+<input type="text" id="pickup_date" placeholder="הכנס תאריך משיכה">
 
 <label>תאריך החזרת ציוד:</label>
-<input type="date" id="return_date">
-
+<input type="text" id="return_date" placeholder="הכנס תאריך החזרה">
 <label>שעת החזרת ציוד צפויה:</label>
-<input type="time" id="returno_time" step="1800">
-
-
+<input type="text" id="returno_time" placeholder="הכנס שעת החזרה">
 <label>הערות המחתים:</label>
 <input type="text" id="signer_notes" placeholder="הערות / חריגים">
 
@@ -295,7 +292,7 @@ const API_URL =
     <p><strong>שם האירוע היוצא:</strong> <span id="p_band"></span></p>
     <p><strong>תאריך משיכת ציוד:</strong> <span id="p_pickup"></span></p>
 <p><strong>תאריך החזרת ציוד:</strong> <span id="p_return"></span></p>
-<p><strong>שעת החזרת ציוד צפויה:</strong> <span id="p_returno"></span></p>
+<p><strong>שעת החזרת ציוד צפויה :</strong> <span id="p_returno"></span></p>
 <p><strong>הערות המחתים:</strong> <span id="p_notes"></span></p>
 
 
@@ -771,14 +768,6 @@ const p_notes    = document.getElementById("p_notes");
 const p_doc_id   = document.getElementById("p_doc_id");
 </script>
 <script>
-function formatDateIL(dateStr) {
-  if (!dateStr) return "—";
-  const [y, m, d] = dateStr.split("-");
-  return `${d}/${m}/${y}`;
-}
-</script>
-
-<script>
 function printList() {
   if (window._isPrinting) return;
   window._isPrinting = true;
@@ -791,9 +780,8 @@ function printList() {
   p_soundman.textContent = soundman_name.value || "—";
   p_id.textContent       = soundman_id.value || "—";
   p_band.textContent     = band_name.value || "—";
-  p_pickup.textContent = formatDateIL(pickup_date.value);
-p_return.textContent = formatDateIL(return_date.value);
-
+  p_pickup.textContent  = pickup_date.value || "—";
+  p_return.textContent  = return_date.value || "—";
   p_returno.textContent = returno_time.value || "—";
   p_notes.textContent   = signer_notes.value || "";
 
