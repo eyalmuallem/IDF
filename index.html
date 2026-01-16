@@ -800,16 +800,26 @@ function printList() {
   setTimeout(() => {
     window.print();
   }, 150);
-
-  // הסתרת overlay אחרי פתיחת חלון הדפסה
   setTimeout(() => {
+  if (window._isPrinting) {
     loader.style.display = "none";
     window._isPrinting = false;
-  }, 1200);
+  }
+}, 4000);
 }
+
+ 
 
 
 </script>
+<script>
+window.addEventListener("afterprint", () => {
+  const loader = document.getElementById("print-loading");
+  loader.style.display = "none";
+  window._isPrinting = false;
+});
+</script>
+
 <div id="print-loading">
   <span>⏳ טוען הדפסה…<br>נא להמתין</span>
 </div>
