@@ -204,17 +204,39 @@ function sendReturn() {
   };
   img.src = url;
 }
+/* ===== SMART AUTO REFRESH ===== */
+let refreshTimer = null;
+
+function startRefresh() {
+  if (!refreshTimer) {
+    refreshTimer = setInterval(loadOpenEvents, 12000);
+  }
+}
+
+function stopRefresh() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stopRefresh();        // טאב לא נראה → עוצר רענון
+  } else {
+    loadOpenEvents();     // חזרה לטאב → רענון מיידי
+    startRefresh();
+  }
+});
+
 
 /* ===== EVENTS ===== */
 btn.addEventListener("click", sendReturn);
 
 /* ===== INIT ===== */
 loadOpenEvents();
+startRefresh();
 
-/* ===== AUTO REFRESH (שקט) ===== */
-setInterval(() => {
-  loadOpenEvents();
-}, 12000); // כל 12 שניות
+
 </script>
 
 </body>
