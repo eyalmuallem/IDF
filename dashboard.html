@@ -741,6 +741,48 @@ if (showOnlyOut && status !== "OUT") return;
       });
     });
 }
+// ===== SMART REFRESH MANAGER =====
+let refreshTimer = null;
+let clockTimer = null;
+let shiftTimer = null;
+
+function startRefresh() {
+  if (!refreshTimer) {
+    refreshTimer = setInterval(() => {
+      const statsOpen =
+        document.getElementById("statsContainer").style.display === "block";
+      if (!statsOpen) {
+        loadData(showOnlyOut);
+      }
+    }, 10000);
+  }
+
+  if (!clockTimer) {
+    clockTimer = setInterval(updateDateTime, 1000);
+  }
+
+  if (!shiftTimer) {
+    shiftTimer = setInterval(updateShiftStatus, 60000);
+  }
+}
+
+function stopRefresh() {
+  clearInterval(refreshTimer);
+  clearInterval(clockTimer);
+  clearInterval(shiftTimer);
+  refreshTimer = clockTimer = shiftTimer = null;
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stopRefresh();
+  } else {
+    updateDateTime();
+    updateShiftStatus();
+    loadData(showOnlyOut);
+    startRefresh();
+  }
+});
+
 
 // ===== Clock =====
 function updateDateTime() {
@@ -763,22 +805,12 @@ document.getElementById("statsTo").value =
   today.toISOString().split("T")[0];
 
 
-// טעינה ראשונית עם פילטר של היום
-loadData();
-
-
-setInterval(updateDateTime, 1000);
-updateDateTime();
-
 // טעינה ראשונית
-setInterval(() => {
-  const statsOpen = document.getElementById("statsContainer").style.display === "block";
-  if (!statsOpen) {
-    loadData(showOnlyOut);
-  }
-}, 10000);
+loadData();
+updateDateTime();
 updateShiftStatus();
-setInterval(updateShiftStatus, 60000); // כל דקה
+startRefresh();
+
 
 
 
