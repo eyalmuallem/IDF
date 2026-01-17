@@ -5,6 +5,7 @@
 <title>דשבורד ציוד</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
 <style>
 /* =========================
    🎨 DESIGN SYSTEM
@@ -263,6 +264,39 @@ tr.OUT:hover {
 thead tr:hover {
   background: linear-gradient(180deg, #1f2937, #111827) !important;
 }
+/* =========================
+   📊 STAT BLOCK TOGGLE
+========================= */
+.stat-block {
+  margin-bottom: 18px;
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-header h4 {
+  margin: 8px 0 6px;
+}
+
+.stat-toggle {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.stat-toggle:hover {
+  color: #111827;
+}
+
+.stat-body {
+  margin-top: 6px;
+}
+
 
 
 </style>
@@ -291,6 +325,18 @@ thead tr:hover {
 <button class="outline" onclick="toggleOutOnly()" id="outBtn">
   הצג אירועים שלא חזרו
 </button>
+<div id="shiftStatus" style="
+  font-size:14px;
+  padding:6px 10px;
+  border-radius:8px;
+  background:#f3f4f6;
+  border:1px solid #e5e7eb;
+  white-space:nowrap;
+">
+  טוען משמרת…
+</div>
+
+
 
 </div>
 
@@ -329,13 +375,38 @@ thead tr:hover {
   </div>
   <button class="outline" onclick="toggleTrend()">קו מגמה</button>
 
-<h4 style="margin:8px 0 6px;"> כמות אירועים סה״כ לפי תאריך</h4>
-
-  <canvas id="weeklyChart" height="60"></canvas>
-  <h4 style="margin:16px 0 6px;"> עומס לפי טווחי שעות (3 שעות)</h4>
-<canvas id="hourlyChart" height="60"></canvas>
-
+<div class="stat-block">
+  <div class="stat-header">
+    <h4>כמות אירועים סה״כ לפי תאריך</h4>
+    <button class="stat-toggle" onclick="toggleStat(this)">▾</button>
+  </div>
+  <div class="stat-body">
+    <canvas id="weeklyChart" height="60"></canvas>
+  </div>
 </div>
+
+  <div class="stat-block">
+  <div class="stat-header">
+    <h4>עומס לפי טווחי שעות (3 שעות)</h4>
+    <button class="stat-toggle" onclick="toggleStat(this)">▾</button>
+  </div>
+  <div class="stat-body">
+    <canvas id="hourlyChart" height="60"></canvas>
+  </div>
+</div>
+
+<div class="stat-block">
+  <div class="stat-header">
+    <h4>חזרות מול הופעות</h4>
+    <button class="stat-toggle" onclick="toggleStat(this)">▾</button>
+  </div>
+  <div class="stat-body">
+    <div style="max-width:320px;margin:0 auto;">
+      <canvas id="eventTypePie"></canvas>
+    </div>
+  </div>
+</div>
+
 
 
 </div>
@@ -344,9 +415,13 @@ thead tr:hover {
   let showOnlyOut = false;
 
 const GID = "0";
-const URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${GID}`;
+const URL =
+  "https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=0";
 
-// dd/mm/yyyy → yyyy-mm-dd
+const SHIFTS_GID = "0";
+const SHIFTS_URL =
+  "https://docs.google.com/spreadsheets/d/1YCxm7BduFh4XIAC-yTKQYkoc5vcjYYDhymeLA9rnDbg/gviz/tq?tqx=out:json&gid=0";
+
 function normalizeDate(ddmmyyyy) {
   if (!ddmmyyyy || !ddmmyyyy.includes("/")) return null;
   const [dd, mm, yyyy] = ddmmyyyy.split("/");
@@ -356,6 +431,7 @@ function normalizeDate(ddmmyyyy) {
 let weeklyChart;
 let hourlyChart;
 let showTrend = false;
+let eventTypePieChart;
 
 
 
@@ -443,6 +519,62 @@ function updateHourlyChart(rows) {
   });
 }
 
+function updateEventTypePie(rows) {
+  const fromInput = document.getElementById("statsFrom")?.value;
+  const toInput   = document.getElementById("statsTo")?.value;
+
+  const fromDate = fromInput ? new Date(fromInput) : null;
+  const toDate   = toInput   ? new Date(toInput)   : null;
+
+  let rehearsals = 0;
+  let shows = 0;
+
+  rows.slice(1).forEach(r => {
+    const eventName = (r.c?.[2]?.v || "").toLowerCase();
+    const dateStr = r.c?.[4]?.f || r.c?.[4]?.v;
+    if (!dateStr) return;
+
+    const [dd, mm, yyyy] = dateStr.split("/");
+    const rowDate = new Date(`${yyyy}-${mm}-${dd}`);
+
+    if (fromDate && rowDate < fromDate) return;
+    if (toDate && rowDate > toDate) return;
+
+    if (eventName.includes("חזרה") || eventName.includes("צפייה")) {
+      rehearsals++;
+    } else {
+      shows++;
+    }
+  });
+
+  if (eventTypePieChart) eventTypePieChart.destroy();
+
+  eventTypePieChart = new Chart(
+    document.getElementById("eventTypePie"),
+    {
+      type: "pie",
+      data: {
+        labels: ["הופעות", "חזרות / צפיות"],
+        datasets: [{
+          data: [shows, rehearsals],
+          backgroundColor: [
+            "rgba(37,99,235,0.7)",   // כחול – הופעות
+            "rgba(16,185,129,0.7)"   // ירוק – חזרות
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { font: { size: 13 } }
+          }
+        }
+      }
+    }
+  );
+}
 
 
 function updateWeeklyChart(rows) {
@@ -576,6 +708,7 @@ function loadData(ignoreFilter = false) {
       const selectedDate = document.getElementById("viewDate").value;
 updateWeeklyChart(rows);
 updateHourlyChart(rows);
+updateEventTypePie(rows);
 
 
 
@@ -644,6 +777,9 @@ setInterval(() => {
     loadData(showOnlyOut);
   }
 }, 10000);
+updateShiftStatus();
+setInterval(updateShiftStatus, 60000); // כל דקה
+
 
 
 
@@ -655,6 +791,8 @@ function updateStatsRange() {
       const rows = json.table.rows || [];
       updateWeeklyChart(rows);
       updateHourlyChart(rows);
+      updateEventTypePie(rows); 
+
     });
 }
 
@@ -684,6 +822,132 @@ function toggleOutOnly() {
   }
 }
 
+function parseGvizDate(cell) {
+  if (!cell) return null;
+
+  // הכי טוב: פורמט מוצג (f) כמו "11/1" או "11/01"
+  if (cell.f && String(cell.f).includes("/")) {
+    const [d, m] = String(cell.f).trim().split("/").map(n => parseInt(n, 10));
+    if (!isNaN(d) && !isNaN(m)) return { d, m };
+  }
+
+  // v יכול להגיע כ- "Date(2026,0,11)"
+  const v = cell.v;
+  if (typeof v === "string" && v.includes("Date(")) {
+    const m = v.match(/Date\((\d+),(\d+),(\d+)\)/);
+    if (m) {
+      const yyyy = parseInt(m[1], 10);
+      const mm = parseInt(m[2], 10) + 1; // בגוגל חודשים 0-11
+      const dd = parseInt(m[3], 10);
+      return { d: dd, m: mm, y: yyyy };
+    }
+  }
+
+  // fallback לטקסט "11/1"
+  if (typeof v === "string" && v.includes("/")) {
+    const [d, m] = v.trim().split("/").map(n => parseInt(n, 10));
+    if (!isNaN(d) && !isNaN(m)) return { d, m };
+  }
+
+  return null;
+}
+
+function parseGvizTimeMinutes(cell) {
+  if (!cell) return null;
+
+  // הכי טוב: פורמט מוצג (f) כמו "09:00"
+  if (cell.f && String(cell.f).includes(":")) {
+    const [h, m] = String(cell.f).trim().split(":").map(n => parseInt(n, 10));
+    if (!isNaN(h) && !isNaN(m)) return h * 60 + m;
+  }
+
+  // v יכול להגיע כ- "Date(1899,11,30,9,0,0)"
+  const v = cell.v;
+  if (typeof v === "string" && v.includes("Date(")) {
+    const m = v.match(/Date\(\d+,\d+,\d+,(\d+),(\d+),(\d+)\)/);
+    if (m) {
+      const hh = parseInt(m[1], 10);
+      const mm = parseInt(m[2], 10);
+      if (!isNaN(hh) && !isNaN(mm)) return hh * 60 + mm;
+    }
+  }
+
+  // fallback "09:00"
+  if (typeof v === "string" && v.includes(":")) {
+    const [h, m] = v.trim().split(":").map(n => parseInt(n, 10));
+    if (!isNaN(h) && !isNaN(m)) return h * 60 + m;
+  }
+
+  return null;
+}
+
+function updateShiftStatus() {
+  fetch(SHIFTS_URL)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const rows = json.table.rows || [];
+
+      const now = new Date();
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      const todayD = now.getDate();
+      const todayM = now.getMonth() + 1;
+
+      let found = null;
+
+      rows.slice(1).forEach(r => {
+        const dateCell = r.c?.[0];   // A תאריך
+        const fromCell = r.c?.[3];   // D משעה
+        const toCell   = r.c?.[4];   // E עד שעה
+        const worker   = r.c?.[5]?.v; // F מחסנאי
+
+        if (!dateCell || !fromCell || !toCell || !worker) return;
+
+        const dm = parseGvizDate(dateCell);
+        if (!dm) return;
+        if (dm.d !== todayD || dm.m !== todayM) return;
+
+        const fromMin = parseGvizTimeMinutes(fromCell);
+        const toMin   = parseGvizTimeMinutes(toCell);
+        if (fromMin == null || toMin == null) return;
+
+        // כולל קצה משמרת
+        if (nowMinutes >= fromMin && nowMinutes <= toMin) {
+          found = {
+            worker,
+            from: fromCell.f || fromCell.v,
+            to:   toCell.f   || toCell.v
+          };
+        }
+      });
+
+      const el = document.getElementById("shiftStatus");
+      if (found) {
+        el.style.background = "#ecfdf5";
+        el.style.borderColor = "#10b981";
+        el.innerHTML = `🟢 <b>במשמרת:</b> ${found.worker} (${found.from}–${found.to})`;
+      } else {
+        el.style.background = "#fef2f2";
+        el.style.borderColor = "#ef4444";
+        el.innerHTML = "🔴 אין מחסנאי במשמרת";
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      const el = document.getElementById("shiftStatus");
+      el.style.background = "#fff7ed";
+      el.style.borderColor = "#f97316";
+      el.innerText = "⚠️ שגיאת משמרות";
+    });
+}
+
+function toggleStat(btn) {
+  const body = btn.closest(".stat-block").querySelector(".stat-body");
+  const isHidden = body.style.display === "none";
+
+  body.style.display = isHidden ? "block" : "none";
+  btn.innerText = isHidden ? "▾" : "▸";
+}
 
 
 
