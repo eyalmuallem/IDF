@@ -788,18 +788,17 @@ function printList() {
   const docId = generateDocumentId();
   p_doc_id.textContent = docId;
 
-  new Image().src =
-    API_URL +
+  fetch(
+  API_URL +
     "?action=out" +
     "&doc=" + encodeURIComponent(docId) +
     "&event=" + encodeURIComponent(band_name.value) +
     "&signer=" + encodeURIComponent(soundman_name.value) +
-    "&_=" + Date.now();
-
-  // Safari צריך רגע לפני print
-  setTimeout(() => {
-    window.print();
-  }, 150);
+    "&_=" + Date.now(),
+  { mode: "no-cors" }
+).finally(() => {
+  setTimeout(() => window.print(), 150);
+});
   setTimeout(() => {
   if (window._isPrinting) {
     loader.style.display = "none";
