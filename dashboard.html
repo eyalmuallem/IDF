@@ -263,6 +263,20 @@ tr.OUT:hover {
 thead tr:hover {
   background: linear-gradient(180deg, #1f2937, #111827) !important;
 }
+.toggle-arrow {
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.toggle-arrow.open {
+  transform: rotate(90deg);
+}
+
+.equipment-row td {
+  background: #f9fafb;
+}
 
 
 </style>
@@ -300,15 +314,17 @@ thead tr:hover {
   <div class="table-card">
     <table id="tbl">
       <thead>
-        <tr>
-          <th>מס׳ מסמך</th>
-          <th>סטטוס</th>
-          <th>שם האירוע</th>
-          <th>שם החותם</th>
-          <th>תאריך</th>
-          <th>שעה</th> 
-        </tr>
-      </thead>
+  <tr>
+    <th></th> 
+    <th>מס׳ מסמך</th>
+    <th>סטטוס</th>
+    <th>שם האירוע</th>
+    <th>שם החותם</th>
+    <th>תאריך</th>
+    <th>שעה</th> 
+  </tr>
+</thead>
+
       <tbody></tbody>
     </table>
   </div>
@@ -341,10 +357,23 @@ thead tr:hover {
 </div>
 
 <script>
+  
   let showOnlyOut = false;
+let openEquipmentCount = 0;
+
 
 const GID = "0";
 const URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${GID}`;
+const EQUIPMENT_LOG_SHEET_ID = "1Grxw76tLRc_pUI8gYcLfC7a6dtNOXy9a2Y5qf0HEN68";
+const EQUIPMENT_LOG_GID = "0";
+
+function getEquipmentLogURL(docId) {
+  const query = `
+    select C, D
+    where B = '${docId}'
+  `;
+  return `https://docs.google.com/spreadsheets/d/${EQUIPMENT_LOG_SHEET_ID}/gviz/tq?gid=${EQUIPMENT_LOG_GID}&tqx=out:json&tq=${encodeURIComponent(query)}`;
+}
 
 // dd/mm/yyyy → yyyy-mm-dd
 function normalizeDate(ddmmyyyy) {
@@ -593,18 +622,25 @@ if (showOnlyOut && status !== "OUT") return;
           if (!rowDate || rowDate !== selectedDate) return;
         }
 
-        const tr = document.createElement("tr");
-        tr.className = status;
+        const docId = r.c?.[0]?.v || "";
 
-        tr.innerHTML = `
-          <td>${r.c?.[0]?.v || ""}</td>
-          <td>${status}</td>
-          <td>${r.c?.[2]?.v || ""}</td>
-          <td>${r.c?.[3]?.v || ""}</td>
-          <td>${dateFormatted}</td>
-          <td>${timeFormatted}</td>
-        `;
-        tbody.appendChild(tr);
+const tr = document.createElement("tr");
+tr.className = status;
+
+tr.innerHTML = `
+  <td>
+    <span class="toggle-arrow" data-doc="${docId}">⯈</span>
+  </td>
+  <td>${docId}</td>
+  <td>${status}</td>
+  <td>${r.c?.[2]?.v || ""}</td>
+  <td>${r.c?.[3]?.v || ""}</td>
+  <td>${dateFormatted}</td>
+  <td>${timeFormatted}</td>
+`;
+tbody.appendChild(tr);
+
+
       });
     });
 }
@@ -637,13 +673,14 @@ loadData();
 setInterval(updateDateTime, 1000);
 updateDateTime();
 
-// טעינה ראשונית
 setInterval(() => {
   const statsOpen = document.getElementById("statsContainer").style.display === "block";
-  if (!statsOpen) {
-    loadData(showOnlyOut);
-  }
+ if (!statsOpen && openEquipmentCount === 0) {
+  loadData(showOnlyOut);
+}
+
 }, 10000);
+
 
 
 
@@ -684,7 +721,67 @@ function toggleOutOnly() {
   }
 }
 
+function toggleEquipmentRow(arrow, parentRow, docId) {
+  // סגירה אם פתוח
+  if (arrow.classList.contains("open")) {
+    arrow.classList.remove("open");
+    const next = parentRow.nextElementSibling;
+    if (next && next.classList.contains("equipment-row")) {
+      next.remove();
+    }
+    openEquipmentCount = Math.max(0, openEquipmentCount - 1);
+return;
 
+  }
+
+  arrow.classList.add("open");
+openEquipmentCount++;
+
+
+  fetch(getEquipmentLogURL(docId))
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const rows = json.table.rows || [];
+
+      let html = `
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th>מק״ט</th>
+              <th>מוצר</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      rows.forEach(r => {
+        html += `
+          <tr>
+            <td>${r.c?.[0]?.v || ""}</td>
+            <td>${r.c?.[1]?.v || ""}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+
+      const tr = document.createElement("tr");
+      tr.className = "equipment-row";
+      tr.innerHTML = `<td colspan="7">${html}</td>`;
+      parentRow.after(tr);
+    });
+}
+
+document.querySelector("#tbl tbody").addEventListener("click", e => {
+  const arrow = e.target.closest(".toggle-arrow");
+  if (!arrow) return;
+
+  const docId = arrow.dataset.doc;
+  const row = arrow.closest("tr");
+
+  toggleEquipmentRow(arrow, row, docId);
+});
 
 
 
