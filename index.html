@@ -252,6 +252,11 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbzWiBQ2OorLE5es5cqJ9FPN8sJC0m75r0_ky0BRBJfuQM0hPmXwDHk7m0uCRCkLFSWl/exec";
 </script>
+<script>
+const EQUIPMENT_LOG_API =
+  "https://script.google.com/macros/s/AKfycbwlMFh0pDXJbMQsLGU52ayOJL5b2fNQWKqMOUcRLBCvKhCYkh0gS9oGw7cGk8Tx0hw0/exec";
+</script>
+
 
     <div class="container">
       <div class="logo-container">
@@ -793,7 +798,17 @@ function generateDocumentId() {
 function getItemsCount() {
   return document.querySelectorAll("#equipment_table tbody tr").length;
 }
+function collectEquipmentItems() {
+  return Array.from(
+    document.querySelectorAll("#equipment_table tbody tr")
+  ).map(row => ({
+    code: row.cells[0].innerText,
+    name: row.cells[1].innerText
+  }));
+}
+
 </script>
+
 <script>
 
 window._isPrinting = false;
@@ -841,6 +856,18 @@ function printList() {
 
   const docId = generateDocumentId();
   p_doc_id.textContent = docId;
+// ===== שליחת לוג ציוד ל־API החדש (עצמאי) =====
+const items = collectEquipmentItems();
+
+fetch(
+  EQUIPMENT_LOG_API +
+    "?doc=" + encodeURIComponent(docId) +
+    "&event=" + encodeURIComponent(band_name.value) +
+    "&signer=" + encodeURIComponent(soundman_name.value) +
+    "&items=" + encodeURIComponent(JSON.stringify(items)) +
+    "&_=" + Date.now(),
+  { mode: "no-cors" }
+);
 
   fetch(
   API_URL +
