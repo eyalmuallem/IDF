@@ -333,6 +333,11 @@ thead tr:hover {
     נתונים בזמן אמת  
   </div>
    <div id="statsContainer" class="table-card" style="margin-top:20px; display:none; padding:16px;">
+<div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+  <button class="primary" onclick="openExtendedStats()">
+     סטטיסטיקות נרחבות
+  </button>
+</div>
 
   <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
     <label>מ־</label>
@@ -782,6 +787,9 @@ document.querySelector("#tbl tbody").addEventListener("click", e => {
 
   toggleEquipmentRow(arrow, row, docId);
 });
+function openExtendedStats(){
+  window.open("analytics.html", "_blank");
+}
 
 
 
