@@ -255,6 +255,183 @@
       header{ align-items:flex-start; }
       .brand{ min-width: auto; }
     }
+  /* =========================
+   🖨️ PRINT / PDF – CLEAN REPORT
+========================= */
+@media print {
+
+  /* --- Global reset --- */
+  body{
+    background:#fff !important;
+    color:#000 !important;
+    font-family: Arial, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  header,
+  .controls,
+  button{
+    display:none !important;
+  }
+
+  main{
+    max-width:100%;
+    padding:0;
+  }
+
+  /* --- Cover page --- */
+  .pdf-cover{
+    page-break-after: always;
+    padding:120px 40px;
+    text-align:center;
+  }
+
+  .pdf-cover h1{
+    font-size:32px;
+    margin-bottom:12px;
+  }
+
+  .pdf-meta{
+    font-size:14px;
+    color:#444;
+  }
+
+  /* --- Layout becomes linear --- */
+  .grid,
+  .kpis{
+    display:block !important;
+  }
+
+  [class*="span-"]{
+    width:100% !important;
+    grid-column:auto !important;
+  }
+
+  /* --- KPI blocks --- */
+  .kpi{
+    background:#fff !important;
+    border:1px solid #ccc !important;
+    box-shadow:none !important;
+    margin-bottom:12px;
+    padding:10px;
+  }
+
+  .kpi .title{
+    font-size:12px;
+    color:#000;
+  }
+
+  .kpi .value{
+    font-size:22px;
+    font-weight:700;
+    margin:4px 0;
+  }
+
+  .kpi .meta{
+    font-size:11px;
+    color:#000;
+  }
+
+  /* --- Cards --- */
+  .card{
+    background:#fff !important;
+    border:1px solid #ccc !important;
+    box-shadow:none !important;
+    margin-bottom:16px;
+    page-break-inside: avoid;
+  }
+
+  .card .head{
+    padding:8px 10px;
+    border-bottom:1px solid #ccc;
+  }
+
+  .card .head h3{
+    font-size:15px;
+    color:#000;
+  }
+
+  .card .body{
+    padding:8px 10px;
+  }
+
+  /* --- Lists --- */
+  .list li{
+    padding:6px 0;
+    border-bottom:1px solid #ddd;
+    font-size:12px;
+  }
+
+  /* --- Tables --- */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+    margin-top:8px;
+  }
+
+  th, td{
+    border:1px solid #999;
+    padding:6px;
+    color:#000;
+    text-align:center;
+  }
+
+  th{
+    background:#f2f2f2;
+    font-weight:700;
+  }
+
+  /* --- Tags --- */
+  .tag{
+    border:1px solid #000;
+    font-weight:700;
+    color:#000 !important;
+  }
+
+  /* --- Charts --- */
+  canvas{
+    max-width:100% !important;
+    height:auto !important;
+  }
+
+}
+/* ===== FORCE PURE BLACK TEXT ===== */
+@media print {
+
+  *{
+    color:#000 !important;
+    opacity:1 !important;
+  }
+
+  .pdf-meta,
+  .hint,
+  .meta,
+  .title,
+  .pill,
+  .sub{
+    color:#000 !important;
+    opacity:1 !important;
+  }
+
+  th{
+    color:#000 !important;
+  }
+
+}
+@media print {
+
+  /* כהה אפורים – שומר צבעים */
+  canvas{
+    filter:
+      contrast(160%)
+      brightness(0.85);
+  }
+
+}
+
+
   </style>
 </head>
 
@@ -294,11 +471,20 @@
     </div>
 
     <button id="refreshBtn">רענן</button>
+    <button onclick="generatePDF()"> הפק דו״ח PDF</button>
+
   </div>
 </header>
 
-<main>
+<main id="report">
   <div id="errBox" style="display:none" class="error"></div>
+<section class="pdf-cover page-break">
+  <h1>דו״ח ציוד – סיכום ע״פ טווח נבחר</h1>
+  <p id="pdfRange"></p>
+  <p class="pdf-meta">
+    הופק בתאריך: <span id="pdfDate"></span>
+  </p>
+</section>
 
   <!-- KPIs -->
   <div class="kpis" id="kpis">
@@ -821,6 +1007,19 @@ function renderOutTable(eventList){
     tbody.appendChild(tr);
   }
 }
+function generatePDF(){
+  const {start, end} = getFilters();
+
+  document.getElementById("pdfRange").textContent =
+    `טווח: ${start.toLocaleDateString("he-IL")} – ${end.toLocaleDateString("he-IL")}`;
+
+  document.getElementById("pdfDate").textContent =
+    new Date().toLocaleDateString("he-IL");
+
+  window.print();
+}
+
+
 
 /** ====== Main flow ====== */
 async function load(){
@@ -876,6 +1075,7 @@ async function load(){
   });
 
   load();
+
 })();
 </script>
 </body>
