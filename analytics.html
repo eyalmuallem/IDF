@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title> Kibana ציוד – דשבורד אנליטיקה</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f172a;
+      --card:#111b33;
+      --muted:#9aa4b2;
+      --text:#e5e7eb;
+      --border:rgba(255,255,255,0.08);
+      --accent:#60a5fa;
+      --green:#34d399;
+      --red:#fb7185;
+      --yellow:#fbbf24;
+      --shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(96,165,250,0.18), transparent 55%),
+                  radial-gradient(900px 600px at 100% 0%, rgba(52,211,153,0.12), transparent 45%),
+                  linear-gradient(180deg, var(--bg), #070b14);
+      color: var(--text);
+    }
+
+    header{
+      position: sticky;
+      top:0;
+      z-index:50;
+      background: rgba(15,23,42,0.75);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--border);
+      padding:14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width: 240px;
+    }
+    .logo{
+      width:38px;height:38px;border-radius:10px;
+      background: linear-gradient(135deg, rgba(96,165,250,0.9), rgba(52,211,153,0.8));
+      box-shadow: 0 10px 30px rgba(96,165,250,0.18);
+    }
+    .brand h1{ margin:0; font-size:16px; font-weight:700; letter-spacing:.2px; }
+    .brand .sub{ color:var(--muted); font-size:12px; margin-top:2px; }
+
+    .controls{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .control{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--border);
+      background: rgba(17,27,51,0.8);
+      border-radius:12px;
+    }
+    label{ color:var(--muted); font-size:12px; }
+    input, select{
+      border:none;
+      outline:none;
+      background: transparent;
+      color: var(--text);
+      font-size:13px;
+      font-variant-numeric: tabular-nums;
+    }
+    input[type="date"]{ color-scheme: dark; }
+    input::placeholder{ color: rgba(229,231,235,0.35); }
+
+    button{
+      border:none;
+      cursor:pointer;
+      border-radius:12px;
+      padding:9px 12px;
+      color:#06101f;
+      background: linear-gradient(135deg, rgba(96,165,250,0.95), rgba(52,211,153,0.9));
+      font-weight:700;
+      box-shadow: 0 10px 25px rgba(96,165,250,0.14);
+      transition: transform .15s ease, filter .15s ease;
+    }
+    button:hover{ transform: translateY(-1px); filter: brightness(1.03); }
+    button.secondary{
+      background: rgba(17,27,51,0.9);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow:none;
+      font-weight:600;
+    }
+
+    main{
+      padding:18px;
+      max-width: 1400px;
+      margin:0 auto;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+
+    .card{
+      background: rgba(17,27,51,0.75);
+      border:1px solid var(--border);
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .card .head h3{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.25px;
+      color: rgba(229,231,235,0.92);
+    }
+    .card .body{ padding:14px; }
+
+    .kpis{
+      grid-column: 1 / -1;
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+
+    .kpi{
+      grid-column: span 3;
+      padding:14px;
+      border-radius:16px;
+      background: rgba(17,27,51,0.78);
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .kpi:before{
+      content:"";
+      position:absolute;
+      inset:-40px -60px auto auto;
+      width:140px;height:140px;
+      background: radial-gradient(circle at 30% 30%, rgba(96,165,250,0.30), transparent 60%);
+      transform: rotate(25deg);
+      pointer-events:none;
+    }
+    .kpi .title{ color:var(--muted); font-size:12px; }
+    .kpi .value{ font-size:28px; font-weight:800; margin-top:8px; }
+    .kpi .meta{ margin-top:6px; color:rgba(229,231,235,0.75); font-size:12px; }
+    .pill{
+      display:inline-flex;
+      gap:6px;
+      align-items:center;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      border:1px solid var(--border);
+      color:rgba(229,231,235,0.85);
+      background: rgba(0,0,0,0.18);
+    }
+
+    .span-6{ grid-column: span 6; }
+    .span-4{ grid-column: span 4; }
+    .span-8{ grid-column: span 8; }
+    .span-12{ grid-column: span 12; }
+
+    .list{
+      list-style:none;
+      padding:0;margin:0;
+    }
+    .list li{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 0;
+      border-bottom:1px dashed rgba(255,255,255,0.10);
+      font-size:13px;
+    }
+    .list li:last-child{ border-bottom:none; }
+    .count{ color: rgba(229,231,235,0.85); font-variant-numeric: tabular-nums; }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size:13px;
+    }
+    th, td{
+      padding:10px 8px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      text-align:center;
+    }
+    th{
+      color: rgba(229,231,235,0.75);
+      font-weight:700;
+      font-size:12px;
+      letter-spacing:.06em;
+      text-transform: uppercase;
+      background: rgba(0,0,0,0.14);
+    }
+    tr:hover td{ background: rgba(96,165,250,0.06); }
+
+    .tag{
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:11px;
+      border:1px solid var(--border);
+      display:inline-block;
+    }
+    .tag.in{ color: var(--green); }
+    .tag.out{ color: var(--red); }
+
+    .hint{
+      color: rgba(229,231,235,0.6);
+      font-size:12px;
+      margin-top:8px;
+    }
+
+    .error{
+      padding:14px;
+      border:1px solid rgba(251,113,133,0.35);
+      background: rgba(251,113,133,0.10);
+      border-radius:14px;
+      color: rgba(255,255,255,0.9);
+    }
+
+    @media (max-width: 1100px){
+      .kpi{ grid-column: span 6; }
+      .span-6, .span-4, .span-8{ grid-column: span 12; }
+      header{ align-items:flex-start; }
+      .brand{ min-width: auto; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="brand">
+    <div class="logo"></div>
+    <div>
+      <h1> ניתוח נתונים - מערכת מעקב ציוד</h1>
+      <div class="sub" id="subtitle">טוען נתונים…</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control">
+      <label>מ־</label>
+      <input type="date" id="fromDate">
+    </div>
+    <div class="control">
+      <label>עד</label>
+      <input type="date" id="toDate">
+    </div>
+
+    <div class="control">
+      <label>חריג OUT (שעות)</label>
+      <select id="outThreshold">
+        <option value="12">12</option>
+        <option value="24" selected>24</option>
+        <option value="48">48</option>
+        <option value="72">72</option>
+      </select>
+    </div>
+
+    <div class="control">
+      <label>חיפוש</label>
+      <input type="text" id="search" placeholder="אירוע / חותם / מס׳ מסמך…">
+    </div>
+
+    <button id="refreshBtn">רענן</button>
+  </div>
+</header>
+
+<main>
+  <div id="errBox" style="display:none" class="error"></div>
+
+  <!-- KPIs -->
+  <div class="kpis" id="kpis">
+    <div class="kpi">
+      <div class="title">סה״כ אירועים בטווח</div>
+      <div class="value" id="kpiTotal">0</div>
+      <div class="meta"><span class="pill">כל הרשומות בטווח</span></div>
+    </div>
+    <div class="kpi">
+      <div class="title">IN (סגור)</div>
+      <div class="value" id="kpiIn">0</div>
+      <div class="meta"><span class="pill" style="border-color:rgba(52,211,153,.35)"> חזר</span></div>
+    </div>
+    <div class="kpi">
+      <div class="title">OUT (פתוח)</div>
+      <div class="value" id="kpiOut">0</div>
+      <div class="meta"><span class="pill" style="border-color:rgba(251,113,133,.35)"> לא חזר</span></div>
+    </div>
+    <div class="kpi">
+      <div class="title">אחוז OUT</div>
+      <div class="value" id="kpiOutPct">0%</div>
+      <div class="meta"><span class="pill">רמת סיכון</span></div>
+    </div>
+
+    <div class="kpi">
+      <div class="title">סה״כ שורות ציוד (לוג)</div>
+      <div class="value" id="kpiEquipLogTotal">0</div>
+      <div class="meta"><span class="pill">כל הזמנים</span></div>
+    </div>
+
+    <div class="kpi">
+      <div class="title">פריטי ציוד בטווח (לפי מסמכים)</div>
+      <div class="value" id="kpiEquipInRange">0</div>
+      <div class="meta"><span class="pill">מחובר למס׳ מסמך</span></div>
+    </div>
+
+    <div class="kpi">
+      <div class="title">ציוד באירועים פתוחים (OUT)</div>
+      <div class="value" id="kpiEquipOpenOut">0</div>
+      <div class="meta"><span class="pill">סיכון תפעולי</span></div>
+    </div>
+
+    <div class="kpi">
+      <div class="title">מס׳ מסמכים ייחודיים בטווח</div>
+      <div class="value" id="kpiDocs">0</div>
+      <div class="meta"><span class="pill">Unique docs</span></div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:14px;">
+    <div class="card span-8">
+      <div class="head">
+        <h3>📈 כמות אירועים לפי תאריך (בטווח)</h3>
+        <span class="pill" id="rangePill">—</span>
+      </div>
+      <div class="body">
+        <canvas id="dailyChart" height="80"></canvas>
+        <div class="hint">כולל IN + OUT. הקו הוא ממוצע נע (3 ימים).</div>
+      </div>
+    </div>
+
+    <div class="card span-4">
+      <div class="head">
+        <h3> פילוח סטטוסים</h3>
+        <span class="pill">IN / OUT</span>
+      </div>
+      <div class="body">
+        <canvas id="statusPie" height="220"></canvas>
+      </div>
+    </div>
+
+    <div class="card span-6">
+      <div class="head">
+        <h3>⏱ עומס לפי טווחי שעות (3 שעות)</h3>
+        <span class="pill">00–24</span>
+      </div>
+      <div class="body">
+        <canvas id="hourChart" height="90"></canvas>
+      </div>
+    </div>
+
+    <div class="card span-6">
+      <div class="head">
+        <h3> טופ ציוד בשימוש (בטווח)</h3>
+        <span class="pill">Top 10</span>
+      </div>
+      <div class="body">
+        <ul class="list" id="topEquipment"></ul>
+        <div class="hint">מחושב מתוך שיט הציוד לפי מס׳ מסמך שמופיעים בטווח.</div>
+      </div>
+    </div>
+
+    <div class="card span-6">
+      <div class="head">
+        <h3> טופ אירועים</h3>
+        <span class="pill">Top 10</span>
+      </div>
+      <div class="body">
+        <ul class="list" id="topEvents"></ul>
+      </div>
+    </div>
+
+    <div class="card span-6">
+      <div class="head">
+        <h3>️ טופ חותמים</h3>
+        <span class="pill">Top 10</span>
+      </div>
+      <div class="body">
+        <ul class="list" id="topSigners"></ul>
+      </div>
+    </div>
+
+    <div class="card span-12">
+      <div class="head">
+        <h3> אירועים פתוחים חריגים (OUT) + כמות ציוד מחוברת</h3>
+        <span class="pill" id="outPill">מעל — שעות</span>
+      </div>
+      <div class="body">
+        <table>
+          <thead>
+            <tr>
+              <th>מס׳ מסמך</th>
+              <th>סטטוס</th>
+              <th>אירוע</th>
+              <th>חותם</th>
+              <th>תאריך</th>
+              <th>שעה</th>
+              <th>כמה זמן פתוח</th>
+              <th>כמות פריטי ציוד</th>
+            </tr>
+          </thead>
+          <tbody id="outTable"></tbody>
+        </table>
+        <div class="hint">הטבלה מסוננת לפי חיפוש + סף חריגות. עמודת ציוד נלקחת משיט הציוד לפי מס׳ מסמך.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+/** ====== CONFIG ====== */
+// Sheet ראשי (אירועים)
+const MAIN_GID = "0";
+const MAIN_URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${MAIN_GID}`;
+
+// Sheet ציוד (Equipment Log) — לפי מה שיש לך בפרויקט
+const EQUIPMENT_SHEET_ID = "1Grxw76tLRc_pUI8gYcLfC7a6dtNOXy9a2Y5qf0HEN68";
+const EQUIPMENT_GID = "0";
+function equipmentURL(){
+  return `https://docs.google.com/spreadsheets/d/${EQUIPMENT_SHEET_ID}/gviz/tq?tqx=out:json&gid=${EQUIPMENT_GID}`;
+}
+
+/** ====== Helpers ====== */
+function parseGviz(text){
+  return JSON.parse(text.substring(47).slice(0, -2));
+}
+
+// dd/mm/yyyy → yyyy-mm-dd
+function normalizeDate(ddmmyyyy) {
+  if (!ddmmyyyy || !ddmmyyyy.includes("/")) return null;
+  const [dd, mm, yyyy] = ddmmyyyy.split("/");
+  return `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
+}
+
+// "dd/mm/yyyy" + "hh:mm" => Date
+function parseRowDateTime(dateStr, timeStr){
+  if(!dateStr) return null;
+  const [dd, mm, yyyy] = dateStr.split("/");
+  let hh = 0, mi = 0;
+  if(timeStr && timeStr.includes(":")){
+    const parts = timeStr.split(":");
+    hh = parseInt(parts[0],10) || 0;
+    mi = parseInt(parts[1],10) || 0;
+  }
+  const d = new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
+  d.setHours(hh, mi, 0, 0);
+  return d;
+}
+
+function clampStartEnd(fromStr, toStr){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  let end = toStr ? new Date(toStr) : new Date(today);
+  let start = fromStr ? new Date(fromStr) : new Date(end);
+
+  start.setHours(0,0,0,0);
+  end.setHours(0,0,0,0);
+
+  // אם אין בחירה – 14 ימים אחרונים
+  if(!fromStr){
+    start = new Date(end);
+    start.setDate(end.getDate() - 13);
+  }
+  // תיקון אם הפוך
+  if(start > end){
+    const tmp = start; start = end; end = tmp;
+  }
+  return {start, end};
+}
+
+function dateKey(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function formatDDMM(d){
+  return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
+}
+function movingAverage(arr, win=3){
+  return arr.map((_,i)=>{
+    const s = Math.max(0, i-win+1);
+    const slice = arr.slice(s, i+1);
+    const avg = slice.reduce((a,b)=>a+b,0)/slice.length;
+    return Number(avg.toFixed(2));
+  });
+}
+function safeText(x){ return (x ?? "").toString().trim(); }
+function setText(id, txt){
+  const el = document.getElementById(id);
+  if(el) el.textContent = txt;
+}
+function showError(msg){
+  const box = document.getElementById("errBox");
+  box.style.display = "block";
+  box.textContent = msg;
+}
+
+/** ====== State ====== */
+let rawRows = [];        // main rows
+let equipmentRows = [];  // equipment log rows
+let charts = { daily:null, hour:null, pie:null };
+
+/** ====== Filters ====== */
+function getFilters(){
+  const fromStr = document.getElementById("fromDate").value;
+  const toStr = document.getElementById("toDate").value;
+  const q = safeText(document.getElementById("search").value).toLowerCase();
+  const thresholdHours = parseInt(document.getElementById("outThreshold").value,10) || 24;
+  return {fromStr, toStr, q, thresholdHours, ...clampStartEnd(fromStr, toStr)};
+}
+
+/** ====== Row mapping ====== */
+// MAIN: 0 docId, 1 status, 2 event, 3 signer, 4 date, 5 time
+function rowToObj(r){
+  const docId = r.c?.[0]?.v ?? "";
+  const status = r.c?.[1]?.v ?? "";
+  const event = r.c?.[2]?.v ?? "";
+  const signer = r.c?.[3]?.v ?? "";
+  const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
+  const timeFormatted = r.c?.[5]?.f || r.c?.[5]?.v || "";
+  return {docId, status, event, signer, dateFormatted, timeFormatted};
+}
+
+// EQUIPMENT LOG: לפי הפרויקט שלך: B=docId, C=sku, D=name
+function equipmentToObj(r){
+  return {
+    docId: r.c?.[1]?.v ?? "",  // B
+    sku:   r.c?.[2]?.v ?? "",  // C
+    name:  r.c?.[3]?.v ?? ""   // D
+  };
+}
+
+/** ====== Data filters ====== */
+function filterEventRows(){
+  const {start, end, q} = getFilters();
+  const startKey = dateKey(start);
+  const endKey = dateKey(end);
+
+  return rawRows
+    .slice(1)
+    .map(rowToObj)
+    .filter(o => (o.status==="IN" || o.status==="OUT"))
+    .filter(o => {
+      const key = normalizeDate(o.dateFormatted);
+      if(!key) return false;
+      return key >= startKey && key <= endKey;
+    })
+    .filter(o => {
+      if(!q) return true;
+      const hay = `${o.docId} ${o.status} ${o.event} ${o.signer} ${o.dateFormatted} ${o.timeFormatted}`.toLowerCase();
+      return hay.includes(q);
+    });
+}
+
+function equipmentCountByDocId(){
+  // Map<docId, count>
+  const map = new Map();
+  equipmentRows.slice(1).forEach(r=>{
+    const e = equipmentToObj(r);
+    const doc = String(e.docId || "");
+    if(!doc) return;
+    map.set(doc, (map.get(doc) || 0) + 1);
+  });
+  return map;
+}
+
+function getEquipmentByDocs(docIdsSet){
+  return equipmentRows
+    .slice(1)
+    .map(equipmentToObj)
+    .filter(e => docIdsSet.has(String(e.docId)));
+}
+
+/** ====== Render ====== */
+function renderSubtitle(){
+  const {start, end} = getFilters();
+  const txt = `טווח: ${start.toLocaleDateString("he-IL")} – ${end.toLocaleDateString("he-IL")}  |  עודכן: ${new Date().toLocaleString("he-IL")}`;
+  setText("subtitle", txt);
+  setText("rangePill", `${start.toLocaleDateString("he-IL")} – ${end.toLocaleDateString("he-IL")}`);
+}
+
+function renderKPIs(eventList){
+  const total = eventList.length;
+  const inCount = eventList.filter(x=>x.status==="IN").length;
+  const outCount = eventList.filter(x=>x.status==="OUT").length;
+  const outPct = total ? Math.round((outCount/total)*100) : 0;
+
+  setText("kpiTotal", total);
+  setText("kpiIn", inCount);
+  setText("kpiOut", outCount);
+  setText("kpiOutPct", outPct + "%");
+
+  // unique docs
+  const docs = new Set(eventList.map(x => String(x.docId)));
+  setText("kpiDocs", docs.size);
+
+  // equipment KPIs
+  const eqLogTotal = Math.max(0, equipmentRows.length - 1);
+  setText("kpiEquipLogTotal", eqLogTotal);
+
+  const eqInRange = getEquipmentByDocs(docs).length;
+  setText("kpiEquipInRange", eqInRange);
+
+  const openDocs = new Set(eventList.filter(x=>x.status==="OUT").map(x=>String(x.docId)));
+  const eqOpenOut = getEquipmentByDocs(openDocs).length;
+  setText("kpiEquipOpenOut", eqOpenOut);
+}
+
+function renderTop(id, list, keyFn){
+  const map = {};
+  list.forEach(x=>{
+    const k = safeText(keyFn(x));
+    if(!k) return;
+    map[k] = (map[k]||0) + 1;
+  });
+
+  const arr = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const el = document.getElementById(id);
+  if(!el) return;
+
+  el.innerHTML = "";
+  if(arr.length===0){
+    el.innerHTML = `<li><span style="opacity:.65">אין נתונים בטווח/בחיפוש</span><span class="count">—</span></li>`;
+    return;
+  }
+  arr.forEach(([name,count])=>{
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${name}</span><span class="count">${count}</span>`;
+    el.appendChild(li);
+  });
+}
+
+function renderTopEquipment(eventList){
+  const docs = new Set(eventList.map(x => String(x.docId)));
+  const eq = getEquipmentByDocs(docs);
+
+  const map = {};
+  eq.forEach(e=>{
+    const key = safeText(e.name) || safeText(e.sku);
+    if(!key) return;
+    map[key] = (map[key] || 0) + 1;
+  });
+
+  const arr = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const el = document.getElementById("topEquipment");
+  if(!el) return;
+
+  el.innerHTML = "";
+  if(arr.length === 0){
+    el.innerHTML = `<li><span style="opacity:.65">אין נתוני ציוד בטווח</span><span class="count">—</span></li>`;
+    return;
+  }
+
+  arr.forEach(([name,count])=>{
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${name}</span><span class="count">${count}</span>`;
+    el.appendChild(li);
+  });
+}
+
+function renderDailyChart(eventList){
+  const {start, end} = getFilters();
+  const counts = {};
+  const labels = [];
+
+  for(let d = new Date(start); d <= end; d.setDate(d.getDate()+1)){
+    const k = dateKey(d);
+    counts[k] = 0;
+    labels.push(formatDDMM(d));
+  }
+
+  eventList.forEach(x=>{
+    const k = normalizeDate(x.dateFormatted);
+    if(k && (k in counts)) counts[k]++;
+  });
+
+  const data = Object.values(counts);
+  const ma = movingAverage(data, 3);
+
+  if(charts.daily) charts.daily.destroy();
+  charts.daily = new Chart(document.getElementById("dailyChart"), {
+    type:"bar",
+    data:{
+      labels,
+      datasets:[
+        { type:"bar", data, borderRadius:6 },
+        { type:"line", data:ma, tension:0.25, pointRadius:0, borderWidth:2 }
+      ]
+    },
+    options:{
+      animation:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ ticks:{ color:"rgba(229,231,235,0.75)" }, grid:{ color:"rgba(255,255,255,0.06)" } },
+        y:{ ticks:{ color:"rgba(229,231,235,0.75)", precision:0 }, grid:{ color:"rgba(255,255,255,0.06)" }, beginAtZero:true }
+      }
+    }
+  });
+}
+
+function renderHourChart(eventList){
+  const buckets = Array(8).fill(0);
+  const labels = ["00–03","03–06","06–09","09–12","12–15","15–18","18–21","21–24"];
+
+  eventList.forEach(x=>{
+    const t = safeText(x.timeFormatted);
+    if(!t.includes(":")) return;
+    const hh = parseInt(t.split(":")[0],10);
+    if(isNaN(hh)) return;
+    const idx = Math.floor(hh/3);
+    if(idx>=0 && idx<8) buckets[idx]++;
+  });
+
+  if(charts.hour) charts.hour.destroy();
+  charts.hour = new Chart(document.getElementById("hourChart"), {
+    type:"bar",
+    data:{ labels, datasets:[{ data:buckets, borderRadius:6 }] },
+    options:{
+      animation:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ ticks:{ color:"rgba(229,231,235,0.75)" }, grid:{ color:"rgba(255,255,255,0.06)" } },
+        y:{ ticks:{ color:"rgba(229,231,235,0.75)", precision:0 }, grid:{ color:"rgba(255,255,255,0.06)" }, beginAtZero:true }
+      }
+    }
+  });
+}
+
+function renderStatusPie(eventList){
+  const inCount = eventList.filter(x=>x.status==="IN").length;
+  const outCount = eventList.filter(x=>x.status==="OUT").length;
+
+  if(charts.pie) charts.pie.destroy();
+  charts.pie = new Chart(document.getElementById("statusPie"), {
+    type:"doughnut",
+    data:{
+      labels:["IN","OUT"],
+      datasets:[{ data:[inCount,outCount], borderWidth:0 }]
+    },
+    options:{
+      animation:false,
+      plugins:{ legend:{ labels:{ color:"rgba(229,231,235,0.85)" } } },
+      cutout:"62%"
+    }
+  });
+}
+
+function renderOutTable(eventList){
+  const {thresholdHours, q} = getFilters();
+  setText("outPill", `מעל ${thresholdHours} שעות`);
+
+  const tbody = document.getElementById("outTable");
+  if(!tbody) return;
+  tbody.innerHTML = "";
+
+  const now = new Date();
+  const eqCountMap = equipmentCountByDocId();
+
+  const outList = eventList
+    .filter(x=>x.status==="OUT")
+    .map(x=>{
+      const dt = parseRowDateTime(x.dateFormatted, x.timeFormatted);
+      const hours = dt ? (now - dt) / (1000*60*60) : null;
+      return {...x, hoursOpen: hours};
+    })
+    .filter(x=>x.hoursOpen !== null && x.hoursOpen >= thresholdHours)
+    .sort((a,b)=>b.hoursOpen - a.hoursOpen)
+    .slice(0,40);
+
+  outList.forEach(x=>{
+    const doc = String(x.docId);
+    const eqCount = eqCountMap.get(doc) || 0;
+    const tr = document.createElement("tr");
+    const hoursTxt = x.hoursOpen ? `${Math.floor(x.hoursOpen)}h` : "—";
+    tr.innerHTML = `
+      <td>${safeText(x.docId)}</td>
+      <td><span class="tag out">OUT</span></td>
+      <td>${safeText(x.event)}</td>
+      <td>${safeText(x.signer)}</td>
+      <td>${safeText(x.dateFormatted)}</td>
+      <td>${safeText(x.timeFormatted)}</td>
+      <td style="color:var(--yellow); font-weight:700">${hoursTxt}</td>
+      <td style="font-weight:800">${eqCount}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  if(outList.length===0){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="8" style="color:rgba(229,231,235,0.65); padding:14px;">אין אירועים חריגים לפי הסף והפילטרים.</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+/** ====== Main flow ====== */
+async function load(){
+  try{
+    document.getElementById("errBox").style.display = "none";
+
+    // טוענים במקביל: אירועים + ציוד
+    const [mainText, eqText] = await Promise.all([
+      fetch(MAIN_URL).then(r => r.text()),
+      fetch(equipmentURL()).then(r => r.text())
+    ]);
+
+    rawRows = parseGviz(mainText).table.rows || [];
+    equipmentRows = parseGviz(eqText).table.rows || [];
+
+    const eventList = filterEventRows();
+
+    renderSubtitle();
+    renderKPIs(eventList);
+    renderDailyChart(eventList);
+    renderHourChart(eventList);
+    renderStatusPie(eventList);
+    renderTopEquipment(eventList);
+    renderTop("topEvents", eventList, x=>x.event);
+    renderTop("topSigners", eventList, x=>x.signer);
+    renderOutTable(eventList);
+
+  }catch(e){
+    console.error(e);
+    showError("לא הצלחתי לטעון נתונים. בדוק שה־Google Sheets פתוחים לצפייה ציבורית (Anyone with the link) ושאין חסימת הרשאות.");
+  }
+}
+
+/** ====== Init defaults ====== */
+(function init(){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const start = new Date(today);
+  start.setDate(today.getDate() - 13);
+
+  document.getElementById("fromDate").value = start.toISOString().split("T")[0];
+  document.getElementById("toDate").value = today.toISOString().split("T")[0];
+
+  document.getElementById("refreshBtn").addEventListener("click", load);
+
+  // auto-refresh on filter change (debounced)
+  let t=null;
+  ["fromDate","toDate","outThreshold","search"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", ()=>{
+      clearTimeout(t);
+      t = setTimeout(load, 250);
+    });
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>
