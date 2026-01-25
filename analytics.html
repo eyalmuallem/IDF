@@ -527,7 +527,7 @@
 <main id="report">
   <div id="errBox" style="display:none" class="error"></div>
 <section class="pdf-cover page-break">
-  <h1>דו״ח ציוד – סיכום ע״פ טווח נבחר</h1>
+  <h1>דו״ח ציוד – סיכום ע״פ טווח תאריכים נבחר</h1>
   <p id="pdfRange"></p>
   <p class="pdf-meta">
     הופק בתאריך: <span id="pdfDate"></span>
@@ -574,6 +574,12 @@
       <div class="value" id="kpiEquipOpenOut">0</div>
       <div class="meta"><span class="pill">סיכון תפעולי</span></div>
     </div>
+    <div class="kpi">
+  <div class="title">איכות נתונים</div>
+  <div class="value" id="kpiDataQuality">—</div>
+  <div class="meta" id="kpiDataQualityMeta">—</div>
+</div>
+
 
     <div class="kpi">
       <div class="title">מס׳ מסמכים ייחודיים בטווח</div>
@@ -603,6 +609,17 @@
         <canvas id="statusPie" height="220"></canvas>
       </div>
     </div>
+    <div class="card span-6">
+  <div class="head">
+    <h3>יחס ציוד / אירוע</h3>
+    <span class="pill">התפלגות</span>
+  </div>
+  <div class="body">
+    <canvas id="equipmentRatioChart" height="120"></canvas>
+    <div class="hint">כמה ציוד בממוצע מחובר לכל מסמך.</div>
+  </div>
+</div>
+
 
     <div class="card span-6">
       <div class="head">
@@ -783,6 +800,36 @@ function setText(id, txt){
   const el = document.getElementById(id);
   if(el) el.textContent = txt;
 }
+function computeDataQuality(eventList){
+  let missingSigner = 0;
+  let missingTime = 0;
+  let invalidDate = 0;
+
+  eventList.forEach(e=>{
+    if(!safeText(e.signer)) missingSigner++;
+    if(!safeText(e.timeFormatted) || !e.timeFormatted.includes(":")) missingTime++;
+    if(!normalizeDate(e.dateFormatted)) invalidDate++;
+  });
+
+  const total = eventList.length;
+  const badEvents = eventList.filter(e =>
+    !safeText(e.signer) ||
+    !safeText(e.timeFormatted) ||
+    !normalizeDate(e.dateFormatted)
+  ).length;
+
+  const valid = total - badEvents;
+  const qualityPct = total ? Math.round((valid / total) * 100) : 100;
+
+  return {
+    total,
+    missingSigner,
+    missingTime,
+    invalidDate,
+    qualityPct
+  };
+}
+
 function showError(msg){
   const box = document.getElementById("errBox");
   box.style.display = "block";
@@ -792,7 +839,8 @@ function showError(msg){
 /** ====== State ====== */
 let rawRows = [];        // main rows
 let equipmentRows = [];  // equipment log rows
-let charts = { daily:null, hour:null, pie:null };
+let charts = { daily:null, hour:null, pie:null, eqRatio:null };
+
 
 /** ====== Filters ====== */
 function getFilters(){
@@ -824,7 +872,25 @@ function equipmentToObj(r){
   };
 }
 
-/** ====== Data filters ====== */
+function computeEquipmentRatio(eventList){
+  const docs = new Set(eventList.map(x => String(x.docId)));
+  const eqMap = equipmentCountByDocId();
+
+  const buckets = {};
+  for(let i=1;i<=14;i++) buckets[i]=0;
+  buckets["15+"] = 0;
+
+  docs.forEach(doc=>{
+    const c = eqMap.get(doc) || 0;
+    if(c <= 0) return;
+    if(c >= 15) buckets["15+"]++;
+    else buckets[c]++;
+  });
+
+  return buckets;
+
+}
+
 function filterEventRows(){
   const {start, end, q} = getFilters();
   const startKey = dateKey(start);
@@ -878,6 +944,27 @@ function renderKPIs(eventList){
   const inCount = eventList.filter(x=>x.status==="IN").length;
   const outCount = eventList.filter(x=>x.status==="OUT").length;
   const outPct = total ? Math.round((outCount/total)*100) : 0;
+  const dq = computeDataQuality(
+  rawRows
+    .slice(1)
+    .map(rowToObj)
+    .filter(o => (o.status==="IN" || o.status==="OUT"))
+);
+
+
+  setText("kpiDataQuality", dq.qualityPct + "%");
+  setText(
+    "kpiDataQualityMeta",
+    `בלי חותם: ${dq.missingSigner} · בלי שעה: ${dq.missingTime} · תאריך לא תקין: ${dq.invalidDate}`
+  );
+    const kpiEl = document.getElementById("kpiDataQuality");
+  if(kpiEl){
+    if(dq.qualityPct >= 95) kpiEl.style.color = "var(--green)";
+    else if(dq.qualityPct >= 85) kpiEl.style.color = "var(--yellow)";
+    else kpiEl.style.color = "var(--red)";
+  }
+
+
 
   setText("kpiTotal", total);
   setText("kpiIn", inCount);
@@ -921,6 +1008,83 @@ function renderTop(id, list, keyFn){
     const li = document.createElement("li");
     li.innerHTML = `<span>${name}</span><span class="count">${count}</span>`;
     el.appendChild(li);
+  });
+}
+function renderEquipmentRatioChart(eventList){
+  const dataMap = computeEquipmentRatio(eventList);
+
+const labels = [
+  "1","2","3","4","5","6","7","8","9","10",
+  "11","12","13","14","15+"
+];
+  const values = labels.map(l => dataMap[l] || 0);
+
+  const canvas = document.getElementById("equipmentRatioChart");
+  if(!canvas) return;
+
+  if(charts.eqRatio) charts.eqRatio.destroy();
+
+  const ctx = canvas.getContext("2d");
+  const gradient = ctx.createLinearGradient(0,0,0,180);
+  gradient.addColorStop(0,"rgba(251,191,36,0.45)");
+  gradient.addColorStop(1,"rgba(251,191,36,0.05)");
+
+  charts.eqRatio = new Chart(ctx, {
+    type:"line",
+    data:{
+      labels,
+      datasets:[{
+        data: values,
+        tension: 0.45,
+        fill: true,
+        borderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderColor: "#fbbf24",
+        backgroundColor: gradient
+      }]
+    },
+    options:{
+  animation:false,
+  plugins:{
+    legend:{ display:false }
+  },
+  scales:{
+   x:{
+  ticks:{ color:"rgba(229,231,235,0.75)" },
+  grid:{
+    color:"rgba(229,231,235,0.12)",
+    drawBorder:false
+  },
+  title:{
+    display:true,
+    text:"מספר פריטי ציוד לאירוע",
+    color:"rgba(229,231,235,0.9)",
+    font:{ size:12, weight:"bold" }
+  
+      }
+    },
+    y:{
+  beginAtZero:true,
+  ticks:{
+    precision:0,
+    color:"rgba(229,231,235,0.75)"
+  },
+  grid:{
+    color:"rgba(229,231,235,0.12)",
+    drawBorder:false
+  },
+  title:{
+    display:true,
+    text:"כמות אירועים",
+    color:"rgba(229,231,235,0.9)",
+    font:{ size:12, weight:"bold" }
+  }
+}
+
+  }
+}
+
   });
 }
 
@@ -1166,6 +1330,8 @@ async function load(){
     renderTop("topEvents", eventList, x=>x.event);
     renderTop("topSigners", eventList, x=>x.signer);
     renderOutTable(eventList);
+    renderEquipmentRatioChart(eventList);
+
 
   }catch(e){
     console.error(e);
