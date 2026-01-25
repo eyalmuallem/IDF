@@ -420,16 +420,7 @@
   }
 
 }
-@media print {
 
-  /* כהה אפורים – שומר צבעים */
-  canvas{
-    filter:
-      contrast(160%)
-      brightness(0.85);
-  }
-
-}
 #approvalPage{
   page-break-before: always;
 }
@@ -733,6 +724,12 @@ function equipmentURL(){
 }
 
 /** ====== Helpers ====== */
+function toLocalDateInputValue(date){
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60 * 1000);
+  return local.toISOString().split("T")[0];
+}
+
 function parseGviz(text){
   return JSON.parse(text.substring(47).slice(0, -2));
 }
@@ -840,6 +837,9 @@ function showError(msg){
 let rawRows = [];        // main rows
 let equipmentRows = [];  // equipment log rows
 let charts = { daily:null, hour:null, pie:null, eqRatio:null };
+// ===== PRINT BAR OVERRIDE =====
+
+
 
 
 /** ====== Filters ====== */
@@ -1276,7 +1276,10 @@ function generatePDF(){
     document.getElementById("approvalId").textContent = "—";
     document.getElementById("approvalRole").textContent = "—";
 
-    window.print();
+   prepareChartsForPrint();
+window.print();
+setTimeout(restoreChartsAfterPrint, 300);
+
     return;
   }
 
@@ -1284,8 +1287,6 @@ function generatePDF(){
   document.getElementById("approvalForm").style.display = "block";
   
 }
-
-
 function confirmApproval(){
   document.getElementById("approvalText").textContent =
     document.getElementById("inputApprovalText").value || "—";
@@ -1300,7 +1301,10 @@ function confirmApproval(){
     document.getElementById("inputApprovalRole").value || "—";
 
   document.getElementById("approvalForm").style.display = "none";
+
+  prepareChartsForPrint();
   window.print();
+  setTimeout(restoreChartsAfterPrint, 300);
 }
 
 
@@ -1339,20 +1343,23 @@ async function load(){
   }
 }
 
-/** ====== Init defaults ====== */
 (function init(){
   const today = new Date();
   today.setHours(0,0,0,0);
-  const start = new Date(today);
-  start.setDate(today.getDate() - 13);
 
-  document.getElementById("fromDate").value = start.toISOString().split("T")[0];
-  document.getElementById("toDate").value = today.toISOString().split("T")[0];
+  const start = new Date(today);
+  start.setDate(today.getDate() - 6); // 7 ימים כולל היום
+
+  document.getElementById("fromDate").value =
+    toLocalDateInputValue(start);
+
+  document.getElementById("toDate").value =
+    toLocalDateInputValue(today);
 
   document.getElementById("refreshBtn").addEventListener("click", load);
 
   // auto-refresh on filter change (debounced)
-  let t=null;
+  let t = null;
   ["fromDate","toDate","outThreshold","search"].forEach(id=>{
     document.getElementById(id).addEventListener("input", ()=>{
       clearTimeout(t);
@@ -1361,8 +1368,84 @@ async function load(){
   });
 
   load();
-
 })();
+const PRINT_COLOR = "#000";
+
+let originalDatasets = new Map();
+let originalOptions = new Map();
+
+function prepareChartsForPrint(){
+  Object.values(charts).forEach(chart=>{
+    if(!chart) return;
+
+    // שמירת options
+    originalOptions.set(chart, JSON.parse(JSON.stringify(chart.options)));
+
+    // שמירת datasets
+    originalDatasets.set(chart, chart.data.datasets.map(ds => ({
+      backgroundColor: ds.backgroundColor,
+      borderColor: ds.borderColor
+    })));
+
+    chart.data.datasets.forEach(ds=>{
+      const isBar =
+        ds.type === "bar" ||
+        chart.config.type === "bar";
+
+      // ✅ רק עמודות לשחור
+      if(isBar){
+        ds.backgroundColor = PRINT_COLOR;
+        ds.borderColor = PRINT_COLOR;
+      }
+    });
+
+    // ✅ צירים / grid / מספרים
+    if(chart.options.scales){
+      Object.values(chart.options.scales).forEach(scale=>{
+        if(scale.ticks) scale.ticks.color = PRINT_COLOR;
+        if(scale.grid){
+          scale.grid.color = PRINT_COLOR;
+          scale.grid.drawBorder = true;
+        }
+        if(scale.title) scale.title.color = PRINT_COLOR;
+      });
+    }
+
+    // ✅ legend (Pie)
+    if(chart.options.plugins?.legend?.labels){
+      chart.options.plugins.legend.labels.color = PRINT_COLOR;
+    }
+
+    chart.update("none");
+  });
+}
+
+function restoreChartsAfterPrint(){
+  Object.values(charts).forEach(chart=>{
+    if(!chart) return;
+
+    // restore options
+    if(originalOptions.has(chart)){
+      chart.options = originalOptions.get(chart);
+    }
+
+    // restore datasets
+    const dsBackup = originalDatasets.get(chart);
+    if(dsBackup){
+      chart.data.datasets.forEach((ds,i)=>{
+        ds.backgroundColor = dsBackup[i].backgroundColor;
+        ds.borderColor = dsBackup[i].borderColor;
+      });
+    }
+
+    chart.update("none");
+  });
+
+  originalOptions.clear();
+  originalDatasets.clear();
+}
+
+
 </script>
 </body>
 </html>
