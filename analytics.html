@@ -430,6 +430,33 @@
   }
 
 }
+#approvalPage{
+  page-break-before: always;
+}
+@media print {
+  #approvalForm{
+    display:none !important;
+  }
+}
+/* לא מוצג באתר – רק ב־PDF */
+#approvalPage{
+  display:none;
+}
+@media print {
+  #approvalPage{
+    display:block !important;
+  }
+}
+/* עמוד שער – מוצג רק ב-PDF */
+.pdf-cover{
+  display:none;
+}
+
+@media print {
+  .pdf-cover{
+    display:block !important;
+  }
+}
 
 
   </style>
@@ -475,6 +502,27 @@
 
   </div>
 </header>
+<div id="approvalForm" class="card span-12" style="display:none; margin:20px">
+  <div class="head">
+    <h3>דו״ח מילולי – פרטי מפיק</h3>
+  </div>
+  <div class="body">
+    <label>דבר מפיק הדו״ח</label>
+    <textarea id="inputApprovalText" rows="4" style="width:100%"></textarea>
+
+    <label>שם מלא</label>
+    <input id="inputApprovalName" type="text" style="width:100%">
+
+    <label>מספר אישי / ת״ז</label>
+    <input id="inputApprovalId" type="text" style="width:100%">
+
+    <label>תפקיד</label>
+    <input id="inputApprovalRole" type="text" style="width:100%">
+
+    <button onclick="confirmApproval()">המשך להפקת PDF</button>
+  </div>
+</div>
+
 
 <main id="report">
   <div id="errBox" style="display:none" class="error"></div>
@@ -622,6 +670,38 @@
       </div>
     </div>
   </div>
+  <section id="approvalPage" class="card span-12" style="display:none">
+  <div class="head">
+    <h3>מסקנות הדוח</h3>
+  </div>
+  <div class="body">
+    <p id="approvalText">לא צורף דו״ח מילולי.</p>
+
+    <table style="margin-top:20px; width:100%">
+      <tr>
+        <td><strong>שם מלא</strong></td>
+        <td id="approvalName">—</td>
+      </tr>
+      <tr>
+        <td><strong>מספר אישי / ת״ז</strong></td>
+        <td id="approvalId">—</td>
+      </tr>
+      <tr>
+        <td><strong>תפקיד</strong></td>
+        <td id="approvalRole">—</td>
+      </tr>
+      <tr>
+        <td><strong>תאריך הפקה</strong></td>
+        <td id="approvalDate">—</td>
+      </tr>
+    </table>
+
+    <div style="margin-top:40px">
+      חתימה: ________________________
+    </div>
+  </div>
+</section>
+
 </main>
 
 <script>
@@ -1007,15 +1087,57 @@ function renderOutTable(eventList){
     tbody.appendChild(tr);
   }
 }
+function askForVerbalReport(){
+  return confirm("האם ברצונך להפיק דו״ח מילולי בנוסף?");
+}
+
 function generatePDF(){
   const {start, end} = getFilters();
 
   document.getElementById("pdfRange").textContent =
     `טווח: ${start.toLocaleDateString("he-IL")} – ${end.toLocaleDateString("he-IL")}`;
-
   document.getElementById("pdfDate").textContent =
     new Date().toLocaleDateString("he-IL");
 
+  const wantsVerbal = askForVerbalReport();
+
+  
+  document.getElementById("approvalDate").textContent =
+    new Date().toLocaleDateString("he-IL");
+
+  // ❌ בלי דו"ח מילולי
+  if(!wantsVerbal){
+    document.getElementById("approvalText").textContent =
+      "מסמך זה הופק ממערכת ניתוח הנתונים, ללא תוספת מסקנות מילוליות מטעם מפיק הדו״ח.";
+
+    document.getElementById("approvalName").textContent = "—";
+    document.getElementById("approvalId").textContent = "—";
+    document.getElementById("approvalRole").textContent = "—";
+
+    window.print();
+    return;
+  }
+
+  // ✅ עם דו"ח מילולי
+  document.getElementById("approvalForm").style.display = "block";
+  
+}
+
+
+function confirmApproval(){
+  document.getElementById("approvalText").textContent =
+    document.getElementById("inputApprovalText").value || "—";
+
+  document.getElementById("approvalName").textContent =
+    document.getElementById("inputApprovalName").value || "—";
+
+  document.getElementById("approvalId").textContent =
+    document.getElementById("inputApprovalId").value || "—";
+
+  document.getElementById("approvalRole").textContent =
+    document.getElementById("inputApprovalRole").value || "—";
+
+  document.getElementById("approvalForm").style.display = "none";
   window.print();
 }
 
