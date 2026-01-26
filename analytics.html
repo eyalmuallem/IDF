@@ -578,6 +578,16 @@
       <div class="meta"><span class="pill">Unique docs</span></div>
     </div>
   </div>
+<div class="card span-6">
+  <div class="head">
+    <h3>מגמת אי החזרה</h3>
+    <span class="pill">7–14 ימים</span>
+  </div>
+  <div class="body">
+    <canvas id="inOutTrendChart" height="90"></canvas>
+    <div class="hint">השוואת סגירות מול פתיחות לאורך זמן.</div>
+  </div>
+</div>
 
   <div class="grid" style="margin-top:14px;">
     <div class="card span-8">
@@ -943,6 +953,98 @@ function getEquipmentByDocs(docIdsSet){
 }
 
 /** ====== Render ====== */
+function renderInOutTrend(eventList){
+  const {start, end} = getFilters();
+
+  const days = [];
+
+  // 1️⃣ בניית ציר זמן אחיד
+  for(let d = new Date(start); d <= end; d.setDate(d.getDate()+1)){
+    const key = dateKey(d);
+    days.push({
+      key,
+      label: formatDDMM(d),
+      in: 0,
+      out: 0
+    });
+  }
+
+  const dayMap = Object.fromEntries(days.map(d => [d.key, d]));
+
+  // 2️⃣ ספירת פעולות לפי היום עצמו
+  eventList.forEach(e=>{
+    const key = normalizeDate(e.dateFormatted);
+    if(!key || !dayMap[key]) return;
+
+    if(e.status === "OUT") dayMap[key].out++;
+    if(e.status === "IN")  dayMap[key].in++;
+  });
+
+  // 3️⃣ פירוק ל־Chart.js
+  const labels  = days.map(d => d.label);
+  const outData = days.map(d => d.out);
+  const inData  = days.map(d => d.in);
+
+  if(charts.inOutTrend) charts.inOutTrend.destroy();
+
+  charts.inOutTrend = new Chart(
+    document.getElementById("inOutTrendChart"),
+    {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "OUT (יצאו אך לא הוחזרו)",
+            data: outData,
+            borderColor: "#fb7185",
+            backgroundColor: "rgba(251,113,133,0.18)",
+            tension: 0.35,
+            fill: true,
+            pointRadius: 2
+          },
+          {
+            label: "IN (חזרו)",
+            data: inData,
+            borderColor: "#34d399",
+            tension: 0.35,
+            pointRadius: 2
+          }
+        ]
+      },
+      options: {
+        animation: false,
+        plugins: {
+          legend: {
+            position: "top",
+            labels: { color: "rgba(229,231,235,0.85)" }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: "rgba(229,231,235,0.6)" }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0,
+              color: "rgba(229,231,235,0.6)"
+            },
+            title: {
+              display: true,
+              text: "כמות פעולות ביום",
+              color: "rgba(229,231,235,0.85)"
+            }
+          }
+        }
+      }
+    }
+  );
+}
+
+
+
 function renderTopBusyDays(eventList){
   const map = {};
 
@@ -1390,6 +1492,8 @@ async function load(){
     renderOutTable(eventList);
     renderEquipmentRatioChart(eventList);
     renderTopBusyDays(eventList);
+    renderInOutTrend(eventList);
+
 
 
 
