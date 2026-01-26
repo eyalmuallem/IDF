@@ -652,6 +652,17 @@
         <ul class="list" id="topSigners"></ul>
       </div>
     </div>
+    <div class="card span-6">
+  <div class="head">
+    <h3> טופ ימים עמוסים</h3>
+    <span class="pill">לפי כמות אירועים</span>
+  </div>
+  <div class="body">
+    <ul class="list" id="topBusyDays"></ul>
+    <div class="hint">ימים עם מספר האירועים הגבוה ביותר בטווח.</div>
+  </div>
+</div>
+
 
     <div class="card span-12">
       <div class="head">
@@ -932,6 +943,49 @@ function getEquipmentByDocs(docIdsSet){
 }
 
 /** ====== Render ====== */
+function renderTopBusyDays(eventList){
+  const map = {};
+
+  eventList.forEach(e=>{
+    const key = normalizeDate(e.dateFormatted);
+    if(!key) return;
+    map[key] = (map[key] || 0) + 1;
+  });
+
+  const arr = Object.entries(map)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10);
+
+  const el = document.getElementById("topBusyDays");
+  if(!el) return;
+
+  el.innerHTML = "";
+
+  if(arr.length === 0){
+    el.innerHTML = `<li>
+      <span style="opacity:.65">אין נתונים בטווח</span>
+      <span class="count">—</span>
+    </li>`;
+    return;
+  }
+
+  arr.forEach(([date,count])=>{
+    const d = new Date(date);
+    const label = d.toLocaleDateString("he-IL", {
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit"
+    });
+
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span>${label}</span>
+      <span class="count">${count}</span>
+    `;
+    el.appendChild(li);
+  });
+}
+
 function renderSubtitle(){
   const {start, end} = getFilters();
   const txt = `טווח: ${start.toLocaleDateString("he-IL")} – ${end.toLocaleDateString("he-IL")}  |  עודכן: ${new Date().toLocaleString("he-IL")}`;
@@ -1335,6 +1389,8 @@ async function load(){
     renderTop("topSigners", eventList, x=>x.signer);
     renderOutTable(eventList);
     renderEquipmentRatioChart(eventList);
+    renderTopBusyDays(eventList);
+
 
 
   }catch(e){
