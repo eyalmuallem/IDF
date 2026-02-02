@@ -305,6 +305,13 @@ thead tr:hover {
 <button class="outline" onclick="toggleOutOnly()" id="outBtn">
   הצג אירועים שלא חזרו
 </button>
+<label>חיפוש חופשי:</label>
+<input
+  type="text"
+  id="searchInput"
+  placeholder="שם / מוצר / אירוע"
+  oninput="applySearchFilter()"
+/>
 
 </div>
 
@@ -365,6 +372,13 @@ thead tr:hover {
   
   let showOnlyOut = false;
 let openEquipmentCount = 0;
+let searchQuery = "";
+let productNameCache = {};
+let productCacheLoaded = false;
+let productCacheLoading = false;
+
+
+
 
 
 const GID = "0";
@@ -475,6 +489,16 @@ function updateHourlyChart(rows) {
       }
     }
   });
+}
+
+function applySearchFilter() {
+  searchQuery = document.getElementById("searchInput").value.toLowerCase();
+
+  if (searchQuery) {
+    loadData(true);   // יש חיפוש → בלי פילטר תאריך
+  } else {
+    loadData(false);  // אין חיפוש → חזרה להיום
+  }
 }
 
 
@@ -604,23 +628,46 @@ function loadData(ignoreFilter = false) {
     .then(text => {
       const json = JSON.parse(text.substring(47).slice(0, -2));
       const rows = json.table.rows || [];
+
+      // ===== preload שמות מוצרים – פעם אחת =====
+   if (!productCacheLoaded && !productCacheLoading) {
+  productCacheLoading = true;
+
+  const docIds = rows
+    .slice(1)
+    .map(r => r.c?.[0]?.v)
+    .filter(Boolean);
+
+  preloadProductNames(docIds)
+    .then(() => {
+      productCacheLoaded = true;
+    })
+    .catch(err => {
+      console.warn("Product preload failed, continuing without it", err);
+    })
+    .finally(() => {
+      productCacheLoading = false;
+    });
+}
+
+// ❗ לא עושים return – ממשיכים לרנדר גם בלי קאש
+
+
+      // ===== רינדור =====
       const tbody = document.querySelector("#tbl tbody");
       tbody.innerHTML = "";
 
       const selectedDate = document.getElementById("viewDate").value;
-updateWeeklyChart(rows);
-updateHourlyChart(rows);
 
-
+      updateWeeklyChart(rows);
+      updateHourlyChart(rows);
 
       rows.slice(1).forEach(r => {
         const status = r.c?.[1]?.v || "";
-        // פילטר: רק OUT
-if (showOnlyOut && status !== "OUT") return;
+        if (showOnlyOut && status !== "OUT") return;
 
         const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
         const timeFormatted = r.c?.[5]?.f || r.c?.[5]?.v || "";
-
         const rowDate = normalizeDate(dateFormatted);
 
         if (!ignoreFilter && selectedDate) {
@@ -628,27 +675,38 @@ if (showOnlyOut && status !== "OUT") return;
         }
 
         const docId = r.c?.[0]?.v || "";
+        const productText = productNameCache[docId] || "";
 
-const tr = document.createElement("tr");
-tr.className = status;
+        const textToSearch = [
+          docId,
+          status,
+          r.c?.[2]?.v || "",
+          r.c?.[3]?.v || "",
+          dateFormatted,
+          timeFormatted,
+          productText
+        ].join(" ").toLowerCase();
 
-tr.innerHTML = `
-  <td>
-    <span class="toggle-arrow" data-doc="${docId}">▼</span>
-  </td>
-  <td>${docId}</td>
-  <td>${status}</td>
-  <td>${r.c?.[2]?.v || ""}</td>
-  <td>${r.c?.[3]?.v || ""}</td>
-  <td>${dateFormatted}</td>
-  <td>${timeFormatted}</td>
-`;
-tbody.appendChild(tr);
+        if (searchQuery && !textToSearch.includes(searchQuery)) return;
 
-
+        const tr = document.createElement("tr");
+        tr.className = status;
+        tr.innerHTML = `
+          <td><span class="toggle-arrow" data-doc="${docId}">▼</span></td>
+          <td>${docId}</td>
+          <td>${status}</td>
+          <td>${r.c?.[2]?.v || ""}</td>
+          <td>${r.c?.[3]?.v || ""}</td>
+          <td>${dateFormatted}</td>
+          <td>${timeFormatted}</td>
+        `;
+        tbody.appendChild(tr);
       });
-    });
+    })
+    .catch(err => console.error("loadData failed:", err));
 }
+
+
 
 // ===== Clock =====
 function updateDateTime() {
@@ -679,12 +737,23 @@ setInterval(updateDateTime, 1000);
 updateDateTime();
 
 setInterval(() => {
-  const statsOpen = document.getElementById("statsContainer").style.display === "block";
- if (!statsOpen && openEquipmentCount === 0) {
-  loadData(showOnlyOut);
-}
+  const statsOpen =
+    document.getElementById("statsContainer").style.display === "block";
 
+  const hasSearch =
+    document.getElementById("searchInput").value.trim().length > 0;
+
+  // ⛔ לא מרעננים בזמן חיפוש
+  if (hasSearch) return;
+
+  // ⛔ לא מרעננים בזמן preload
+  if (productCacheLoading) return;
+
+  if (!statsOpen && openEquipmentCount === 0) {
+    loadData(showOnlyOut);
+  }
 }, 10000);
+
 
 
 
@@ -725,6 +794,29 @@ function toggleOutOnly() {
     loadData(false);  // חזרה לדיפולט = היום
   }
 }
+function preloadProductNames(docIds) {
+  const promises = docIds.map(docId => {
+    if (productNameCache[docId]) return Promise.resolve();
+
+    return fetch(getEquipmentLogURL(docId))
+      .then(res => res.text())
+      .then(text => {
+        const json = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = json.table.rows || [];
+
+        // לוקחים רק שמות מוצרים (עמודה D)
+        const productText = rows
+          .map(r => r.c?.[1]?.v || "")
+          .join(" ")
+          .toLowerCase();
+
+        productNameCache[docId] = productText;
+      });
+  });
+
+  return Promise.all(promises);
+}
+
 
 function toggleEquipmentRow(arrow, parentRow, docId) {
   // סגירה אם פתוח
