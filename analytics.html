@@ -52,11 +52,13 @@
       gap:12px;
       min-width: 240px;
     }
-    .logo{
-      width:38px;height:38px;border-radius:10px;
-      background: linear-gradient(135deg, rgba(96,165,250,0.9), rgba(52,211,153,0.8));
-      box-shadow: 0 10px 30px rgba(96,165,250,0.18);
-    }
+   .brand-logo{
+  height:44px;
+  width:auto;
+  object-fit:contain;
+  border-radius:10px;
+}
+
     .brand h1{ margin:0; font-size:16px; font-weight:700; letter-spacing:.2px; }
     .brand .sub{ color:var(--muted); font-size:12px; margin-top:2px; }
 
@@ -255,10 +257,37 @@
       header{ align-items:flex-start; }
       .brand{ min-width: auto; }
     }
-  /* =========================
-   🖨️ PRINT / PDF – CLEAN REPORT
-========================= */
+    /* ===== Footer hidden on site ===== */
+
+
+
+/* ===== Footer hidden on site ===== */
+.print-footer{
+  display:none;
+}
+
 @media print {
+    /* ===== Footer – PDF only ===== */
+  .print-footer{
+    display:block !important;
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    text-align:center;
+    padding:8px 0;
+    background:#fff;
+    border-top:1px solid #000;
+  }
+
+  .print-footer img{
+    height:42px;
+  }
+
+  @page{
+    margin-bottom:60px;
+  }
+
 
   /* --- Global reset --- */
   body{
@@ -397,6 +426,8 @@
   }
 
 }
+
+
 /* ===== FORCE PURE BLACK TEXT ===== */
 @media print {
 
@@ -450,18 +481,24 @@
 }
 
 
+
   </style>
 </head>
 
 <body>
 <header>
   <div class="brand">
-    <div class="logo"></div>
-    <div>
-      <h1> ניתוח נתונים - מערכת מעקב ציוד</h1>
-      <div class="sub" id="subtitle">טוען נתונים…</div>
-    </div>
+  <img 
+    src="https://i.postimg.cc/C10KTLTh/Chat-GPT-Image-Feb-13-2026-05-05-23-PM-(1).png"
+    class="brand-logo"
+    alt="Digicare Logo"
+  />
+  <div>
+    <h1> ניתוח נתונים - מערכת מעקב ציוד</h1>
+    <div class="sub" id="subtitle">טוען נתונים…</div>
   </div>
+</div>
+
 
   <div class="controls">
     <div class="control">
@@ -1503,5 +1540,12 @@ function restoreChartsAfterPrint(){
 
 
 </script>
+<div class="print-footer">
+  <img 
+    src="https://i.postimg.cc/C10KTLTh/Chat-GPT-Image-Feb-13-2026-05-05-23-PM-(1).png"
+    alt="Digicare Logo"
+  />
+</div>
+
 </body>
 </html>
