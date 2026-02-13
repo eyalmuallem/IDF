@@ -48,21 +48,27 @@ body {
 .header {
   background: var(--primary);
   color: white;
-  padding: 16px 24px;
+  padding: 18px 24px;
   display:flex;
-  justify-content: space-between;
   align-items:center;
+  justify-content: space-between;
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
-.header h1 {
+
+.header h1{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
   margin:0;
-  font-size:20px;
+  font-size:22px;
   font-weight:600;
+  letter-spacing:0.5px;
 }
+
 
 .datetime {
   font-size:14px;
@@ -277,6 +283,18 @@ thead tr:hover {
 .equipment-row td {
   background: #f9fafb;
 }
+.header-logo{
+  height:64px;
+  background:white;
+  padding:4px;
+  border-radius:10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  overflow:hidden;
+
+  transform: scale(1);
+}
+
+
 
 
 </style>
@@ -288,9 +306,16 @@ thead tr:hover {
 
 <!-- ===== Header ===== -->
 <div class="header">
-  <h1>📊 דשבורד בקרה – ציוד</h1>
+  <img src="https://i.postimg.cc/C10KTLTh/Chat-GPT-Image-Feb-13-2026-05-05-23-PM-(1).png"
+       alt="Logo"
+       class="header-logo">
+
+  <h1>דשבורד בקרה - מעקב ציוד</h1>
+
   <div class="datetime" id="datetime"></div>
 </div>
+
+
 
 
 
