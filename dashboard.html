@@ -6,9 +6,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-/* =========================
-   🎨 DESIGN SYSTEM
-========================= */
 :root{
   --bg:#f3f4f6;
   --card:#ffffff;
@@ -19,32 +16,22 @@
   --border:#e5e7eb;
 }
 
-/* =========================
-   🌍 GLOBAL
-========================= */
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   direction: rtl;
-  background: #f3f4f6; /* צבע אחיד */
+  background: #f3f4f6;
   color: #111827;
 }
+
 .page {
   min-height: 100vh;
   background: linear-gradient(180deg, #f3f4f6 0%, #eef2f7 100%);
   padding-bottom: 40px;
 }
 
-
-
-
-/* =========================
-   🧭 HEADER
-========================= */
 .header {
   background: var(--primary);
   color: white;
@@ -58,7 +45,6 @@ body {
   z-index: 10;
 }
 
-
 .header h1{
   position:absolute;
   left:50%;
@@ -69,26 +55,18 @@ body {
   letter-spacing:0.5px;
 }
 
-
 .datetime {
-  font-size:18px;   /* תגדיל ל-18 או 20 אם בא לך יותר דומיננטי */
+  font-size:18px;
   font-weight:500;
   opacity:0.95;
   font-variant-numeric: tabular-nums;
 }
 
-
-/* =========================
-   📦 PAGE LAYOUT
-========================= */
 .container {
   padding: 24px 32px;
   width: 100%;
 }
 
-/* =========================
-   🎛 CONTROLS
-========================= */
 .controls {
   background: rgba(255,255,255,0.94);
   border:1px solid var(--border);
@@ -99,6 +77,7 @@ body {
   gap:12px;
   margin-bottom:20px;
   box-shadow:0 4px 14px rgba(0,0,0,0.06);
+  flex-wrap: wrap;
 }
 
 .controls label {
@@ -113,9 +92,6 @@ body {
   background:#fff;
 }
 
-/* =========================
-   🔘 BUTTONS
-========================= */
 .controls button {
   border-radius:8px;
   padding:8px 16px;
@@ -125,7 +101,6 @@ body {
   transition: all .2s ease;
 }
 
-/* Primary */
 .controls button.primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color:#fff;
@@ -137,31 +112,22 @@ body {
   box-shadow: 0 6px 14px rgba(37,99,235,.35);
 }
 
-/* Secondary */
 .controls button.secondary {
   background: #f3f4f6;
   color: #374151;
   border: 1px solid var(--border);
 }
 
-.controls button.secondary:hover {
-  background: #e5e7eb;
-}
+.controls button.secondary:hover { background: #e5e7eb; }
 
-/* Outline */
 .controls button.outline {
   background: transparent;
   color: var(--secondary);
   border: 1px dashed var(--border);
 }
 
-.controls button.outline:hover {
-  background:#eef2f7;
-}
+.controls button.outline:hover { background:#eef2f7; }
 
-/* =========================
-   📊 TABLE CARD
-========================= */
 .table-card {
   background: rgba(255,255,255,0.92);
   backdrop-filter: blur(6px);
@@ -171,9 +137,6 @@ body {
   overflow:hidden;
 }
 
-/* =========================
-   📋 TABLE
-========================= */
 table {
   width:100%;
   border-collapse: collapse;
@@ -199,67 +162,32 @@ th {
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
+tr:hover { background:#f8fafc; }
 
-tr:hover {
-  background:#f8fafc;
-}
-
-/* =========================
-   ✅ STATUS COLORS
-========================= */
-/* ===== STATUS ROW BACKGROUND ===== */
 tr.IN {
-  background: linear-gradient(
-    90deg,
-    rgba(16,185,129,0.10),
-    rgba(16,185,129,0.04)
-  );
+  background: linear-gradient(90deg, rgba(16,185,129,0.10), rgba(16,185,129,0.04));
 }
 
 tr.OUT {
-  background: linear-gradient(
-    90deg,
-    rgba(239,68,68,0.12),
-    rgba(239,68,68,0.05)
-  );
+  background: linear-gradient(90deg, rgba(239,68,68,0.12), rgba(239,68,68,0.05));
 }
 
-/* חיזוק הסטטוס עצמו */
 tr.IN td:nth-child(2),
 tr.OUT td:nth-child(2) {
-  color: #111827; /* שחור אחיד */
+  color: #111827;
   font-weight: 500;
 }
 
-
-/* hover עדין שלא שובר את הצבע */
 tr.IN:hover,
-tr.OUT:hover {
-  filter: brightness(0.97);
-}
+tr.OUT:hover { filter: brightness(0.97); }
 
-
-/* =========================
-   📉 STATS ANIMATION
-========================= */
-#statsContainer {
-  animation: fadeUp .25s ease;
-}
+#statsContainer { animation: fadeUp .25s ease; }
 
 @keyframes fadeUp {
-  from {
-    opacity:0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity:1;
-    transform: translateY(0);
-  }
+  from { opacity:0; transform: translateY(6px); }
+  to   { opacity:1; transform: translateY(0); }
 }
 
-/* =========================
-   🧾 FOOTER
-========================= */
 .footer-note {
   margin-top:10px;
   font-size:12px;
@@ -267,10 +195,10 @@ tr.OUT:hover {
   opacity:.7;
 }
 
-/* מניעת hover/tap על כותרת הטבלה (בעיקר iOS) */
 thead tr:hover {
   background: linear-gradient(180deg, #1f2937, #111827) !important;
 }
+
 .toggle-arrow {
   cursor: pointer;
   font-size: 14px;
@@ -278,13 +206,10 @@ thead tr:hover {
   transition: transform 0.2s ease;
 }
 
-.toggle-arrow.open {
-  transform: rotate(90deg);
-}
+.toggle-arrow.open { transform: rotate(90deg); }
 
-.equipment-row td {
-  background: #f9fafb;
-}
+.equipment-row td { background: #f9fafb; }
+
 .header-logo{
   height:64px;
   background:white;
@@ -292,121 +217,269 @@ thead tr:hover {
   border-radius:10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   overflow:hidden;
-
-  transform: scale(1);
 }
 
+/* ===== CALENDAR ===== */
+#calendarView {
+  display: none;
+  animation: fadeUp .25s ease;
+  overflow: visible;
+}
 
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
 
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
+.cal-nav button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background .2s;
+}
+
+.cal-nav button:hover { background: var(--accent-dark); }
+
+.cal-nav span {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary);
+  min-width: 160px;
+  text-align: center;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-day-header {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  padding: 6px 0;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.cal-cell {
+  background: #f9fafb;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-height: 80px;
+  padding: 6px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+.cal-cell:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 10px rgba(37,99,235,0.12);
+  transform: translateY(-1px);
+}
+
+.cal-cell.today {
+  border-color: var(--accent);
+  background: rgba(37,99,235,0.05);
+}
+
+.cal-cell.empty {
+  background: transparent;
+  border: 1px dashed #e5e7eb;
+  cursor: default;
+  pointer-events: none;
+}
+
+.cal-cell .day-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--secondary);
+  margin-bottom: 4px;
+}
+
+.cal-cell.today .day-num { color: var(--accent); }
+
+.cal-event-dot {
+  display: block;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  margin: 1px 0;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal-event-dot.IN {
+  background: rgba(16,185,129,0.15);
+  color: #065f46;
+}
+
+.cal-event-dot.OUT {
+  background: rgba(239,68,68,0.15);
+  color: #991b1b;
+}
+
+#dayDetail {
+  background: rgba(255,255,255,0.95);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+  display: none;
+  animation: fadeUp .2s ease;
+}
+
+#dayDetail h3 {
+  margin: 0 0 14px;
+  color: var(--primary);
+  font-size: 16px;
+}
+
+#dayDetail table { width: 100%; border-collapse: collapse; }
+
+#dayDetail th, #dayDetail td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #eef2f7;
+  font-size: 13px;
+}
+
+#dayDetail thead tr {
+  background: linear-gradient(180deg, #1f2937, #111827);
+}
+
+#dayDetail thead tr:hover {
+  background: linear-gradient(180deg, #1f2937, #111827) !important;
+}
 </style>
 </head>
 
 <body>
-    <div class="page">
-
+<div class="page">
 
 <!-- ===== Header ===== -->
 <div class="header">
   <img src="https://i.postimg.cc/C10KTLTh/Chat-GPT-Image-Feb-13-2026-05-05-23-PM-(1).png"
-       alt="Logo"
-       class="header-logo">
-
+       alt="Logo" class="header-logo">
   <h1>דשבורד בקרה - מעקב ציוד</h1>
-
   <div class="datetime" id="datetime"></div>
 </div>
 
-
-
-
-
+<div class="container">
 
   <!-- ===== Controls ===== -->
   <div class="controls">
-  <label>תאריך לצפייה:</label>
-  <input type="date" id="viewDate">
-  <button class="primary" onclick="loadData()">צפה</button>
-<button class="secondary" onclick="loadData(showOnlyOut)">רענן</button>
-<button class="outline" onclick="toggleStats()" id="statsBtn">סטטיסטיקות</button>
-<button class="outline" onclick="toggleOutOnly()" id="outBtn">
-  הצג אירועים שלא חזרו
-</button>
-<label>חיפוש חופשי:</label>
-<input
-  type="text"
-  id="searchInput"
-  placeholder="שם / מוצר / אירוע"
-  oninput="applySearchFilter()"
-/>
-
-</div>
-
-
+    <label>תאריך לצפייה:</label>
+    <input type="date" id="viewDate">
+    <button class="primary" onclick="loadData()">צפה</button>
+    <button class="secondary" onclick="loadData(showOnlyOut)">רענן</button>
+    <button class="outline" onclick="toggleStats()" id="statsBtn">סטטיסטיקות</button>
+    <button class="outline" onclick="toggleOutOnly()" id="outBtn">הצג אירועים שלא חזרו</button>
+    <button class="outline" onclick="toggleCalendar()" id="calendarBtn"> לוח שנה</button>
+    <label>חיפוש חופשי:</label>
+    <input type="text" id="searchInput" placeholder="שם / מוצר / אירוע" oninput="applySearchFilter()"/>
+  </div>
 
   <!-- ===== Table ===== -->
-  <div class="table-card">
+  <div class="table-card" id="mainTableCard">
     <table id="tbl">
       <thead>
-  <tr>
-    <th></th> 
-    <th>מס׳ מסמך</th>
-    <th>סטטוס</th>
-    <th>שם האירוע</th>
-    <th>שם החותם</th>
-    <th>תאריך</th>
-    <th>שעה</th> 
-  </tr>
-</thead>
-
+        <tr>
+          <th></th>
+          <th>מס׳ מסמך</th>
+          <th>סטטוס</th>
+          <th>שם האירוע</th>
+          <th>שם החותם</th>
+          <th>תאריך</th>
+          <th>שעה</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <div class="footer-note">
-    נתונים בזמן אמת  
+  <div class="footer-note" id="footerNote">נתונים בזמן אמת</div>
+
+  <!-- ===== Stats ===== -->
+  <div id="statsContainer" class="table-card" style="margin-top:20px; display:none; padding:16px;">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+      <button class="primary" onclick="openExtendedStats()">סטטיסטיקות נרחבות</button>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+      <label>מ־</label>
+      <input type="date" id="statsFrom">
+      <label>עד</label>
+      <input type="date" id="statsTo">
+      <button class="secondary" onclick="updateStatsRange()">הצג</button>
+    </div>
+    <button class="outline" onclick="toggleTrend()">קו מגמה</button>
+    <h4 style="margin:8px 0 6px;">כמות אירועים סה״כ לפי תאריך</h4>
+    <canvas id="weeklyChart" height="60"></canvas>
+    <h4 style="margin:16px 0 6px;">עומס לפי טווחי שעות (3 שעות)</h4>
+    <canvas id="hourlyChart" height="60"></canvas>
   </div>
-   <div id="statsContainer" class="table-card" style="margin-top:20px; display:none; padding:16px;">
-<div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
-  <button class="primary" onclick="openExtendedStats()">
-     סטטיסטיקות נרחבות
-  </button>
-</div>
 
-  <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
-    <label>מ־</label>
-    <input type="date" id="statsFrom">
+  <!-- ===== Calendar View ===== -->
+  <div id="calendarView" class="table-card" style="padding:20px; margin-top:0;">
 
-    <label>עד</label>
-    <input type="date" id="statsTo">
+    <div class="cal-header">
+      <div class="cal-nav">
+        <button onclick="calPrevMonth()">&#8594;</button>
+        <span id="calMonthLabel"></span>
+        <button onclick="calNextMonth()">&#8592;</button>
+      </div>
+      <div style="font-size:13px; color:#6b7280;">לחץ על תאריך לפרטים</div>
+    </div>
 
-    <button class="secondary" onclick="updateStatsRange()">הצג</button>
+    <div class="cal-grid" id="calDayHeaders"></div>
+    <div class="cal-grid" id="calGrid" style="margin-top:6px;"></div>
+
+    <div id="dayDetail">
+      <h3 id="dayDetailTitle"></h3>
+      <table>
+        <thead>
+          <tr>
+            <th>מס׳ מסמך</th>
+            <th>סטטוס</th>
+            <th>שם האירוע</th>
+            <th>שם החותם</th>
+            <th>שעה</th>
+          </tr>
+        </thead>
+        <tbody id="dayDetailBody"></tbody>
+      </table>
+    </div>
+
   </div>
-  <button class="outline" onclick="toggleTrend()">קו מגמה</button>
 
-<h4 style="margin:8px 0 6px;"> כמות אירועים סה״כ לפי תאריך</h4>
-
-  <canvas id="weeklyChart" height="60"></canvas>
-  <h4 style="margin:16px 0 6px;"> עומס לפי טווחי שעות (3 שעות)</h4>
-<canvas id="hourlyChart" height="60"></canvas>
-
-</div>
-
-
-</div>
+</div><!-- end .container -->
+</div><!-- end .page -->
 
 <script>
-  
-  let showOnlyOut = false;
+
+let showOnlyOut = false;
 let openEquipmentCount = 0;
 let searchQuery = "";
 let productNameCache = {};
 let productCacheLoaded = false;
 let productCacheLoading = false;
-
-
-
-
 
 const GID = "0";
 const URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${GID}`;
@@ -414,14 +487,10 @@ const EQUIPMENT_LOG_SHEET_ID = "1Grxw76tLRc_pUI8gYcLfC7a6dtNOXy9a2Y5qf0HEN68";
 const EQUIPMENT_LOG_GID = "0";
 
 function getEquipmentLogURL(docId) {
-  const query = `
-    select C, D
-    where B = '${docId}'
-  `;
+  const query = `select C, D where B = '${docId}'`;
   return `https://docs.google.com/spreadsheets/d/${EQUIPMENT_LOG_SHEET_ID}/gviz/tq?gid=${EQUIPMENT_LOG_GID}&tqx=out:json&tq=${encodeURIComponent(query)}`;
 }
 
-// dd/mm/yyyy → yyyy-mm-dd
 function normalizeDate(ddmmyyyy) {
   if (!ddmmyyyy || !ddmmyyyy.includes("/")) return null;
   const [dd, mm, yyyy] = ddmmyyyy.split("/");
@@ -432,8 +501,6 @@ let weeklyChart;
 let hourlyChart;
 let showTrend = false;
 
-
-
 function calculateTrend(data, window = 3) {
   return data.map((_, i) => {
     const start = Math.max(0, i - window + 1);
@@ -442,77 +509,42 @@ function calculateTrend(data, window = 3) {
     return Number(avg.toFixed(2));
   });
 }
+
 function updateHourlyChart(rows) {
   const fromInput = document.getElementById("statsFrom")?.value;
   const toInput   = document.getElementById("statsTo")?.value;
-
-  const fromDate = fromInput ? new Date(fromInput) : null;
-  const toDate   = toInput   ? new Date(toInput)   : null;
-
-  // 8 טווחים של 3 שעות
-  const buckets = Array(8).fill(0);
-  const labels = [
-    "00–03",
-    "03–06",
-    "06–09",
-    "09–12",
-    "12–15",
-    "15–18",
-    "18–21",
-    "21–24"
-  ];
+  const fromDate  = fromInput ? new Date(fromInput) : null;
+  const toDate    = toInput   ? new Date(toInput)   : null;
+  const buckets   = Array(8).fill(0);
+  const labels    = ["00–03","03–06","06–09","09–12","12–15","15–18","18–21","21–24"];
 
   rows.slice(1).forEach(r => {
     const status = r.c?.[1]?.v;
     if (status !== "IN" && status !== "OUT") return;
-
     const dateStr = r.c?.[4]?.f || r.c?.[4]?.v;
     const timeStr = r.c?.[5]?.f || r.c?.[5]?.v;
     if (!dateStr || !timeStr) return;
-
     const [dd, mm, yyyy] = dateStr.split("/");
     const [hh] = timeStr.split(":");
-
     const hour = parseInt(hh, 10);
     if (isNaN(hour)) return;
-
     const rowDate = new Date(`${yyyy}-${mm}-${dd}`);
-
     if (fromDate && rowDate < fromDate) return;
-    if (toDate && rowDate > toDate) return;
-
-    const bucketIndex = Math.floor(hour / 3);
-    if (bucketIndex >= 0 && bucketIndex < buckets.length) {
-      buckets[bucketIndex]++;
-    }
+    if (toDate   && rowDate > toDate)   return;
+    const bi = Math.floor(hour / 3);
+    if (bi >= 0 && bi < 8) buckets[bi]++;
   });
 
   if (hourlyChart) hourlyChart.destroy();
-
   hourlyChart = new Chart(document.getElementById("hourlyChart"), {
     type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        data: buckets,
-        backgroundColor: "rgba(16,185,129,0.6)",
-        borderRadius: 4,
-        barThickness: 26
-      }]
-    },
+    data: { labels, datasets: [{ data: buckets, backgroundColor: "rgba(16,185,129,0.6)", borderRadius: 4, barThickness: 26 }] },
     options: {
       animation: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: {
-          title: { display: true, text: "טווח שעות" },
-          ticks: { color: "#6b7280" }
-        },
-        y: {
-          beginAtZero: true,
-          title: { display: true, text: "כמות אירועים" },
-          ticks: { precision: 0 }
-        }
+        x: { title: { display: true, text: "טווח שעות" }, ticks: { color: "#6b7280" } },
+        y: { beginAtZero: true, title: { display: true, text: "כמות אירועים" }, ticks: { precision: 0 } }
       }
     }
   });
@@ -520,134 +552,68 @@ function updateHourlyChart(rows) {
 
 function applySearchFilter() {
   searchQuery = document.getElementById("searchInput").value.toLowerCase();
-
-  if (searchQuery) {
-    loadData(true);   // יש חיפוש → בלי פילטר תאריך
-  } else {
-    loadData(false);  // אין חיפוש → חזרה להיום
-  }
+  loadData(!!searchQuery);
 }
-
-
 
 function updateWeeklyChart(rows) {
   const fromInput = document.getElementById("statsFrom")?.value;
-const toInput   = document.getElementById("statsTo")?.value;
-
-const fromDate = fromInput ? new Date(fromInput) : null;
-const toDate   = toInput   ? new Date(toInput)   : null;
-
-  const counts = {};
-  const labels = [];
-
-    // ברירת מחדל: 7 ימים אחרונים אם לא בחרו טווח
-  const end = toDate ? new Date(toDate) : new Date();
-  const start = fromDate ? new Date(fromDate) : new Date(end);
-
+  const toInput   = document.getElementById("statsTo")?.value;
+  const fromDate  = fromInput ? new Date(fromInput) : null;
+  const toDate    = toInput   ? new Date(toInput)   : null;
+  const counts    = {};
+  const labels    = [];
+  const end       = toDate   ? new Date(toDate)   : new Date();
+  const start     = fromDate ? new Date(fromDate) : new Date(end);
   if (!fromDate) start.setDate(end.getDate() - 6);
-
-  // לנרמל לשעה 00:00 כדי שהשוואות יעבדו חלק
   start.setHours(0,0,0,0);
   end.setHours(0,0,0,0);
 
-  // בונים counts + labels לכל יום בטווח
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-   const key =
-  d.getFullYear() + "-" +
-  String(d.getMonth() + 1).padStart(2, "0") + "-" +
-  String(d.getDate()).padStart(2, "0");
-
+    const key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
     counts[key] = 0;
-
-    labels.push(
-      d.getDate().toString().padStart(2,"0") + "/" +
-      (d.getMonth()+1).toString().padStart(2,"0")
-    );
+    labels.push(d.getDate().toString().padStart(2,"0") + "/" + (d.getMonth()+1).toString().padStart(2,"0"));
   }
-
 
   rows.slice(1).forEach(r => {
-  const status = r.c?.[1]?.v;
-  if (status !== "IN" && status !== "OUT") return;
-
-  const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
-  const rowDate = normalizeDate(dateFormatted);
-
-if (rowDate && (rowDate in counts)) {
-  counts[rowDate]++;
-}
-
-
-});
-
+    const status = r.c?.[1]?.v;
+    if (status !== "IN" && status !== "OUT") return;
+    const rowDate = normalizeDate(r.c?.[4]?.f || r.c?.[4]?.v || "");
+    if (rowDate && (rowDate in counts)) counts[rowDate]++;
+  });
 
   const data = Object.values(counts);
-
   if (weeklyChart) weeklyChart.destroy();
 
-
-
-
- weeklyChart = new Chart(document.getElementById("weeklyChart"), {
-  type: "bar",
-  data: {
-    labels,
-    datasets: [
-      {
-        type: "bar",
-        data,
-        backgroundColor: "rgba(37,99,235,0.6)",
-        borderRadius: 4,
-        barThickness: 18
-      },
-      {
-        type: "line",
-        data: calculateTrend(data),
-        borderColor: "#9ca3af",
-        borderWidth: 2,
-        tension: 0,
-        pointRadius: 0,
-        hidden: !showTrend
-      }
-    ]
-  },
-  options: {
-    animation: false,
-    maintainAspectRatio: true,
-    aspectRatio: 4,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: {
-        grid: { display: true, color: "rgba(0,0,0,0.04)", drawBorder: false },
-        ticks: { color: "#9ca3af" }
-      },
-      y: {
-        beginAtZero: true,
-        grid: { color: "rgba(0,0,0,0.06)", borderDash: [4, 4], drawBorder: false },
-        ticks: { color: "#9ca3af", precision: 0 }
+  weeklyChart = new Chart(document.getElementById("weeklyChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { type: "bar",  data, backgroundColor: "rgba(37,99,235,0.6)", borderRadius: 4, barThickness: 18 },
+        { type: "line", data: calculateTrend(data), borderColor: "#9ca3af", borderWidth: 2, tension: 0, pointRadius: 0, hidden: !showTrend }
+      ]
+    },
+    options: {
+      animation: false,
+      maintainAspectRatio: true,
+      aspectRatio: 4,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: true, color: "rgba(0,0,0,0.04)", drawBorder: false }, ticks: { color: "#9ca3af" } },
+        y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.06)", borderDash: [4,4], drawBorder: false }, ticks: { color: "#9ca3af", precision: 0 } }
       }
     }
-  }
-});
-
-
+  });
 }
- function toggleStats() {
+
+function toggleStats() {
   const box = document.getElementById("statsContainer");
   const btn = document.getElementById("statsBtn");
-
   const isHidden = box.style.display === "none";
-
   box.style.display = isHidden ? "block" : "none";
-  btn.innerText = isHidden ? " הסתר סטטיסטיקות" : " הצג סטטיסטיקות";
-
-  // אם פותחים – נוודא שהגרף מעודכן
-  if (isHidden) {
-    loadData();
-  }
+  btn.innerText = isHidden ? "הסתר סטטיסטיקות" : "סטטיסטיקות";
+  if (isHidden) loadData();
 }
-
-
 
 function loadData(ignoreFilter = false) {
   fetch(URL)
@@ -656,64 +622,37 @@ function loadData(ignoreFilter = false) {
       const json = JSON.parse(text.substring(47).slice(0, -2));
       const rows = json.table.rows || [];
 
-      // ===== preload שמות מוצרים – פעם אחת =====
-   if (!productCacheLoaded && !productCacheLoading) {
-  productCacheLoading = true;
+      if (!productCacheLoaded && !productCacheLoading) {
+        productCacheLoading = true;
+        const docIds = rows.slice(1).map(r => r.c?.[0]?.v).filter(Boolean);
+        preloadProductNames(docIds)
+          .then(() => { productCacheLoaded = true; })
+          .catch(err => { console.warn("Product preload failed", err); })
+          .finally(() => { productCacheLoading = false; });
+      }
 
-  const docIds = rows
-    .slice(1)
-    .map(r => r.c?.[0]?.v)
-    .filter(Boolean);
-
-  preloadProductNames(docIds)
-    .then(() => {
-      productCacheLoaded = true;
-    })
-    .catch(err => {
-      console.warn("Product preload failed, continuing without it", err);
-    })
-    .finally(() => {
-      productCacheLoading = false;
-    });
-}
-
-// ❗ לא עושים return – ממשיכים לרנדר גם בלי קאש
-
-
-      // ===== רינדור =====
       const tbody = document.querySelector("#tbl tbody");
       tbody.innerHTML = "";
-
       const selectedDate = document.getElementById("viewDate").value;
 
       updateWeeklyChart(rows);
       updateHourlyChart(rows);
 
       rows.slice(1).forEach(r => {
-        const status = r.c?.[1]?.v || "";
+        const status        = r.c?.[1]?.v || "";
         if (showOnlyOut && status !== "OUT") return;
 
         const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
         const timeFormatted = r.c?.[5]?.f || r.c?.[5]?.v || "";
-        const rowDate = normalizeDate(dateFormatted);
+        const rowDate       = normalizeDate(dateFormatted);
 
         if (!ignoreFilter && selectedDate) {
           if (!rowDate || rowDate !== selectedDate) return;
         }
 
-        const docId = r.c?.[0]?.v || "";
+        const docId       = r.c?.[0]?.v || "";
         const productText = productNameCache[docId] || "";
-
-        const textToSearch = [
-          docId,
-          status,
-          r.c?.[2]?.v || "",
-          r.c?.[3]?.v || "",
-          dateFormatted,
-          timeFormatted,
-          productText
-        ].join(" ").toLowerCase();
-
+        const textToSearch = [docId, status, r.c?.[2]?.v||"", r.c?.[3]?.v||"", dateFormatted, timeFormatted, productText].join(" ").toLowerCase();
         if (searchQuery && !textToSearch.includes(searchQuery)) return;
 
         const tr = document.createElement("tr");
@@ -733,57 +672,32 @@ function loadData(ignoreFilter = false) {
     .catch(err => console.error("loadData failed:", err));
 }
 
-
-
-// ===== Clock =====
 function updateDateTime() {
   const now = new Date();
   document.getElementById("datetime").innerText =
     now.toLocaleDateString("he-IL") + " | " + now.toLocaleTimeString("he-IL");
 }
-// ברירת מחדל: היום
-document.getElementById("viewDate").value =
-  new Date().toISOString().split("T")[0];
-  // ===== ברירת מחדל לסטטיסטיקות: 7 ימים אחרונים =====
-const today = new Date();
-const weekAgo = new Date();
-weekAgo.setDate(today.getDate() - 6);
 
-document.getElementById("statsFrom").value =
-  weekAgo.toISOString().split("T")[0];
+// ===== Init =====
+document.getElementById("viewDate").value = new Date().toISOString().split("T")[0];
 
-document.getElementById("statsTo").value =
-  today.toISOString().split("T")[0];
+const _today = new Date();
+const _weekAgo = new Date();
+_weekAgo.setDate(_today.getDate() - 6);
+document.getElementById("statsFrom").value = _weekAgo.toISOString().split("T")[0];
+document.getElementById("statsTo").value   = _today.toISOString().split("T")[0];
 
-
-// טעינה ראשונית עם פילטר של היום
 loadData();
-
-
 setInterval(updateDateTime, 1000);
 updateDateTime();
 
 setInterval(() => {
-  const statsOpen =
-    document.getElementById("statsContainer").style.display === "block";
-
-  const hasSearch =
-    document.getElementById("searchInput").value.trim().length > 0;
-
-  // ⛔ לא מרעננים בזמן חיפוש
-  if (hasSearch) return;
-
-  // ⛔ לא מרעננים בזמן preload
-  if (productCacheLoading) return;
-
-  if (!statsOpen && openEquipmentCount === 0) {
-    loadData(showOnlyOut);
-  }
+  const statsOpen = document.getElementById("statsContainer").style.display === "block";
+  const calOpen   = document.getElementById("calendarView").style.display   === "block";
+  const hasSearch = document.getElementById("searchInput").value.trim().length > 0;
+  if (hasSearch || productCacheLoading || calOpen) return;
+  if (!statsOpen && openEquipmentCount === 0) loadData(showOnlyOut);
 }, 10000);
-
-
-
-
 
 function updateStatsRange() {
   fetch(URL)
@@ -798,98 +712,61 @@ function updateStatsRange() {
 
 function toggleTrend() {
   showTrend = !showTrend;
-
   if (weeklyChart) {
     weeklyChart.data.datasets[1].hidden = !showTrend;
     weeklyChart.update();
   }
-
-  // אופציונלי: להחליף טקסט בכפתור עצמו
   const btn = document.querySelector('#statsContainer button.outline');
   if (btn) btn.innerText = showTrend ? "הסתר קו מגמה" : "קו מגמה";
 }
+
 function toggleOutOnly() {
   showOnlyOut = !showOnlyOut;
-
   const btn = document.getElementById("outBtn");
-
   if (showOnlyOut) {
     btn.innerText = "הצג את כל האירועים";
-    loadData(true);   // OUT בלבד, בלי תאריך
+    loadData(true);
   } else {
     btn.innerText = "הצג אירועים שלא חזרו";
-    loadData(false);  // חזרה לדיפולט = היום
+    loadData(false);
   }
 }
+
 function preloadProductNames(docIds) {
   const promises = docIds.map(docId => {
     if (productNameCache[docId]) return Promise.resolve();
-
     return fetch(getEquipmentLogURL(docId))
       .then(res => res.text())
       .then(text => {
         const json = JSON.parse(text.substring(47).slice(0, -2));
         const rows = json.table.rows || [];
-
-        // לוקחים רק שמות מוצרים (עמודה D)
-        const productText = rows
-          .map(r => r.c?.[1]?.v || "")
-          .join(" ")
-          .toLowerCase();
-
-        productNameCache[docId] = productText;
+        productNameCache[docId] = rows.map(r => r.c?.[1]?.v || "").join(" ").toLowerCase();
       });
   });
-
   return Promise.all(promises);
 }
 
-
 function toggleEquipmentRow(arrow, parentRow, docId) {
-  // סגירה אם פתוח
   if (arrow.classList.contains("open")) {
     arrow.classList.remove("open");
     const next = parentRow.nextElementSibling;
-    if (next && next.classList.contains("equipment-row")) {
-      next.remove();
-    }
+    if (next && next.classList.contains("equipment-row")) next.remove();
     openEquipmentCount = Math.max(0, openEquipmentCount - 1);
-return;
-
+    return;
   }
-
   arrow.classList.add("open");
-openEquipmentCount++;
-
+  openEquipmentCount++;
 
   fetch(getEquipmentLogURL(docId))
     .then(res => res.text())
     .then(text => {
       const json = JSON.parse(text.substring(47).slice(0, -2));
       const rows = json.table.rows || [];
-
-      let html = `
-        <table style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr>
-              <th>מק״ט</th>
-              <th>מוצר</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
+      let html = `<table style="width:100%;border-collapse:collapse;"><thead><tr><th>מק״ט</th><th>מוצר</th></tr></thead><tbody>`;
       rows.forEach(r => {
-        html += `
-          <tr>
-            <td>${r.c?.[0]?.v || ""}</td>
-            <td>${r.c?.[1]?.v || ""}</td>
-          </tr>
-        `;
+        html += `<tr><td>${r.c?.[0]?.v || ""}</td><td>${r.c?.[1]?.v || ""}</td></tr>`;
       });
-
       html += `</tbody></table>`;
-
       const tr = document.createElement("tr");
       tr.className = "equipment-row";
       tr.innerHTML = `<td colspan="7">${html}</td>`;
@@ -900,20 +777,178 @@ openEquipmentCount++;
 document.querySelector("#tbl tbody").addEventListener("click", e => {
   const arrow = e.target.closest(".toggle-arrow");
   if (!arrow) return;
-
-  const docId = arrow.dataset.doc;
-  const row = arrow.closest("tr");
-
-  toggleEquipmentRow(arrow, row, docId);
+  toggleEquipmentRow(arrow, arrow.closest("tr"), arrow.dataset.doc);
 });
-function openExtendedStats(){
+
+function openExtendedStats() {
   window.open("analytics.html", "_blank");
 }
 
+/* ===== CALENDAR ===== */
+let calYear, calMonth;
+let allRowsCache = [];
 
+function toggleCalendar() {
+  const cal       = document.getElementById("calendarView");
+  const tableCard = document.getElementById("mainTableCard");
+  const footer    = document.getElementById("footerNote");
+  const stats     = document.getElementById("statsContainer");
+  const btn       = document.getElementById("calendarBtn");
+
+  const isOpen = cal.style.display === "block";
+
+  if (isOpen) {
+    cal.style.display       = "none";
+    tableCard.style.display = "block";
+    footer.style.display    = "block";
+    btn.innerText           = "📅 לוח שנה";
+  } else {
+    // סגור סטטיסטיקות אם פתוחות
+    if (stats.style.display === "block") {
+      stats.style.display = "none";
+      document.getElementById("statsBtn").innerText = "סטטיסטיקות";
+    }
+    tableCard.style.display = "none";
+    footer.style.display    = "none";
+    cal.style.display       = "block";
+    btn.innerText           = "✕ סגור לוח שנה";
+
+    if (!calYear) {
+      const now = new Date();
+      calYear  = now.getFullYear();
+      calMonth = now.getMonth();
+    }
+    fetchAllRowsForCalendar();
+  }
+}
+
+function fetchAllRowsForCalendar() {
+  fetch(URL)
+    .then(r => r.text())
+    .then(text => {
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      allRowsCache = json.table.rows || [];
+      renderCalendar();
+    });
+}
+
+function renderCalendar() {
+  const label   = document.getElementById("calMonthLabel");
+  const grid    = document.getElementById("calGrid");
+  const headers = document.getElementById("calDayHeaders");
+
+  const monthNames = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+  const dayNames   = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+
+  label.textContent = `${monthNames[calMonth]} ${calYear}`;
+  headers.innerHTML = dayNames.map(d => `<div class="cal-day-header">${d}</div>`).join("");
+
+  const eventMap = {};
+  allRowsCache.slice(1).forEach(r => {
+    const status = r.c?.[1]?.v;
+    if (status !== "IN" && status !== "OUT") return;
+    const rowDate = normalizeDate(r.c?.[4]?.f || r.c?.[4]?.v || "");
+    if (!rowDate) return;
+    const [y, m, d] = rowDate.split("-").map(Number);
+    if (y !== calYear || m - 1 !== calMonth) return;
+    if (!eventMap[d]) eventMap[d] = [];
+    eventMap[d].push({
+      docId:  r.c?.[0]?.v || "",
+      status,
+      event:  r.c?.[2]?.v || "",
+      signer: r.c?.[3]?.v || "",
+      time:   r.c?.[5]?.f || r.c?.[5]?.v || ""
+    });
+  });
+
+  const firstDay    = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const now         = new Date();
+  let cells = "";
+
+  for (let i = 0; i < firstDay; i++) cells += `<div class="cal-cell empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = (now.getFullYear() === calYear && now.getMonth() === calMonth && now.getDate() === d);
+    const events  = eventMap[d] || [];
+    const visible = events.slice(0, 3);
+    const extra   = events.length - visible.length;
+
+    const dots = visible.map(e =>
+      `<div class="cal-event-dot ${e.status}">${e.status === "IN" ? "↩" : "↪"} ${e.event.substring(0,12)}</div>`
+    ).join("");
+
+    const extraHtml = extra > 0
+      ? `<div style="font-size:10px;color:#6b7280;text-align:center;margin-top:2px;">+${extra} נוספים</div>`
+      : "";
+
+    cells += `
+      <div class="cal-cell${isToday ? " today" : ""}" onclick="showDayDetail(${d})">
+        <div class="day-num">${d}</div>
+        ${dots}${extraHtml}
+      </div>
+    `;
+  }
+
+  grid.innerHTML = cells;
+  document.getElementById("dayDetail").style.display = "none";
+}
+
+function showDayDetail(day) {
+  const panel = document.getElementById("dayDetail");
+  const title = document.getElementById("dayDetailTitle");
+  const tbody = document.getElementById("dayDetailBody");
+
+  const monthNames = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+  title.textContent = `אירועים לתאריך ${day} ${monthNames[calMonth]} ${calYear}`;
+
+  const events = [];
+  allRowsCache.slice(1).forEach(r => {
+    const status = r.c?.[1]?.v;
+    if (status !== "IN" && status !== "OUT") return;
+    const rowDate = normalizeDate(r.c?.[4]?.f || r.c?.[4]?.v || "");
+    if (!rowDate) return;
+    const [y, m, d] = rowDate.split("-").map(Number);
+    if (y !== calYear || m - 1 !== calMonth || d !== day) return;
+    events.push({
+      docId:  r.c?.[0]?.v || "",
+      status,
+      event:  r.c?.[2]?.v || "",
+      signer: r.c?.[3]?.v || "",
+      time:   r.c?.[5]?.f || r.c?.[5]?.v || ""
+    });
+  });
+
+  if (events.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="color:#6b7280;text-align:center;padding:16px;">אין אירועים ביום זה</td></tr>`;
+  } else {
+    tbody.innerHTML = events.map(e => `
+      <tr class="${e.status}">
+        <td>${e.docId}</td>
+        <td>${e.status}</td>
+        <td>${e.event}</td>
+        <td>${e.signer}</td>
+        <td>${e.time}</td>
+      </tr>
+    `).join("");
+  }
+
+  panel.style.display = "block";
+  panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function calPrevMonth() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function calNextMonth() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
 
 </script>
-
-  </div>
-
+</body>
 </html>
