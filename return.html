@@ -124,7 +124,45 @@ button:disabled{
   min-width:160px;
   text-align:left;
 }
+@media (max-width: 600px) {
 
+  .header {
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    gap: 6px;
+  }
+
+  .header h1 {
+    position: static; /* מבטל absolute */
+    transform: none;
+    text-align: center;
+    font-size: 18px;
+  }
+
+  .header-logo {
+    height: 45px;
+  }
+
+  .datetime {
+    text-align: center;
+    min-width: auto;
+    font-size: 13px;
+  }
+
+  .page {
+    padding: 20px 14px;
+  }
+
+  .panel {
+    padding: 20px;
+  }
+
+  select, button {
+    font-size: 15px;
+    padding: 12px;
+  }
+}
 </style>
 </head>
 
