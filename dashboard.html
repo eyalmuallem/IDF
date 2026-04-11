@@ -675,6 +675,7 @@ let searchQuery = "";
 let productNameCache = {};
 let productCacheLoaded = false;
 let productCacheLoading = false;
+let activeOutItems = new Set();
 
 const GID = "0";
 const URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${GID}`;
@@ -685,7 +686,32 @@ function getEquipmentLogURL(docId) {
   const query = `select C, D where B = '${docId}'`;
   return `https://docs.google.com/spreadsheets/d/${EQUIPMENT_LOG_SHEET_ID}/gviz/tq?gid=${EQUIPMENT_LOG_GID}&tqx=out:json&tq=${encodeURIComponent(query)}`;
 }
+async function collectActiveOutItems(rows) {
+  activeOutItems.clear();
 
+  const outRows = rows.slice(1).filter(r => r.c?.[1]?.v === "OUT");
+
+  const promises = outRows.map(async r => {
+    const docId = r.c?.[0]?.v;
+    if (!docId) return;
+
+    try {
+      const res = await fetch(getEquipmentLogURL(docId));
+      const text = await res.text();
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const items = json.table.rows || [];
+
+      items.forEach(item => {
+        const code = item.c?.[0]?.v;
+        if (code) activeOutItems.add(String(code).trim().replace("#",""));
+      });
+    } catch (err) {
+      console.warn("Failed to collect OUT items for docId:", docId, err);
+    }
+  });
+
+  await Promise.all(promises);
+}
 function normalizeDate(ddmmyyyy) {
   if (!ddmmyyyy || !ddmmyyyy.includes("/")) return null;
   const [dd, mm, yyyy] = ddmmyyyy.split("/");
@@ -810,61 +836,58 @@ function toggleStats() {
   if (isHidden) loadData();
 }
 
-function loadData(ignoreFilter = false) {
-  fetch(URL)
-    .then(res => res.text())
-    .then(text => {
-      const json = JSON.parse(text.substring(47).slice(0, -2));
-      const rows = json.table.rows || [];
+async function loadData(ignoreFilter = false) {
+  try {
+    const res = await fetch(URL);
+    const text = await res.text();
 
-      if (!productCacheLoaded && !productCacheLoading) {
-        productCacheLoading = true;
-        const docIds = rows.slice(1).map(r => r.c?.[0]?.v).filter(Boolean);
-        preloadProductNames(docIds)
-          .then(() => { productCacheLoaded = true; })
-          .catch(err => { console.warn("Product preload failed", err); })
-          .finally(() => { productCacheLoading = false; });
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    const rows = json.table.rows || [];
+
+    // 🔥 אוסף את כל המק"טים שנמצאים כרגע בחוץ
+    await collectActiveOutItems(rows);
+
+    const tbody = document.querySelector("#tbl tbody");
+    tbody.innerHTML = "";
+
+    const selectedDate = document.getElementById("viewDate").value;
+
+    updateWeeklyChart(rows);
+    updateHourlyChart(rows);
+
+    rows.slice(1).forEach(r => {
+      const status = r.c?.[1]?.v || "";
+      if (showOnlyOut && status !== "OUT") return;
+
+      const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
+      const timeFormatted = r.c?.[5]?.f || r.c?.[5]?.v || "";
+      const rowDate = normalizeDate(dateFormatted);
+
+      if (!ignoreFilter && selectedDate) {
+        if (!rowDate || rowDate !== selectedDate) return;
       }
 
-      const tbody = document.querySelector("#tbl tbody");
-      tbody.innerHTML = "";
-      const selectedDate = document.getElementById("viewDate").value;
+      const docId = r.c?.[0]?.v || "";
 
-      updateWeeklyChart(rows);
-      updateHourlyChart(rows);
+      const tr = document.createElement("tr");
+      tr.className = status;
 
-      rows.slice(1).forEach(r => {
-        const status        = r.c?.[1]?.v || "";
-        if (showOnlyOut && status !== "OUT") return;
+      tr.innerHTML = `
+        <td><span class="toggle-arrow" data-doc="${docId}">▼</span></td>
+        <td>${docId}</td>
+        <td>${status}</td>
+        <td>${r.c?.[2]?.v || ""}</td>
+        <td>${r.c?.[3]?.v || ""}</td>
+        <td>${dateFormatted}</td>
+        <td>${timeFormatted}</td>
+      `;
 
-        const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
-        const timeFormatted = r.c?.[5]?.f || r.c?.[5]?.v || "";
-        const rowDate       = normalizeDate(dateFormatted);
+      tbody.appendChild(tr);
+    });
 
-        if (!ignoreFilter && selectedDate) {
-          if (!rowDate || rowDate !== selectedDate) return;
-        }
-
-        const docId       = r.c?.[0]?.v || "";
-        const productText = productNameCache[docId] || "";
-        const textToSearch = [docId, status, r.c?.[2]?.v||"", r.c?.[3]?.v||"", dateFormatted, timeFormatted, productText].join(" ").toLowerCase();
-        if (searchQuery && !textToSearch.includes(searchQuery)) return;
-
-        const tr = document.createElement("tr");
-        tr.className = status;
-        tr.innerHTML = `
-          <td><span class="toggle-arrow" data-doc="${docId}">▼</span></td>
-          <td>${docId}</td>
-          <td>${status}</td>
-          <td>${r.c?.[2]?.v || ""}</td>
-          <td>${r.c?.[3]?.v || ""}</td>
-          <td>${dateFormatted}</td>
-          <td>${timeFormatted}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    })
-    .catch(err => console.error("loadData failed:", err));
+  } catch (err) {
+    console.error("loadData failed:", err);
+  }
 }
 
 function updateDateTime() {
@@ -1151,7 +1174,7 @@ function toggleWarehouse() {
   const calendar = document.getElementById("calendarView");
   const stats = document.getElementById("statsContainer");
   const footer = document.getElementById("footerNote");
-  const btn = document.getElementById("warehouseBtn");
+  const btn = document.querySelector(".warehouse-btn");
 
   const isOpen = warehouse.style.display === "flex";
 
@@ -1172,17 +1195,49 @@ function toggleWarehouse() {
   }
 }
 const zoneData = {
-  1: ["מקט 1", "מקט 2"],
-  2: ["מקט 3", "מקט 4"],
-  3: ["מקט 5"],
-  4: ["מקט 6"],
-  5: ["מקט 7"],
-  6: ["מקט 8"],
-  7: ["מקט 9"],
+  1: [
+    { code: "#0101", name: "מקט 1" },
+    { code: "#0102", name: "מקט 2" }
+  ],
 
-  A: ["ציוד ישן 1", "ציוד ישן 2"],
-  B: ["אחסון צד", "כבלים"],
-  C: ["ציוד לא רלוונטי"]
+  2: [
+    { code: "#0201", name: "מקט 3" },
+    { code: "#0202", name: "מקט 4" }
+  ],
+
+  3: [
+    { code: "#0301", name: "מקט 5" }
+  ],
+
+  4: [
+    { code: "#0401", name: "מקט 6" }
+  ],
+
+  5: [
+    { code: "#0501", name: "מקט 7" }
+  ],
+
+  6: [
+    { code: "#0601", name: "מקט 8" }
+  ],
+
+  7: [
+    { code: "#0701", name: "מקט 9" }
+  ],
+
+  A: [
+    { code: "#0001", name: "ציוד ישן 1" },
+    { code: "#A002", name: "ציוד ישן 2" }
+  ],
+
+  B: [
+    { code: "#B001", name: "אחסון צד" },
+    { code: "#B002", name: "כבלים" }
+  ],
+
+  C: [
+    { code: "#C001", name: "ציוד לא רלוונטי" }
+  ]
 };
 function openZone(zoneId){
   const popup = document.getElementById("zonePopup");
@@ -1191,9 +1246,40 @@ function openZone(zoneId){
 
   title.innerText = "אזור " + zoneId;
 
-  const items = zoneData[zoneId] || ["אין ציוד"];
+  const items = zoneData[zoneId] || [];
 
-  list.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+  if (!items.length) {
+    list.innerHTML = `<li style="list-style:none;color:#6b7280;">אין ציוד</li>`;
+    popup.style.display = "flex";
+    return;
+  }
+
+  list.innerHTML = items.map(item => {
+const isOut = activeOutItems.has(String(item.code).trim().replace("#",""));
+    return `
+    <li style="
+  list-style:none;
+  padding:3px 6px;
+  border-bottom:1px solid #e5e7eb;
+  font-size:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:${isOut ? "#b91c1c" : "#065f46"};
+  background:${isOut ? "#fee2e2" : "#dcfce7"};
+">
+
+  <span style="font-weight:600;">
+    ${item.code}
+  </span>
+
+  <span style="opacity:0.8;">
+    ${item.name}
+  </span>
+
+</li>
+    `;
+  }).join("");
 
   popup.style.display = "flex";
 }
