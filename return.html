@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="he">
 <head>
 <meta charset="UTF-8" />
@@ -14,17 +14,7 @@ body{
   color:#111827;
 }
 
-/* Header */
-.header{
-  background:#0f172a;
-  color:#fff;
-  padding:22px 32px;
-}
-.header h1{
-  margin:0;
-  font-size:22px;
-  font-weight:600;
-}
+
 
 /* Page */
 .page{
@@ -82,6 +72,58 @@ button:disabled{
 
 .ok{ color:#15803d; }
 .err{ color:#b91c1c; }
+.header {
+  background:#1f2937;
+  color:white;
+  padding:18px 24px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  position:sticky;
+  top:0;
+  z-index:10;
+
+  box-shadow:0 8px 24px rgba(0,0,0,0.12);
+}
+
+.header h1 {
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  margin:0;
+  font-size:22px;
+  font-weight:600;
+}
+
+.header-logo {
+  height:60px;
+  background:white;
+  padding:4px;
+  border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.25);
+}
+
+.datetime {
+  font-size:16px;
+  font-weight:500;
+  opacity:0.9;
+  font-variant-numeric: tabular-nums;
+}
+.header {
+  position: relative;
+}
+.header h1 {
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  white-space:nowrap;
+}
+.datetime {
+  min-width:160px;
+  text-align:left;
+}
 
 </style>
 </head>
@@ -89,7 +131,12 @@ button:disabled{
 <body>
 
 <header class="header">
+  <img src="https://i.postimg.cc/C10KTLTh/Chat-GPT-Image-Feb-13-2026-05-05-23-PM-(1).png"
+       class="header-logo">
+
   <h1>מערכת החזרת ציוד</h1>
+
+  <div class="datetime" id="datetime"></div>
 </header>
 
 <main class="page">
@@ -103,6 +150,7 @@ button:disabled{
     <button id="btn">סמן כהוחזר</button>
 
     <div id="msg" class="msg"></div>
+    
 
   </section>
 </main>
@@ -236,6 +284,14 @@ btn.addEventListener("click", sendReturn);
 loadOpenEvents();
 startRefresh();
 
+function updateDateTime() {
+  const now = new Date();
+  document.getElementById("datetime").innerText =
+    now.toLocaleDateString("he-IL") + " | " + now.toLocaleTimeString("he-IL");
+}
+
+setInterval(updateDateTime, 1000);
+updateDateTime();
 
 </script>
 
