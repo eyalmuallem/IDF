@@ -581,6 +581,17 @@ thead tr:hover {
     height: auto;
   }
 }
+.zone.tools {
+  fill: #e0f2fe;          /* תכלת */
+  stroke: #0369a1;
+  stroke-width: 2;
+  stroke-dasharray: 6,4;
+}
+
+.zone.tools:hover {
+  fill: #d1d5db;          /* אפור */
+}
+
 </style>
 </head>
 
@@ -704,7 +715,8 @@ thead tr:hover {
 </div>
 
 
-<svg viewBox="0 0 700 500" style="width:100%;">
+<svg viewBox="-40 0 740 500" style="width:100%;">
+
   <!-- שורה עליונה -->
   <rect x="120" y="50" width="120" height="60" class="zone good" onclick="openZone(5)"/>
   <text x="180" y="85" class="label">5</text>
@@ -743,6 +755,20 @@ thead tr:hover {
   <!-- כניסה -->
   <rect x="500" y="280" width="80" height="150" fill="#9ca3af"/>
   <text x="540" y="360" class="label">כניסה</text>
+
+ <!-- מחסן כלים -->
+<rect x="-20" y="30" width="35" height="250"
+      class="zone tools"
+      onclick="openZone('TOOLS')"/>
+
+<text x="-2.5" y="155"
+      class="label"
+      text-anchor="middle"
+      dominant-baseline="middle"
+      transform="rotate(-90 -2.5,155)">
+  מחסן כלים
+</text>
+</svg>
 
 </svg>
      <div id="zonePopup" style="
@@ -1309,7 +1335,8 @@ function toggleWarehouse() {
   }
 }
 const zoneData = {
-  1: [
+
+  TOOLS: [
     { code: "#0001", name: "סט תופים - נח״ל" },
     { code: "#0002", name: "סט תופים - שריון" },
     { code: "#0003", name: "סט תופים - חינוך כלים" },
@@ -1329,10 +1356,8 @@ const zoneData = {
     { code: "#0017", name: "גיטרה - 1" },
     { code: "#0018", name: "גיטרה - 2" },
     { code: "#0019", name: "גיטרה - 3" },
-    { code: "#0020", name: "גיטרה - 4" }
-  ],
+    { code: "#0020", name: "גיטרה - 4" },
 
-  2: [
     { code: "#0021", name: "גיטרה - 5" },
     { code: "#0022", name: "גיטרה - 6" },
     { code: "#0023", name: "גיטרה - 7" },
@@ -1344,17 +1369,18 @@ const zoneData = {
     { code: "#0029", name: "בס - 5" },
     { code: "#0030", name: "בס - 6" },
     { code: "#0031", name: "בס - 7" },
-    { code: "#0032", name: "בס - 8" },
-    { code: "#0033", name: "סט - אומן חושים" },
+    { code: "#0032", name: "בס - 8" }
+  
+  ],
+
+  1: [
+   { code: "#0033", name: "סט - אומן חושים" },
     { code: "#0034", name: "סט - אומן חושים 2" },
     { code: "#0035", name: "סט - הופעת פלייבק 1" },
     { code: "#0036", name: "סט - הופעת פלייבק 2" },
     { code: "#0037", name: "סט הופעת כלים 1" },
     { code: "#0038", name: "סט - הופעת כלים 2" },
-    { code: "#0039", name: "סט - דיג׳יי" }
-  ],
-
-  3: [
+    { code: "#0039", name: "סט - דיג׳יי" },
     { code: "#0040", name: "מחשב 1" },
     { code: "#0041", name: "מחשב 2" },
     { code: "#0042", name: "מחשב 3" },
@@ -1362,7 +1388,10 @@ const zoneData = {
     { code: "#0044", name: "SHURE SM 58" },
     { code: "#0045", name: "SHURE SM 58" },
     { code: "#0046", name: "SHURE SM 58" },
-    { code: "#0047", name: "SHURE SM 58" },
+    { code: "#0047", name: "SHURE SM 58" }
+  ],
+
+  2: [
     { code: "#0048", name: "SHURE SM 58" },
     { code: "#0049", name: "SHURE SM 58" },
     { code: "#0050", name: "SHURE SM 58" },
@@ -1375,7 +1404,7 @@ const zoneData = {
     { code: "#0057", name: "OH" }
   ],
 
-  4: [
+  3: [
     { code: "#0058", name: "SUB A" },
     { code: "#0059", name: "SUB A" },
     { code: "#0060", name: "SUB B" },
@@ -1385,7 +1414,10 @@ const zoneData = {
     { code: "#0064", name: "QU 24" },
     { code: "#0065", name: "QU 24" },
     { code: "#0066", name: "QU 16" },
-    { code: "#0067", name: "QU 16" },
+    { code: "#0067", name: "QU 16" }
+  ],
+
+  4: [
     { code: "#0068", name: "QU 16" },
     { code: "#0069", name: "QU 16" },
     { code: "#0070", name: "סטנד תווים 1" },
@@ -1400,108 +1432,43 @@ const zoneData = {
     { code: "#0076", name: "סטנד רמקול 3" },
     { code: "#0077", name: "סטנד רמקול 4" },
     { code: "#0078", name: "סטנד רמקול 5" },
-    { code: "#0079", name: "סטנד רמקול 6" },
+    { code: "#0079", name: "סטנד רמקול 6" }
+  ],
+
+  6: [
     { code: "#0080", name: "סטנד רמקול 7" },
     { code: "#0081", name: "סטנד רמקול 8" },
     { code: "#0082", name: "סטנד גיטרה 1" },
     { code: "#0083", name: "סטנד גיטרה 2" },
     { code: "#0084", name: "סטנד גיטרה 3" },
-    { code: "#0085", name: "סטנד גיטרה 4" },
+    { code: "#0085", name: "סטנד גיטרה 4" }
+  ],
+
+  7: [
     { code: "#0086", name: "סטנד קלידים 1" },
     { code: "#0087", name: "סטנד קלידים 2" },
     { code: "#0088", name: "סטנד קלידים 3" },
     { code: "#0089", name: "סטנד קלידים 4" }
   ],
 
-  6: [
+  A: [
     { code: "#0090", name: "סטנד מיקרופון 1" },
     { code: "#0091", name: "סטנד מיקרופון 2" },
     { code: "#0092", name: "סטנד מיקרופון 3" },
-    { code: "#0093", name: "סטנד מיקרופון 4" },
-    { code: "#0094", name: "סטנד מחשב 1" },
-    { code: "#0095", name: "סטנד מחשב 2" },
-    { code: "#0096", name: "סטנד מחשב 3" },
-    { code: "#0097", name: "סטנד מחשב 4" },
-    { code: "#0098", name: "כינור" },
-    { code: "#0099", name: "צ׳לו" },
-    { code: "#0100", name: "קונטרה בס" },
-    { code: "#0101", name: "HANDY" },
-    { code: "#0102", name: "HANDY" },
-    { code: "#0103", name: "HANDY" },
-    { code: "#0104", name: "HANDY" },
-    { code: "#0105", name: "HANDY" }
-  ],
-
-  7: [
-    { code: "#0106", name: "פק אינרים 1" },
-    { code: "#0107", name: "פק אינרים 1" },
-    { code: "#0108", name: "פק אינרים 1" },
-    { code: "#0109", name: "פק אינרים 1" },
-    { code: "#0110", name: "פק אינרים 2" },
-    { code: "#0111", name: "פק אינרים 2" },
-    { code: "#0112", name: "פק אינרים 2" },
-    { code: "#0113", name: "פק אינרים 2" },
-    { code: "#0114", name: "MILAN 10" },
-    { code: "#0115", name: "MILAN 10" },
-    { code: "#0116", name: "MILAN 10" },
-    { code: "#0117", name: "MILAN 12" },
-    { code: "#0118", name: "MILAN 12" },
-    { code: "#0119", name: "MILAN 12" },
-    { code: "#0120", name: "MILAN 12" }
-  ],
-
-  A: [
-    { code: "#0121", name: "MILAN 15" },
-    { code: "#0122", name: "MILAN 15" },
-    { code: "#0123", name: "MILAN 15" },
-    { code: "#0124", name: "MILAN 15" },
-    { code: "#0125", name: "MAKLET MP" },
-    { code: "#0126", name: "MAKLET MP" },
-    { code: "#0127", name: "MAKLET MP" },
-    { code: "#0128", name: "כיסא בר 1" },
-    { code: "#0129", name: "כיסא בר 2" },
-    { code: "#0130", name: "כיסא בר 3" },
-    { code: "#0131", name: "כיסא בר 4" },
-    { code: "#0132", name: "כיסא בר 5" },
-    { code: "#0133", name: "כיסא בר 6" },
-    { code: "#0134", name: "כיסא בר 7" },
-    { code: "#0135", name: "כיסא בר 8" }
+    { code: "#0093", name: "סטנד מיקרופון 4" }
   ],
 
   B: [
-    { code: "#0136", name: "XLR ארוך 1" },
-    { code: "#0137", name: "XLR ארוך 2" },
-    { code: "#0138", name: "XLR ארוך 3" },
-    { code: "#0139", name: "XLR ארוך 4" },
-    { code: "#0140", name: "XLR ארוך 5" },
-    { code: "#0141", name: "XLR ארוך 6" },
-    { code: "#0142", name: "XLR ארוך 7" },
-    { code: "#0143", name: "XLR ארוך 8" },
-    { code: "#0144", name: "XLR ארוך 9" },
-    { code: "#0145", name: "XLR ארוך 10" },
-    { code: "#0146", name: "XLR בינוני 1" },
-    { code: "#0147", name: "XLR בינוני 2" },
-    { code: "#0148", name: "XLR בינוני 3" },
-    { code: "#0149", name: "XLR בינוני 4" },
-    { code: "#0150", name: "XLR בינוני 5" }
+    { code: "#0094", name: "סטנד מחשב 1" },
+    { code: "#0095", name: "סטנד מחשב 2" },
+    { code: "#0096", name: "סטנד מחשב 3" },
+    { code: "#0097", name: "סטנד מחשב 4" }
   ],
 
   C: [
-    { code: "#0151", name: "XLR בינוני 6" },
-    { code: "#0152", name: "XLR בינוני 7" },
-    { code: "#0153", name: "XLR בינוני 8" },
-    { code: "#0154", name: "XLR בינוני 9" },
-    { code: "#0155", name: "XLR בינוני 10" },
-    { code: "#0156", name: "XLR קצר 1" },
-    { code: "#0157", name: "XLR קצר 2" },
-    { code: "#0158", name: "XLR קצר 3" },
-    { code: "#0159", name: "XLR קצר 4" },
-    { code: "#0160", name: "XLR קצר 5" },
-    { code: "#0161", name: "XLR קצר 6" },
-    { code: "#0162", name: "XLR קצר 7" },
-    { code: "#0163", name: "XLR קצר 8" },
-    { code: "#0164", name: "XLR קצר 9" },
-    { code: "#0165", name: "XLR קצר 10" }
+    { code: "#0098", name: "כינור" },
+    { code: "#0099", name: "צ׳לו" },
+    { code: "#0100", name: "קונטרה בס" }
   ]
 };
 function openZone(zoneId){
@@ -1509,8 +1476,14 @@ function openZone(zoneId){
   const title = document.getElementById("zoneTitle");
   const list = document.getElementById("zoneList");
 
-  title.innerText = "אזור " + zoneId;
+  const zoneNames = {
+  TOOLS: "מחסן כלים",
+  A: "חדר A",
+  B: "חדר B",
+  C: "חדר C"
+};
 
+title.innerText = zoneNames[zoneId] || ("אזור " + zoneId);
   const items = zoneData[zoneId] || [];
 
   if (!items.length) {
