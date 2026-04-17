@@ -816,6 +816,7 @@ let productNameCache = {};
 let productCacheLoaded = false;
 let productCacheLoading = false;
 let activeOutItems = new Set();
+let itemToEventMap = {};
 
 const GID = "0";
 const URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${GID}`;
@@ -841,10 +842,19 @@ async function collectActiveOutItems(rows) {
       const json = JSON.parse(text.substring(47).slice(0, -2));
       const items = json.table.rows || [];
 
-      items.forEach(item => {
-        const code = item.c?.[0]?.v;
-        if (code) activeOutItems.add(String(code).trim().replace("#",""));
-      });
+    const eventName = r.c?.[2]?.v || "";
+const signerName = r.c?.[3]?.v || "";
+
+items.forEach(item => {
+  const code = item.c?.[0]?.v;
+  if (code) {
+    const cleanCode = String(code).trim().replace("#","");
+
+    activeOutItems.add(cleanCode);
+
+    // 🔥 חדש – שומר לאיזה אירוע שייך
+itemToEventMap[cleanCode] = `${eventName} (${signerName})`;  }
+});
     } catch (err) {
       console.warn("Failed to collect OUT items for docId:", docId, err);
     }
@@ -1494,6 +1504,8 @@ title.innerText = zoneNames[zoneId] || ("אזור " + zoneId);
 
   list.innerHTML = items.map(item => {
 const isOut = activeOutItems.has(String(item.code).trim().replace("#",""));
+const cleanCode = String(item.code).trim().replace("#","");
+const eventName = itemToEventMap[cleanCode];
     return `
     <li style="
   list-style:none;
@@ -1511,10 +1523,14 @@ const isOut = activeOutItems.has(String(item.code).trim().replace("#",""));
     ${item.code}
   </span>
 
-  <span style="opacity:0.8;">
-    ${item.name}
-  </span>
-
+ <span style="display:flex; flex-direction:column; align-items:flex-end;">
+  ${item.name}
+  ${isOut && eventName ? `
+    <small style="font-size:10px; color:#7f1d1d;">
+      ↪ ${eventName}
+    </small>
+  ` : ""}
+</span>
 </li>
     `;
   }).join("");
