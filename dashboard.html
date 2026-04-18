@@ -715,59 +715,123 @@ thead tr:hover {
 </div>
 
 
-<svg viewBox="-40 0 740 500" style="width:100%;">
+<svg viewBox="-40 0 740 500" style="width:100%; font-family:Arial; background:#f8fafc;">
 
-  <!-- שורה עליונה -->
-  <rect x="120" y="50" width="120" height="60" class="zone good" onclick="openZone(5)"/>
-  <text x="180" y="85" class="label">5</text>
+<defs>
+  <!-- Grid עדין -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M40 0 H0 V40" fill="none" stroke="#eef2f7" stroke-width="1"/>
+  </pattern>
+</defs>
 
-  <rect x="280" y="50" width="120" height="60" class="zone warn" onclick="openZone(6)"/>
-  <text x="340" y="85" class="label">6</text>
+<!-- רקע עם grid -->
+<rect x="-40" y="0" width="800" height="500" fill="url(#grid)" />
 
-  <rect x="440" y="50" width="120" height="60" class="zone good" onclick="openZone(7)"/>
-  <text x="500" y="85" class="label">7</text>
+<style>
+.zone {
+  fill:#ffffff;
+  stroke:#d1d5db;
+  stroke-width:1.2;
+  rx:6;
+  cursor:pointer;
+  transition:all .15s ease;
+}
 
-  <!-- חדר A -->
-  <rect x="40" y="40" width="60" height="80" class="zone" onclick="openZone('A')"/>
-  <text x="70" y="85" class="label">A</text>
+.zone:hover {
+  stroke:#2563eb;
+  fill:#f1f5ff;
+}
 
-  <!-- חדר B -->
-  <rect x="600" y="10" width="80" height="100" class="zone" onclick="openZone('B')"/>
-  <text x="640" y="70" class="label">B</text>
+.tools {
+  fill:#ffffff;
+  stroke:#9ca3af;
+  stroke-dasharray:4 3;
+  stroke-width:1.2;
+  rx:6;
+  cursor:pointer;
+  transition:all .15s ease;
+}
 
-  <!-- שורה תחתונה -->
-  <rect x="120" y="150" width="120" height="90" class="zone good" onclick="openZone(4)"/>
-  <text x="180" y="200" class="label">4</text>
+.tools:hover {
+  stroke:#2563eb;
+  fill:#f1f5ff;
+}
 
-  <rect x="280" y="150" width="120" height="90" class="zone bad" onclick="openZone(3)"/>
-  <text x="340" y="200" class="label">3</text>
+.label {
+  fill:#111827;
+  font-size:13px;
+  font-weight:500;
+  text-anchor:middle;
+  dominant-baseline:middle;
+  pointer-events:none;
+}
 
-  <rect x="440" y="150" width="120" height="90" class="zone warn" onclick="openZone(2)"/>
-  <text x="500" y="200" class="label">2</text>
+.sub-label {
+  fill:#6b7280;
+  font-size:12px;
+}
+</style>
 
-  <rect x="600" y="150" width="80" height="140" class="zone good" onclick="openZone(1)"/>
-  <text x="640" y="220" class="label">1</text>
+<!-- מסגרת כללית (נותן תחושת תוכנית) -->
+<rect x="-35" y="5" width="730" height="490"
+      fill="none"
+      stroke="#e5e7eb"
+      stroke-width="1.2"
+      rx="8"/>
 
-  <!-- חדר C -->
-  <rect x="40" y="160" width="60" height="100" class="zone" onclick="openZone('C')"/>
-  <text x="70" y="210" class="label">C</text>
+<!-- שורה עליונה -->
+<rect x="120" y="50" width="120" height="60" class="zone" onclick="openZone(5)"/>
+<text x="180" y="80" class="label">5</text>
 
-  <!-- כניסה -->
-  <rect x="500" y="280" width="80" height="150" fill="#9ca3af"/>
-  <text x="540" y="360" class="label">כניסה</text>
+<rect x="280" y="50" width="120" height="60" class="zone" onclick="openZone(6)"/>
+<text x="340" y="80" class="label">6</text>
 
- <!-- מחסן כלים -->
+<rect x="440" y="50" width="120" height="60" class="zone" onclick="openZone(7)"/>
+<text x="500" y="80" class="label">7</text>
+
+<!-- חדר A -->
+<rect x="40" y="40" width="60" height="80" class="zone" onclick="openZone('A')"/>
+<text x="70" y="80" class="label">A</text>
+
+<!-- חדר B -->
+<rect x="600" y="10" width="80" height="100" class="zone" onclick="openZone('B')"/>
+<text x="640" y="60" class="label">B</text>
+
+<!-- שורה תחתונה -->
+<rect x="120" y="150" width="120" height="90" class="zone" onclick="openZone(4)"/>
+<text x="180" y="195" class="label">4</text>
+
+<rect x="280" y="150" width="120" height="90" class="zone" onclick="openZone(3)"/>
+<text x="340" y="195" class="label">3</text>
+
+<rect x="440" y="150" width="120" height="90" class="zone" onclick="openZone(2)"/>
+<text x="500" y="195" class="label">2</text>
+
+<rect x="600" y="150" width="80" height="140" class="zone" onclick="openZone(1)"/>
+<text x="640" y="220" class="label">1</text>
+
+<!-- חדר C -->
+<rect x="40" y="160" width="60" height="100" class="zone" onclick="openZone('C')"/>
+<text x="70" y="210" class="label">C</text>
+
+<!-- כניסה (יותר “אזור” ממלבן) -->
+<rect x="500" y="280" width="80" height="150"
+      fill="#eef2f7"
+      stroke="#d1d5db"
+      rx="6"/>
+<text x="540" y="360" class="sub-label">כניסה</text>
+
+<!-- מחסן כלים -->
 <rect x="-20" y="30" width="35" height="250"
-      class="zone tools"
+      class="tools"
       onclick="openZone('TOOLS')"/>
 
 <text x="-2.5" y="155"
       class="label"
-      text-anchor="middle"
-      dominant-baseline="middle"
       transform="rotate(-90 -2.5,155)">
   מחסן כלים
 </text>
+
 </svg>
 
 </svg>
