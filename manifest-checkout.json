@@ -1,0 +1,13 @@
+{
+  "name": "Digicare Checkout",
+  "short_name": "Checkout",
+  "start_url": "/IDF/",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/IDF/checkout.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
