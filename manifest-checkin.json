@@ -1,0 +1,13 @@
+{
+  "name": "Digicare Checkin",
+  "short_name": "Checkin",
+  "start_url": "/IDF/return.html",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/IDF/checkin.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
