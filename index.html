@@ -875,12 +875,13 @@ fetch(
   { mode: "no-cors" }
 );
 
-  fetch(
+ fetch(
   API_URL +
     "?action=out" +
     "&doc=" + encodeURIComponent(docId) +
     "&event=" + encodeURIComponent(band_name.value) +
     "&signer=" + encodeURIComponent(soundman_name.value) +
+    "&return_time=" + encodeURIComponent(returno_time.value) +
     "&_=" + Date.now(),
   { mode: "no-cors" }
 ).finally(() => {
