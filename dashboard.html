@@ -641,7 +641,7 @@ thead tr:hover {
           <th>שם האירוע</th>
           <th>שם החותם</th>
           <th>תאריך</th>
-          <th>שעה</th>
+          <th>שעת חזרה</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -693,7 +693,7 @@ thead tr:hover {
             <th>סטטוס</th>
             <th>שם האירוע</th>
             <th>שם החותם</th>
-            <th>שעה</th>
+            <th>שעת חזרה</th>
           </tr>
         </thead>
         <tbody id="dayDetailBody"></tbody>
@@ -942,8 +942,7 @@ function updateHourlyChart(rows) {
     const status = r.c?.[1]?.v;
     if (status !== "IN" && status !== "OUT") return;
     const dateStr = r.c?.[4]?.f || r.c?.[4]?.v;
-    const timeStr = r.c?.[5]?.f || r.c?.[5]?.v;
-    if (!dateStr || !timeStr) return;
+const timeStr = getTimeValue(r.c?.[6]) || getTimeValue(r.c?.[5]);    if (!dateStr || !timeStr) return;
     const [dd, mm, yyyy] = dateStr.split("/");
     const [hh] = timeStr.split(":");
     const hour = parseInt(hh, 10);
@@ -1034,6 +1033,22 @@ function toggleStats() {
   btn.innerText = isHidden ? "הסתר סטטיסטיקות" : "סטטיסטיקות";
   if (isHidden) loadData();
 }
+function getTimeValue(cell) {
+  if (!cell) return "";
+
+  if (cell.f) return cell.f;
+
+  const v = cell.v;
+
+  if (typeof v === "number") {
+    const totalMinutes = Math.round(v * 24 * 60);
+    const hh = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+    const mm = String(totalMinutes % 60).padStart(2, "0");
+    return `${hh}:${mm}`;
+  }
+
+  return String(v || "");
+}
 
 async function loadData(ignoreFilter = false) {
   try {
@@ -1059,7 +1074,7 @@ async function loadData(ignoreFilter = false) {
       if (showOnlyOut && status !== "OUT") return;
 
       const dateFormatted = r.c?.[4]?.f || r.c?.[4]?.v || "";
-      const timeFormatted = r.c?.[5]?.f || r.c?.[5]?.v || "";
+      const timeFormatted = getTimeValue(r.c?.[6]) || getTimeValue(r.c?.[5]);
       const rowDate = normalizeDate(dateFormatted);
 
       if (!ignoreFilter && selectedDate) {
@@ -1276,7 +1291,7 @@ function renderCalendar() {
       status,
       event:  r.c?.[2]?.v || "",
       signer: r.c?.[3]?.v || "",
-      time:   r.c?.[5]?.f || r.c?.[5]?.v || ""
+      time: getTimeValue(r.c?.[6]) || getTimeValue(r.c?.[5])
     });
   });
 
@@ -1334,8 +1349,7 @@ function showDayDetail(day) {
       status,
       event:  r.c?.[2]?.v || "",
       signer: r.c?.[3]?.v || "",
-      time:   r.c?.[5]?.f || r.c?.[5]?.v || ""
-    });
+time: getTimeValue(r.c?.[6]) || getTimeValue(r.c?.[5])    });
   });
 
   if (events.length === 0) {
