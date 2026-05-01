@@ -204,12 +204,34 @@ thead tr:hover {
 }
 
 .toggle-arrow {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 10px;
+  background: #eef2f7;
+  color: #111827;
+
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   user-select: none;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
+.toggle-arrow:hover {
+  background: #e5e7eb;
+}
+
+.toggle-arrow:active {
+  transform: scale(0.92);
+}
+
+.toggle-arrow.open {
+  transform: rotate(90deg);
+}
 .toggle-arrow.open { transform: rotate(90deg); }
 
 .equipment-row td { background: #f9fafb; }
@@ -871,6 +893,8 @@ const GID = "0";
 const URL = `https://docs.google.com/spreadsheets/d/1-FwT_TEBWPH-tEk1N3bi88S-9TukQ3iPJMl6l0ikDCI/gviz/tq?tqx=out:json&gid=${GID}`;
 const EQUIPMENT_LOG_SHEET_ID = "1Grxw76tLRc_pUI8gYcLfC7a6dtNOXy9a2Y5qf0HEN68";
 const EQUIPMENT_LOG_GID = "0";
+const EQUIPMENT_LOG_API =
+  "https://script.google.com/macros/s/AKfycbwlMFh0pDXJbMQsLGU52ayOJL5b2fNQWKqMOUcRLBCvKhCYkh0gS9oGw7cGk8Tx0hw0/exec";
 
 function getEquipmentLogURL(docId) {
   const query = `select C, D where B = '${docId}'`;
@@ -1087,7 +1111,7 @@ async function loadData(ignoreFilter = false) {
       tr.className = status;
 
       tr.innerHTML = `
-        <td><span class="toggle-arrow" data-doc="${docId}">▼</span></td>
+        <td><button type="button" class="toggle-arrow" data-doc="${docId}">▼</button></td>
         <td>${docId}</td>
         <td>${status}</td>
         <td>${r.c?.[2]?.v || ""}</td>
@@ -1196,7 +1220,27 @@ function toggleEquipmentRow(arrow, parentRow, docId) {
     .then(text => {
       const json = JSON.parse(text.substring(47).slice(0, -2));
       const rows = json.table.rows || [];
-      let html = `<table style="width:100%;border-collapse:collapse;"><thead><tr><th>מק״ט</th><th>מוצר</th></tr></thead><tbody>`;
+      let html = `
+  <div style="margin-bottom:10px; display:flex; gap:8px; justify-content:flex-end;">
+    <select id="addCode_${docId}" style="padding:8px; border:1px solid #ddd; border-radius:8px; min-width:220px;">
+  <option value="">בחר ציוד...</option>
+  ${equipmentList.map(item => `
+    <option value="${item.code}">
+      ${item.code} - ${item.name}
+    </option>
+  `).join("")}
+</select>
+    <button onclick="addEquipmentToExistingEvent('${docId}')" style="padding:8px 12px; border:none; border-radius:8px; background:#2563eb; color:white; cursor:pointer;">
+      הוסף ציוד
+    </button>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr><th>מק״ט</th><th>מוצר</th></tr>
+    </thead>
+    <tbody>
+`;
       rows.forEach(r => {
         html += `<tr><td>${r.c?.[0]?.v || ""}</td><td>${r.c?.[1]?.v || ""}</td></tr>`;
       });
@@ -1600,8 +1644,83 @@ const eventName = itemToEventMap[cleanCode];
 
   popup.style.display = "flex";
 }
+const equipmentList = Object.values(zoneData)
+  .flat()
+  .sort((a, b) => {
+    const numA = parseInt(a.code.replace("#", ""));
+    const numB = parseInt(b.code.replace("#", ""));
+    return numA - numB;
+  });
+
+function findEquipmentByCode(code) {
+  const clean = String(code).trim().replace("#", "");
+  return equipmentList.find(item =>
+    String(item.code).replace("#", "") === clean
+  );
+}
+
 function closeZonePopup(){
   document.getElementById("zonePopup").style.display = "none";
+}
+function addEquipmentToExistingEvent(docId) {
+  const input = document.getElementById(`addCode_${docId}`);
+  const code = input.value;
+
+  if (!code) {
+    alert("נא להזין מק״ט");
+    return;
+  }
+
+  const item = findEquipmentByCode(code);
+// 🔥 בדיקה אם כבר קיים באירוע
+const equipmentTable = input.closest(".equipment-row");
+const existingRows = equipmentTable.querySelectorAll("tbody tr");
+
+for (let row of existingRows) {
+  const existingCode = row.children[0]?.innerText.trim();
+  if (existingCode === code) {
+    alert("הציוד כבר קיים באירוע!");
+    return;
+  }
+}
+  if (!item) {
+    alert("מק״ט לא מוכר: " + code);
+    return;
+  }
+
+  const items = [
+    {
+      code: item.code,
+      name: item.name
+    }
+  ];
+
+  fetch(
+    EQUIPMENT_LOG_API +
+      "?doc=" + encodeURIComponent(docId) +
+      "&event=" + encodeURIComponent("") +
+      "&signer=" + encodeURIComponent("") +
+      "&items=" + encodeURIComponent(JSON.stringify(items)) +
+      "&_=" + Date.now(),
+    { mode: "no-cors" }
+  );
+
+  alert("הציוד נוסף לאירוע: " + item.code + " - " + item.name);
+
+  input.value = "";
+
+  const openArrow = document.querySelector(`.toggle-arrow[data-doc="${docId}"]`);
+  if (openArrow) {
+    const row = openArrow.closest("tr");
+    const next = row.nextElementSibling;
+    if (next && next.classList.contains("equipment-row")) next.remove();
+    openArrow.classList.remove("open");
+    openEquipmentCount = Math.max(0, openEquipmentCount - 1);
+
+    setTimeout(() => {
+      toggleEquipmentRow(openArrow, row, docId);
+    }, 700);
+  }
 }
 
 </script>
