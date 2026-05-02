@@ -1221,8 +1221,22 @@ function toggleEquipmentRow(arrow, parentRow, docId) {
       const json = JSON.parse(text.substring(47).slice(0, -2));
       const rows = json.table.rows || [];
       let html = `
-  <div style="margin-bottom:10px; display:flex; gap:8px; justify-content:flex-end;">
-    <select id="addCode_${docId}" style="padding:8px; border:1px solid #ddd; border-radius:8px; min-width:220px;">
+  <div style="
+  margin-bottom:10px;
+  display:flex;
+  gap:8px;
+  justify-content:flex-start;
+  direction:rtl;
+  width:100%;
+">
+    <select id="addCode_${docId}" style="
+  padding:8px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  min-width:220px;
+  direction:rtl;
+  text-align:right;
+">
   <option value="">בחר ציוד...</option>
   ${equipmentList.map(item => `
     <option value="${item.code}">
