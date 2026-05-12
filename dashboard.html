@@ -1075,6 +1075,8 @@ function getTimeValue(cell) {
 }
 
 async function loadData(ignoreFilter = false) {
+  const scrollY = window.scrollY;
+
   try {
     const res = await fetch(URL);
     const text = await res.text();
@@ -1120,7 +1122,11 @@ async function loadData(ignoreFilter = false) {
         <td>${timeFormatted}</td>
       `;
 
-      tbody.appendChild(tr);
+          tbody.appendChild(tr);
+    });
+
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
     });
 
   } catch (err) {
