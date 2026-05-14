@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Digicare - אירועים יוצאים</title>
+
+  <link rel="apple-touch-icon" href="/IDF/dashboard.png">
+  <link rel="icon" href="/IDF/dashboard.png">
+
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --primary:#1f2937;
+      --secondary:#374151;
+      --accent:#2563eb;
+      --accent-dark:#1e40af;
+      --border:#e5e7eb;
+      --success:#16a34a;
+      --danger:#dc2626;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      direction:rtl;
+      background:linear-gradient(180deg,#f3f4f6 0%,#eef2f7 100%);
+      color:#111827;
+      min-height:100vh;
+    }
+
+    .header{
+      background:var(--primary);
+      color:white;
+      padding:18px 24px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .header h1{
+      margin:0;
+      font-size:22px;
+      font-weight:600;
+      letter-spacing:.5px;
+    }
+
+    .header-logo{
+      height:64px;
+      background:white;
+      padding:4px;
+      border-radius:10px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .datetime{
+      font-size:16px;
+      opacity:.95;
+      font-variant-numeric:tabular-nums;
+    }
+
+    .container{
+      max-width:920px;
+      margin:0 auto;
+      padding:28px 18px 50px;
+    }
+
+    .form-card{
+      background:rgba(255,255,255,0.94);
+      border:1px solid var(--border);
+      border-radius:14px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.06);
+      padding:22px;
+    }
+
+    .card-title{
+      margin:0 0 6px;
+      font-size:20px;
+      color:var(--primary);
+    }
+
+    .card-subtitle{
+      margin:0 0 22px;
+      font-size:13px;
+      color:#6b7280;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:16px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+    }
+
+    label{
+      font-size:14px;
+      color:var(--secondary);
+      font-weight:600;
+    }
+
+    input, select{
+      width:100%;
+      padding:11px 12px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-size:15px;
+      background:white;
+      color:#111827;
+      outline:none;
+    }
+
+    input:focus, select:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(37,99,235,0.12);
+    }
+
+    .full{
+      grid-column:1 / -1;
+    }
+
+    .actions{
+      display:flex;
+      gap:12px;
+      margin-top:22px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      border:none;
+      border-radius:9px;
+      padding:10px 18px;
+      font-size:15px;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .primary{
+      background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+      color:white;
+      box-shadow:0 2px 4px rgba(37,99,235,0.25);
+    }
+
+    .primary:hover{
+      transform:translateY(-1px);
+      box-shadow:0 6px 14px rgba(37,99,235,.35);
+    }
+
+    .secondary{
+      background:#f3f4f6;
+      color:#374151;
+      border:1px solid var(--border);
+    }
+
+    .secondary:hover{
+      background:#e5e7eb;
+    }
+
+    .status{
+      margin-top:16px;
+      padding:12px;
+      border-radius:10px;
+      display:none;
+      font-size:14px;
+      font-weight:600;
+    }
+
+    .status.success{
+      display:block;
+      background:#dcfce7;
+      color:#166534;
+      border:1px solid #bbf7d0;
+    }
+
+    .status.error{
+      display:block;
+      background:#fee2e2;
+      color:#991b1b;
+      border:1px solid #fecaca;
+    }
+
+    .footer-note{
+      margin-top:12px;
+      font-size:12px;
+      color:#6b7280;
+      opacity:.75;
+      text-align:center;
+    }
+
+    @media(max-width:768px){
+      .header{
+        flex-direction:column;
+        gap:10px;
+        padding:14px 12px;
+        text-align:center;
+      }
+
+      .header h1{
+        font-size:18px;
+      }
+
+      .header-logo{
+        height:48px;
+      }
+
+      .datetime{
+        font-size:14px;
+      }
+
+      .container{
+        padding:14px 12px 34px;
+      }
+
+      .form-card{
+        padding:16px;
+      }
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      input, select, button{
+        font-size:16px;
+      }
+
+      .actions button{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <img
+      src="https://i.postimg.cc/C10KTLTh/Chat-GPT-Image-Feb-13-2026-05-05-23-PM-(1).png"
+      alt="Logo"
+      class="header-logo"
+    >
+
+    <h1>Digicare - אירועים יוצאים</h1>
+
+    <div class="datetime" id="datetime"></div>
+  </div>
+
+  <div class="container">
+
+    <div class="form-card">
+      <h2 class="card-title">דיווח אירוע יוצא</h2>
+      <p class="card-subtitle">
+        מילוי פרטי אירוע מתוכנן לצורך שידור לדשבורד המרכזי.
+      </p>
+
+      <form id="eventForm">
+        <div class="grid">
+
+          <div class="field">
+            <label for="eventDate">תאריך</label>
+            <input type="date" id="eventDate" name="eventDate" required>
+          </div>
+
+          <div class="field">
+            <label for="bandName">שם הרכב</label>
+            <input type="text" id="bandName" name="bandName" placeholder="לדוגמה: להקת..." required>
+          </div>
+
+          <div class="field">
+            <label for="producerName">שם מפיק</label>
+            <input type="text" id="producerName" name="producerName" required>
+          </div>
+
+          <div class="field">
+            <label for="sound">הגברה שלנו</label>
+            <select id="sound" name="sound" required>
+              <option value="">בחר</option>
+              <option value="כן">כן</option>
+              <option value="לא">לא</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="instruments">כלים שלנו</label>
+            <select id="instruments" name="instruments" required>
+              <option value="">בחר</option>
+              <option value="כן">כן</option>
+              <option value="לא">לא</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="departureTime">שעת יציאה</label>
+            <input type="time" id="departureTime" name="departureTime" required>
+          </div>
+
+          <div class="field">
+            <label for="returnTime">שעת חזרה משוערת</label>
+            <input type="time" id="returnTime" name="returnTime" required>
+          </div>
+
+          <div class="field full">
+            <label for="contact">איש קשר / מספר טלפון מטעם ההרכב</label>
+            <input type="text" id="contact" name="contact" placeholder="שם + טלפון" required>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="primary" id="submitBtn">שלח אירוע</button>
+          <button type="button" class="secondary" onclick="resetForm()">נקה טופס</button>
+        </div>
+
+        <div id="statusBox" class="status"></div>
+      </form>
+    </div>
+
+    <div class="footer-note">
+      Digicare · נתוני אירועים יוצאים
+    </div>
+
+  </div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTcwOI9gIQYt5KNmeN0h1apiXtR9J7pLlElI_18VoziFNbQDuIbv3ktO1HZstAuuR3/exec";
+
+  function updateDateTime(){
+    const now = new Date();
+    document.getElementById("datetime").innerText =
+      now.toLocaleDateString("he-IL") + " | " + now.toLocaleTimeString("he-IL");
+  }
+
+  setInterval(updateDateTime, 1000);
+  updateDateTime();
+
+  document.getElementById("eventDate").value =
+    new Date().toISOString().split("T")[0];
+
+  document.getElementById("eventForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+
+    const submitBtn = document.getElementById("submitBtn");
+    const statusBox = document.getElementById("statusBox");
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "שולח...";
+
+    const data = {
+      eventDate: document.getElementById("eventDate").value,
+      bandName: document.getElementById("bandName").value.trim(),
+      producerName: document.getElementById("producerName").value.trim(),
+      sound: document.getElementById("sound").value,
+      instruments: document.getElementById("instruments").value,
+      departureTime: document.getElementById("departureTime").value,
+      returnTime: document.getElementById("returnTime").value,
+      contact: document.getElementById("contact").value.trim()
+    };
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+
+      statusBox.className = "status success";
+      statusBox.innerText = "האירוע נשלח בהצלחה";
+      document.getElementById("eventForm").reset();
+      document.getElementById("eventDate").value =
+        new Date().toISOString().split("T")[0];
+
+    } catch (err) {
+      statusBox.className = "status error";
+      statusBox.innerText = "אירעה שגיאה בשליחה";
+      console.error(err);
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.innerText = "שלח אירוע";
+  });
+
+  function resetForm(){
+    document.getElementById("eventForm").reset();
+    document.getElementById("eventDate").value =
+      new Date().toISOString().split("T")[0];
+
+    const statusBox = document.getElementById("statusBox");
+    statusBox.className = "status";
+    statusBox.innerText = "";
+  }
+</script>
+
+</body>
+</html>
