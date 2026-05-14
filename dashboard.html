@@ -616,6 +616,42 @@ thead tr:hover {
 .zone.tools:hover {
   fill: #d1d5db;          /* אפור */
 }
+#plannedCalendarView .planned-toolbar {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+
+#plannedCalendarView input {
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#fff;
+  font-size:14px;
+}
+
+#plannedCalendarView button.primary {
+  background:linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:8px 16px;
+  box-shadow:0 2px 4px rgba(37,99,235,0.2);
+}
+
+#plannedCalendarView button.secondary {
+  background:#f3f4f6;
+  color:#374151;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:8px 16px;
+}
+
+#plannedCalendarView button:hover {
+  transform:translateY(-1px);
+}
 
 </style>
 </head>
@@ -641,6 +677,9 @@ thead tr:hover {
     <button class="outline" onclick="toggleStats()" id="statsBtn">סטטיסטיקות</button>
     <button class="outline" onclick="toggleOutOnly()" id="outBtn"> אירועים שטרם חזרו</button>
     <button class="outline" onclick="toggleCalendar()" id="calendarBtn"> לוח שנה</button>
+    <button class="outline" onclick="togglePlannedCalendar()" id="plannedCalendarBtn">
+  לוח אירועים מתוכננים
+</button>
     
     <input type="text" id="searchInput" placeholder="חיפוש חופשי:" oninput="applySearchFilter()"/>
   </div>
@@ -723,6 +762,33 @@ thead tr:hover {
     </div>
 
   </div>
+ <div id="plannedCalendarView" class="table-card" style="padding:20px; margin-top:0; display:none;">
+
+  <div class="planned-toolbar">
+    <label>תאריך אירועים מתוכננים:</label>
+    <input type="date" id="plannedDateInput">
+    <button class="primary" onclick="loadPlannedEventsByDate()">הצג</button>
+    <button class="primary" onclick="copyPlannedWhatsappSummary()">
+  העתק סיכום לווצאפ
+</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>שם הרכב</th>
+        <th>מפיק</th>
+        <th>הגברה</th>
+        <th>כלים</th>
+        <th>יציאה</th>
+        <th>חזרה משוערת</th>
+        <th>איש קשר</th>
+      </tr>
+    </thead>
+    <tbody id="plannedEventsBody"></tbody>
+  </table>
+
+</div>
 
 </div><!-- end .container -->
 </div><!-- end .page -->
@@ -1156,11 +1222,11 @@ updateDateTime();
 setInterval(() => {
   const statsOpen = document.getElementById("statsContainer").style.display === "block";
   const calOpen   = document.getElementById("calendarView").style.display   === "block";
+  const plannedCalOpen = document.getElementById("plannedCalendarView").style.display === "block";
   const hasSearch = document.getElementById("searchInput").value.trim().length > 0;
   const warehouseOpen = document.getElementById("warehouseView").style.display === "flex";
 
-if (hasSearch || productCacheLoading || calOpen || warehouseOpen) return;
-  if (!statsOpen && openEquipmentCount === 0) loadData(showOnlyOut);
+if (hasSearch || productCacheLoading || calOpen || plannedCalOpen || warehouseOpen) return;  if (!statsOpen && openEquipmentCount === 0) loadData(showOnlyOut);
 }, 10000);
 
 function updateStatsRange() {
@@ -1846,7 +1912,174 @@ for (let row of existingRows) {
     }, 700);
   }
 }
+const PLANNED_SHEET_ID = "1NBR5PefJjwTUacYjLtOYZdh9v70rzSOTLW1q7JrhDBc";
+const PLANNED_GID = "0";
+const PLANNED_URL =
+  `https://docs.google.com/spreadsheets/d/${PLANNED_SHEET_ID}/gviz/tq?tqx=out:json&gid=${PLANNED_GID}`;
 
+let plannedRowsCache = [];
+
+function parsePlannedGviz(text) {
+  return JSON.parse(text.substring(47).slice(0, -2));
+}
+
+function plannedCellValue(cell) {
+  if (!cell) return "";
+  return cell.f || cell.v || "";
+}
+
+function plannedDateToKey(cell) {
+  if (!cell) return "";
+
+  if (cell.f) {
+    if (cell.f.includes("/")) {
+      const [dd, mm, yyyy] = cell.f.split("/");
+      return `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
+    }
+    if (cell.f.includes("-")) return cell.f;
+  }
+
+  const v = String(cell.v || "");
+  const match = v.match(/Date\((\d+),(\d+),(\d+)\)/);
+
+  if (match) {
+    const y = Number(match[1]);
+    const m = Number(match[2]) + 1;
+    const d = Number(match[3]);
+    return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  }
+
+  return v;
+}
+
+async function fetchPlannedRows() {
+  const res = await fetch(PLANNED_URL);
+  const text = await res.text();
+  const json = parsePlannedGviz(text);
+  const rows = json.table.rows || [];
+
+  plannedRowsCache = rows.map(r => ({
+    dateKey: plannedDateToKey(r.c?.[1]),
+    band: plannedCellValue(r.c?.[2]),
+    producer: plannedCellValue(r.c?.[3]),
+    sound: plannedCellValue(r.c?.[4]),
+    instruments: plannedCellValue(r.c?.[5]),
+    departure: plannedCellValue(r.c?.[6]),
+    returnTime: plannedCellValue(r.c?.[7]),
+    contact: plannedCellValue(r.c?.[8])
+  })).filter(e => e.dateKey);
+}
+
+function tomorrowKey() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split("T")[0];
+}
+
+function setPlannedTomorrow() {
+  document.getElementById("plannedDateInput").value = tomorrowKey();
+  loadPlannedEventsByDate();
+}
+
+async function togglePlannedCalendar() {
+  const planned = document.getElementById("plannedCalendarView");
+  const tableCard = document.getElementById("mainTableCard");
+  const footer = document.getElementById("footerNote");
+  const stats = document.getElementById("statsContainer");
+  const regularCalendar = document.getElementById("calendarView");
+  const warehouse = document.getElementById("warehouseView");
+  const btn = document.getElementById("plannedCalendarBtn");
+
+  const isOpen = planned.style.display === "block";
+
+  if (isOpen) {
+    planned.style.display = "none";
+    tableCard.style.display = "block";
+    footer.style.display = "block";
+    btn.innerText = "אירועים מתוכננים";
+    return;
+  }
+
+  stats.style.display = "none";
+  regularCalendar.style.display = "none";
+  warehouse.style.display = "none";
+
+  document.getElementById("statsBtn").innerText = "סטטיסטיקות";
+  document.getElementById("calendarBtn").innerText = " לוח שנה";
+
+  tableCard.style.display = "none";
+  footer.style.display = "none";
+  planned.style.display = "block";
+  btn.innerText = "✕ סגור אירועים מתוכננים";
+
+  document.getElementById("plannedDateInput").value = tomorrowKey();
+
+  await fetchPlannedRows();
+  loadPlannedEventsByDate();
+}
+
+function loadPlannedEventsByDate() {
+  const selectedDate = document.getElementById("plannedDateInput").value;
+  const tbody = document.getElementById("plannedEventsBody");
+
+  const events = plannedRowsCache.filter(e => e.dateKey === selectedDate);
+
+  if (!events.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="color:#6b7280;text-align:center;padding:18px;">
+          אין אירועים מתוכננים לתאריך שנבחר
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = events.map(e => `
+    <tr>
+      <td>${e.band}</td>
+      <td>${e.producer}</td>
+      <td>${e.sound}</td>
+      <td>${e.instruments}</td>
+      <td>${e.departure}</td>
+      <td>${e.returnTime}</td>
+      <td>${e.contact}</td>
+    </tr>
+  `).join("");
+  
+}
+function copyPlannedWhatsappSummary() {
+  const selectedDate = document.getElementById("plannedDateInput").value;
+  const events = plannedRowsCache.filter(e => e.dateKey === selectedDate);
+
+  if (!selectedDate) {
+    alert("נא לבחור תאריך");
+    return;
+  }
+
+  if (!events.length) {
+    alert("אין אירועים מתוכננים בתאריך שנבחר");
+    return;
+  }
+
+  const [yyyy, mm, dd] = selectedDate.split("-");
+  const formattedDate = `${dd}/${mm}/${yyyy}`;
+
+  let text = `סיכום אירועים מתוכננים לתאריך ${formattedDate}\n\n`;
+
+  events.forEach((e, index) => {
+    text += `${index + 1}. ${e.band || "ללא שם הרכב"}\n`;
+    text += `מפיק: ${e.producer || "-"}\n`;
+    text += `שעת יציאה: ${e.departure || "-"}\n`;
+    text += `שעת חזרה משוערת: ${e.returnTime || "-"}\n\n`;
+  });
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert("הסיכום הועתק. אפשר להדביק בווצאפ");
+  }).catch(() => {
+    prompt("העתק את הסיכום ידנית:", text);
+  });
+}
 </script>
 </body>
 </html>
