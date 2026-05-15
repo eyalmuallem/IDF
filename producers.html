@@ -288,14 +288,19 @@
             </select>
           </div>
 
-          <div class="field">
-            <label for="instruments">כלים שלנו</label>
-            <select id="instruments" name="instruments" required>
-              <option value="">בחר</option>
-              <option value="כן">כן</option>
-              <option value="לא">לא</option>
-            </select>
-          </div>
+         <div class="field">
+  <label for="instruments">כלים שלנו</label>
+  <select id="instruments" name="instruments" required onchange="toggleInstrumentsDetails()">
+    <option value="">בחר</option>
+    <option value="כן">כן</option>
+    <option value="לא">לא</option>
+  </select>
+</div>
+
+<div class="field full" id="instrumentsDetailsBox" style="display:none;">
+  <label for="instrumentsDetails">פירוט כלים</label>
+  <input type="text" id="instrumentsDetails" placeholder="לדוגמה: גיטרה, קלידים, בס">
+</div>
 
           <div class="field">
             <label for="departureTime">שעת יציאה</label>
@@ -358,7 +363,10 @@
       bandName: document.getElementById("bandName").value.trim(),
       producerName: document.getElementById("producerName").value.trim(),
       sound: document.getElementById("sound").value,
-      instruments: document.getElementById("instruments").value,
+      instruments:
+  document.getElementById("instruments").value === "כן"
+    ? "כן - " + document.getElementById("instrumentsDetails").value.trim()
+    : document.getElementById("instruments").value,
       departureTime: document.getElementById("departureTime").value,
       returnTime: document.getElementById("returnTime").value,
       contact: document.getElementById("contact").value.trim()
@@ -399,6 +407,18 @@
     statusBox.className = "status";
     statusBox.innerText = "";
   }
+  function toggleInstrumentsDetails() {
+  const value = document.getElementById("instruments").value;
+  const box = document.getElementById("instrumentsDetailsBox");
+  const input = document.getElementById("instrumentsDetails");
+
+  if (value === "כן") {
+    box.style.display = "flex";
+  } else {
+    box.style.display = "none";
+    input.value = "";
+  }
+}
 </script>
 
 </body>
