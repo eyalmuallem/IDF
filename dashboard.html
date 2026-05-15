@@ -768,6 +768,9 @@ thead tr:hover {
     <label>תאריך אירועים מתוכננים:</label>
     <input type="date" id="plannedDateInput">
     <button class="primary" onclick="loadPlannedEventsByDate()">הצג</button>
+    <button class="secondary" onclick="setPlannedTomorrow()">
+  אירועי מחר
+</button>
     <button class="primary" onclick="copyPlannedWhatsappSummary()">
   העתק סיכום לווצאפ
 </button>
@@ -2007,15 +2010,14 @@ async function togglePlannedCalendar() {
   document.getElementById("statsBtn").innerText = "סטטיסטיקות";
   document.getElementById("calendarBtn").innerText = " לוח שנה";
 
-  tableCard.style.display = "none";
-  footer.style.display = "none";
   planned.style.display = "block";
-  btn.innerText = "✕ סגור אירועים מתוכננים";
+btn.innerText = "✕ סגור אירועים מתוכננים";
 
-  document.getElementById("plannedDateInput").value = tomorrowKey();
+document.getElementById("plannedDateInput").value =
+  new Date().toISOString().split("T")[0];
 
-  await fetchPlannedRows();
-  loadPlannedEventsByDate();
+await fetchPlannedRows();
+loadPlannedEventsByDate();
 }
 
 function loadPlannedEventsByDate() {
