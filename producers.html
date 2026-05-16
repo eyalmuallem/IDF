@@ -236,6 +236,65 @@
         width:100%;
       }
     }
+    .confirm-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:18px;
+}
+
+.confirm-box{
+  background:white;
+  width:100%;
+  max-width:460px;
+  border-radius:16px;
+  padding:22px;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);
+}
+
+.confirm-box h3{
+  margin:0 0 16px;
+  color:var(--primary);
+  font-size:20px;
+}
+
+.confirm-summary{
+  display:grid;
+  gap:10px;
+  font-size:15px;
+  line-height:1.5;
+}
+
+.confirm-row{
+  background:#f9fafb;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 12px;
+}
+
+.confirm-row strong{
+  color:#374151;
+}
+
+.confirm-actions{
+  display:flex;
+  gap:10px;
+  margin-top:20px;
+}
+
+.confirm-actions button{
+  flex:1;
+}
+
+@media(max-width:768px){
+  .confirm-actions{
+    flex-direction:column;
+  }
+}
   </style>
 </head>
 
@@ -320,7 +379,7 @@
         </div>
 
         <div class="actions">
-          <button type="submit" class="primary" id="submitBtn">שלח אירוע</button>
+          <button type="button" class="primary" id="submitBtn" onclick="openConfirmModal()">שלח אירוע</button>
           <button type="button" class="secondary" onclick="resetForm()">נקה טופס</button>
         </div>
 
@@ -333,6 +392,18 @@
     </div>
 
   </div>
+  <div id="confirmModal" class="confirm-modal">
+  <div class="confirm-box">
+    <h3>אישור פרטי האירוע</h3>
+
+    <div id="confirmSummary" class="confirm-summary"></div>
+
+    <div class="confirm-actions">
+      <button type="button" class="primary" onclick="submitConfirmedEvent()">מאשר ושולח</button>
+      <button type="button" class="secondary" onclick="closeConfirmModal()">חזרה לעריכה</button>
+    </div>
+  </div>
+</div>
 
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTcwOI9gIQYt5KNmeN0h1apiXtR9J7pLlElI_18VoziFNbQDuIbv3ktO1HZstAuuR3/exec";
@@ -349,54 +420,88 @@
   document.getElementById("eventDate").value =
     new Date().toISOString().split("T")[0];
 
-  document.getElementById("eventForm").addEventListener("submit", async function(e){
-    e.preventDefault();
+ function collectFormData() {
+  return {
+    eventDate: document.getElementById("eventDate").value,
+    bandName: document.getElementById("bandName").value.trim(),
+    producerName: document.getElementById("producerName").value.trim(),
+    sound: document.getElementById("sound").value,
+    instruments:
+      document.getElementById("instruments").value === "כן"
+        ? "כן - " + document.getElementById("instrumentsDetails").value.trim()
+        : document.getElementById("instruments").value,
+    departureTime: document.getElementById("departureTime").value,
+    returnTime: document.getElementById("returnTime").value,
+    contact: document.getElementById("contact").value.trim()
+  };
+}
 
-    const submitBtn = document.getElementById("submitBtn");
-    const statusBox = document.getElementById("statusBox");
+function openConfirmModal() {
+  const form = document.getElementById("eventForm");
 
-    submitBtn.disabled = true;
-    submitBtn.innerText = "שולח...";
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
 
-    const data = {
-      eventDate: document.getElementById("eventDate").value,
-      bandName: document.getElementById("bandName").value.trim(),
-      producerName: document.getElementById("producerName").value.trim(),
-      sound: document.getElementById("sound").value,
-      instruments:
-  document.getElementById("instruments").value === "כן"
-    ? "כן - " + document.getElementById("instrumentsDetails").value.trim()
-    : document.getElementById("instruments").value,
-      departureTime: document.getElementById("departureTime").value,
-      returnTime: document.getElementById("returnTime").value,
-      contact: document.getElementById("contact").value.trim()
-    };
+  const data = collectFormData();
 
-    try {
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      });
+  document.getElementById("confirmSummary").innerHTML = `
+    <div class="confirm-row"><strong>תאריך:</strong> ${data.eventDate}</div>
+    <div class="confirm-row"><strong>שם הרכב:</strong> ${data.bandName}</div>
+    <div class="confirm-row"><strong>שם מפיק:</strong> ${data.producerName}</div>
+    <div class="confirm-row"><strong>הגברה שלנו:</strong> ${data.sound}</div>
+    <div class="confirm-row"><strong>כלים שלנו:</strong> ${data.instruments}</div>
+    <div class="confirm-row"><strong>שעת יציאה:</strong> ${data.departureTime}</div>
+    <div class="confirm-row"><strong>שעת חזרה משוערת:</strong> ${data.returnTime}</div>
+    <div class="confirm-row"><strong>איש קשר:</strong> ${data.contact}</div>
+  `;
 
-      statusBox.className = "status success";
-      statusBox.innerText = "האירוע נשלח בהצלחה";
-      document.getElementById("eventForm").reset();
-      document.getElementById("eventDate").value =
-        new Date().toISOString().split("T")[0];
+  document.getElementById("confirmModal").style.display = "flex";
+}
 
-    } catch (err) {
-      statusBox.className = "status error";
-      statusBox.innerText = "אירעה שגיאה בשליחה";
-      console.error(err);
-    }
+function closeConfirmModal() {
+  document.getElementById("confirmModal").style.display = "none";
+}
 
-    submitBtn.disabled = false;
-    submitBtn.innerText = "שלח אירוע";
-  });
+async function submitConfirmedEvent() {
+  closeConfirmModal();
+
+  const submitBtn = document.getElementById("submitBtn");
+  const statusBox = document.getElementById("statusBox");
+  const data = collectFormData();
+
+  submitBtn.disabled = true;
+  submitBtn.innerText = "שולח...";
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+
+    statusBox.className = "status success";
+    statusBox.innerText = `האירוע של ${data.bandName} נשלח בהצלחה`;
+
+    document.getElementById("eventForm").reset();
+    document.getElementById("eventDate").value =
+      new Date().toISOString().split("T")[0];
+
+    document.getElementById("instrumentsDetailsBox").style.display = "none";
+
+  } catch (err) {
+    statusBox.className = "status error";
+    statusBox.innerText = "אירעה שגיאה בשליחה";
+    console.error(err);
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.innerText = "שלח אירוע";
+}
 
   function resetForm(){
     document.getElementById("eventForm").reset();
@@ -419,6 +524,7 @@
     input.value = "";
   }
 }
+
 </script>
 
 </body>
