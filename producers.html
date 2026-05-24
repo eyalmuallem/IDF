@@ -315,7 +315,7 @@
   <div class="container">
 
     <div class="form-card">
-      <h2 class="card-title">דיווח אירוע יוצא</h2>
+      <h2 class="card-title">דיווח אירועים מתוכננים</h2>
       <p class="card-subtitle">
         מילוי פרטי אירוע מתוכנן לצורך שידור לדשבורד המרכזי.
       </p>
@@ -327,6 +327,14 @@
             <label for="eventDate">תאריך</label>
             <input type="date" id="eventDate" name="eventDate" required>
           </div>
+          <div class="field full">
+  <label for="eventType">סוג אירוע</label>
+  <select id="eventType" name="eventType" required>
+    <option value="">בחר</option>
+    <option value="הופעה">הופעה</option>
+    <option value="חזרה">חזרה</option>
+  </select>
+</div>
 
           <div class="field">
             <label for="bandName">שם הרכב</label>
@@ -423,8 +431,10 @@
  function collectFormData() {
   return {
     eventDate: document.getElementById("eventDate").value,
-    bandName: document.getElementById("bandName").value.trim(),
-    producerName: document.getElementById("producerName").value.trim(),
+bandName:
+  document.getElementById("eventType").value +
+  " - " +
+  document.getElementById("bandName").value.trim(),    producerName: document.getElementById("producerName").value.trim(),
     sound: document.getElementById("sound").value,
     instruments:
       document.getElementById("instruments").value === "כן"
