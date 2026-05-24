@@ -1,7 +1,7 @@
 {
   "name": "Digicare Producer",
   "short_name": "Producer",
-  "start_url": "/IDF/producer.html",
+  "start_url": "/IDF/producers.html",
   "scope": "/IDF/",
   "display": "standalone",
   "background_color": "#0f172a",
