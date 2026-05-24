@@ -666,10 +666,38 @@ async function copyProducerSummary(type){
 
   });
 
-  navigator.clipboard.writeText(text);
+ copyTextToClipboard(text);
 
-  alert("הועתק");
+}
+function copyTextToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert("הועתק");
+    }).catch(() => {
+      fallbackCopyText(text);
+    });
+  } else {
+    fallbackCopyText(text);
+  }
+}
 
+function fallbackCopyText(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+
+  try {
+    document.execCommand("copy");
+    alert("הועתק");
+  } catch {
+    prompt("העתק ידנית:", text);
+  }
+
+  document.body.removeChild(textarea);
 }
  function collectFormData() {
   return {
