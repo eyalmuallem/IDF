@@ -1,0 +1,21 @@
+{
+  "name": "Digicare Producer",
+  "short_name": "Producer",
+  "start_url": "/IDF/producer.html",
+  "scope": "/IDF/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/IDF/dashboard.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/IDF/dashboard.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
