@@ -295,6 +295,27 @@
     flex-direction:column;
   }
 }
+.planned-mini-card{
+  margin-top:18px;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.06);
+}
+
+.copy-split{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+
+@media(max-width:768px){
+  .copy-split{
+    grid-template-columns:1fr;
+  }
+}
   </style>
 </head>
 
@@ -393,6 +414,10 @@
 
         <div id="statusBox" class="status"></div>
       </form>
+    <div class="actions">
+  <button type="button" class="primary" onclick="openCopyModal()">
+לוח אירועים  </button>
+</div>
     </div>
 
     <div class="footer-note">
@@ -412,10 +437,48 @@
     </div>
   </div>
 </div>
+<div id="copyModal" class="confirm-modal">
+  <div class="confirm-box">
+    <h3>העתקת סיכום אירועים</h3>
 
+    <div class="field">
+     <label for="copyDateInput" id="copyDateLabel">
+  תאריך לסיכום
+</label>
+
+<input
+  type="date"
+  id="copyDateInput"
+  onchange="renderCopyModalEvents(); updateTodayLabel();"
+>
+</div>
+<div id="copyModalEvents" class="confirm-summary" style="margin-top:14px;"></div>
+
+    <div class="copy-split">
+      <button type="button" class="primary" onclick="copyProducerSummary('חזרה')">
+        העתק חזרות
+      </button>
+
+      <button type="button" class="primary" onclick="copyProducerSummary('הופעה')">
+        העתק הופעות
+      </button>
+    </div>
+
+    <div class="confirm-actions">
+      <button type="button" class="secondary" onclick="closeCopyModal()">
+        סגור
+      </button>
+    </div>
+  </div>
+</div>
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTcwOI9gIQYt5KNmeN0h1apiXtR9J7pLlElI_18VoziFNbQDuIbv3ktO1HZstAuuR3/exec";
+const PLANNED_SHEET_ID = "1NBR5PefJjwTUacYjLtOYZdh9v70rzSOTLW1q7JrhDBc";
+const PLANNED_GID = "0";
+const PLANNED_URL =
+  `https://docs.google.com/spreadsheets/d/${PLANNED_SHEET_ID}/gviz/tq?tqx=out:json&gid=${PLANNED_GID}`;
 
+let producerPlannedRows = [];
   function updateDateTime(){
     const now = new Date();
     document.getElementById("datetime").innerText =
@@ -427,7 +490,187 @@
 
   document.getElementById("eventDate").value =
     new Date().toISOString().split("T")[0];
+    document.getElementById("copyDateInput").value =
+  new Date().toISOString().split("T")[0];
+  async function openCopyModal() {
+  document.getElementById("copyModal").style.display = "flex";
+  await fetchProducerPlannedRows();
+  renderCopyModalEvents();
+  updateTodayLabel();
+}
 
+function closeCopyModal() {
+  document.getElementById("copyModal").style.display = "none";
+}
+function renderCopyModalEvents() {
+  const selectedDate = document.getElementById("copyDateInput").value;
+  const box = document.getElementById("copyModalEvents");
+
+  const events = producerPlannedRows.filter(e => e.dateKey === selectedDate);
+
+  if (!events.length) {
+    box.innerHTML = `
+      <div class="confirm-row" style="text-align:center;color:#6b7280;">
+        אין אירועים בתאריך שנבחר
+      </div>
+    `;
+    return;
+  }
+
+  box.innerHTML = events.map(e => `
+    <div class="confirm-row">
+      <strong>${e.band || "ללא שם הרכב"}</strong><br>
+      מפיק: ${e.producer || "-"}<br>
+      יציאה: ${e.departure || "-"} · חזרה: ${e.returnTime || "-"}
+    </div>
+  `).join("");
+}
+function updateTodayLabel(){
+
+  const input =
+    document.getElementById("copyDateInput");
+
+  const label =
+    document.getElementById("copyDateLabel");
+
+  const today =
+    new Date().toISOString().split("T")[0];
+
+  if(input.value === today){
+
+    label.innerHTML =
+      "תאריך לסיכום <span style='color:#16a34a;'>(היום)</span>";
+
+  } else {
+
+    label.innerHTML =
+      "תאריך לסיכום";
+
+  }
+
+}
+    
+function parsePlannedGviz(text) {
+  return JSON.parse(text.substring(47).slice(0,-2));
+}
+
+function plannedCellValue(cell){
+  if(!cell) return "";
+  return cell.f || cell.v || "";
+}
+
+function plannedDateToKey(cell){
+  if(!cell) return "";
+
+  if(cell.f && cell.f.includes("/")){
+    const [dd,mm,yyyy] = cell.f.split("/");
+    return `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
+  }
+
+  const v = String(cell.v || "");
+  const match = v.match(/Date\((\d+),(\d+),(\d+)\)/);
+
+  if(match){
+    const y = Number(match[1]);
+    const m = Number(match[2])+1;
+    const d = Number(match[3]);
+
+    return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  }
+
+  return v;
+}
+
+async function fetchProducerPlannedRows(){
+
+  const res = await fetch(PLANNED_URL);
+  const text = await res.text();
+
+  const json = parsePlannedGviz(text);
+  const rows = json.table.rows || [];
+
+  producerPlannedRows = rows.map(r=>({
+
+    dateKey:
+      plannedDateToKey(r.c?.[1]),
+
+    band:
+      plannedCellValue(r.c?.[2]),
+
+    producer:
+      plannedCellValue(r.c?.[3]),
+
+    departure:
+      plannedCellValue(r.c?.[6]),
+
+    returnTime:
+      plannedCellValue(r.c?.[7])
+
+  })).filter(e=>e.dateKey);
+
+}
+
+async function copyProducerSummary(type){
+
+  const selectedDate =
+    document.getElementById("copyDateInput").value;
+
+  if(!selectedDate){
+
+    alert("בחר תאריך");
+    return;
+
+  }
+
+  await fetchProducerPlannedRows();
+
+  const events =
+    producerPlannedRows.filter(e=>
+
+      e.dateKey===selectedDate &&
+
+      String(e.band)
+      .startsWith(type+" -")
+
+    );
+
+  if(!events.length){
+
+    alert("אין אירועים");
+    return;
+
+  }
+
+  const [year,month,day] =
+    selectedDate.split("-");
+
+  let text =
+`${type==="חזרה" ? "חזרות" : "הופעות"} ${day}/${month}/${year}
+
+`;
+
+  events.forEach((e,index)=>{
+
+    const band =
+      e.band
+      .replace(type+" -","")
+      .trim();
+
+    text +=
+`${index+1}. ${band}
+מפיק: ${e.producer || "-"}
+יציאה: ${e.departure || "-"}
+חזרה: ${e.returnTime || "-"}
+
+`;
+
+  });
+
+  navigator.clipboard.writeText(text);
+
+  alert("הועתק");
+
+}
  function collectFormData() {
   return {
     eventDate: document.getElementById("eventDate").value,
