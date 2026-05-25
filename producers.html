@@ -535,13 +535,22 @@ function renderCopyModalEvents() {
   }
 
   const regularHtml = regularEvents.map(e => {
-    const cleanBand = String(e.band || "ללא שם הרכב")
-      .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "");
+   const bandText = String(e.band || "ללא שם הרכב");
+
+const returnMatch =
+  bandText.match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
+
+const cleanBand =
+  bandText.replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "");
+
+const returnNote =
+  returnMatch
+    ? ` <span style="color:#b45309;font-weight:700;">(חוזר בתאריך ${returnMatch[1].split("-").reverse().join("/")})</span>`
+    : "";
 
     return `
       <div class="confirm-row">
-        <strong>${cleanBand}</strong><br>
-        מפיק: ${e.producer || "-"}<br>
+<strong>${cleanBand}${returnNote}</strong><br>        מפיק: ${e.producer || "-"}<br>
         יציאה: ${e.departure || "-"} · חזרה: ${e.returnTime || "-"}
       </div>
     `;
