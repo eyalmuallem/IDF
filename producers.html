@@ -348,6 +348,18 @@
             <label for="eventDate">תאריך</label>
             <input type="date" id="eventDate" name="eventDate" required>
           </div>
+          <div class="field">
+  <label for="hasLodging">האם כולל לינה?</label>
+  <select id="hasLodging" onchange="toggleReturnDateBox()" required>
+    <option value="לא">לא</option>
+    <option value="כן">כן</option>
+  </select>
+</div>
+
+<div class="field" id="returnDateBox" style="display:none;">
+  <label for="returnDate">תאריך חזרה</label>
+  <input type="date" id="returnDate">
+</div>
           <div class="field full">
   <label for="eventType">סוג אירוע</label>
   <select id="eventType" name="eventType" required>
@@ -506,9 +518,14 @@ function renderCopyModalEvents() {
   const selectedDate = document.getElementById("copyDateInput").value;
   const box = document.getElementById("copyModalEvents");
 
-  const events = producerPlannedRows.filter(e => e.dateKey === selectedDate);
+  const regularEvents = producerPlannedRows.filter(e => e.dateKey === selectedDate);
 
-  if (!events.length) {
+  const returningEvents = producerPlannedRows.filter(e => {
+    const match = String(e.band || "").match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
+    return match && match[1] === selectedDate;
+  });
+
+  if (!regularEvents.length && !returningEvents.length) {
     box.innerHTML = `
       <div class="confirm-row" style="text-align:center;color:#6b7280;">
         אין אירועים בתאריך שנבחר
@@ -517,14 +534,35 @@ function renderCopyModalEvents() {
     return;
   }
 
-  box.innerHTML = events.map(e => `
-    <div class="confirm-row">
-      <strong>${e.band || "ללא שם הרכב"}</strong><br>
-      מפיק: ${e.producer || "-"}<br>
-      יציאה: ${e.departure || "-"} · חזרה: ${e.returnTime || "-"}
-    </div>
-  `).join("");
+  const regularHtml = regularEvents.map(e => {
+    const cleanBand = String(e.band || "ללא שם הרכב")
+      .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "");
+
+    return `
+      <div class="confirm-row">
+        <strong>${cleanBand}</strong><br>
+        מפיק: ${e.producer || "-"}<br>
+        יציאה: ${e.departure || "-"} · חזרה: ${e.returnTime || "-"}
+      </div>
+    `;
+  }).join("");
+
+  const returningHtml = returningEvents.map(e => {
+    const cleanBand = String(e.band || "ללא שם הרכב")
+      .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "");
+
+    return `
+      <div class="confirm-row" style="background:#fff7ed;border-color:#fed7aa;">
+        <strong>חוזר היום: ${cleanBand}</strong><br>
+        מפיק: ${e.producer || "-"}<br>
+        שעת חזרה משוערת: ${e.returnTime || "-"}
+      </div>
+    `;
+  }).join("");
+
+  box.innerHTML = regularHtml + returningHtml;
 }
+
 function updateTodayLabel(){
 
   const input =
@@ -700,12 +738,20 @@ function fallbackCopyText(text) {
   document.body.removeChild(textarea);
 }
  function collectFormData() {
+  const eventType = document.getElementById("eventType").value;
+  const bandRaw = document.getElementById("bandName").value.trim();
+  const hasLodging = document.getElementById("hasLodging").value;
+  const returnDate = document.getElementById("returnDate").value;
+
+  const lodgingMarker =
+    hasLodging === "כן" && returnDate
+      ? ` ⟦חוזר:${returnDate}⟧`
+      : "";
+
   return {
     eventDate: document.getElementById("eventDate").value,
-bandName:
-  document.getElementById("eventType").value +
-  " - " +
-  document.getElementById("bandName").value.trim(),    producerName: document.getElementById("producerName").value.trim(),
+    bandName: eventType + " - " + bandRaw + lodgingMarker,
+    producerName: document.getElementById("producerName").value.trim(),
     sound: document.getElementById("sound").value,
     instruments:
       document.getElementById("instruments").value === "כן"
@@ -748,9 +794,9 @@ function closeConfirmModal() {
 async function submitConfirmedEvent() {
   closeConfirmModal();
 
-  const submitBtn = document.getElementById("submitBtn");
-  const statusBox = document.getElementById("statusBox");
-  const data = collectFormData();
+ const submitBtn = document.getElementById("submitBtn");
+const statusBox = document.getElementById("statusBox");
+const data = collectFormData();
 
   submitBtn.disabled = true;
   submitBtn.innerText = "שולח...";
@@ -773,6 +819,9 @@ async function submitConfirmedEvent() {
       new Date().toISOString().split("T")[0];
 
     document.getElementById("instrumentsDetailsBox").style.display = "none";
+    document.getElementById("returnDateBox").style.display = "none";
+document.getElementById("returnDate").required = false;
+document.getElementById("returnDate").value = "";
 
   } catch (err) {
     statusBox.className = "status error";
@@ -784,15 +833,27 @@ async function submitConfirmedEvent() {
   submitBtn.innerText = "שלח אירוע";
 }
 
-  function resetForm(){
-    document.getElementById("eventForm").reset();
-    document.getElementById("eventDate").value =
-      new Date().toISOString().split("T")[0];
+ function resetForm(){
 
-    const statusBox = document.getElementById("statusBox");
-    statusBox.className = "status";
-    statusBox.innerText = "";
-  }
+  document.getElementById("eventForm").reset();
+
+  document.getElementById("eventDate").value =
+    new Date().toISOString().split("T")[0];
+
+  document.getElementById("returnDateBox").style.display = "none";
+  document.getElementById("returnDate").required = false;
+  document.getElementById("returnDate").value = "";
+
+  document.getElementById("instrumentsDetailsBox").style.display = "none";
+  document.getElementById("instrumentsDetails").value = "";
+
+  const statusBox =
+    document.getElementById("statusBox");
+
+  statusBox.className = "status";
+  statusBox.innerText = "";
+
+}
   function toggleInstrumentsDetails() {
   const value = document.getElementById("instruments").value;
   const box = document.getElementById("instrumentsDetailsBox");
@@ -802,6 +863,20 @@ async function submitConfirmedEvent() {
     box.style.display = "flex";
   } else {
     box.style.display = "none";
+    input.value = "";
+  }
+}
+function toggleReturnDateBox() {
+  const value = document.getElementById("hasLodging").value;
+  const box = document.getElementById("returnDateBox");
+  const input = document.getElementById("returnDate");
+
+  if (value === "כן") {
+    box.style.display = "flex";
+    input.required = true;
+  } else {
+    box.style.display = "none";
+    input.required = false;
     input.value = "";
   }
 }
