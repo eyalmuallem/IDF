@@ -373,6 +373,79 @@
   color:#374151;
   border:1px solid #e5e7eb;
 }
+#copyModal .confirm-box{
+  max-height:95vh;
+  overflow:hidden;
+  width:100%;
+  max-width:640px;
+}
+
+@media(min-width:769px){
+
+  #copyModal .confirm-box{
+
+    height:auto;
+    min-height:550px;
+
+  }
+
+  #copyModal .copy-split button,
+  #copyModal .confirm-actions button{
+
+    padding:9px 14px;
+    font-size:14px;
+
+  }
+
+  #copyModalEvents{
+
+    max-height:55vh;
+
+  }
+
+}
+
+#copyModalEvents{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  max-height:none;
+}
+
+#copyModal .copy-split{
+  margin-top:8px;
+  gap:6px;
+}
+
+#copyModal .confirm-actions{
+  margin-top:8px;
+}
+
+@media(max-width:768px){
+
+  #copyModal .copy-split button,
+  #copyModal .confirm-actions button{
+
+    padding:7px 10px;
+    font-size:12px;
+    border-radius:8px;
+
+  }
+
+}
+@media(max-width:768px){
+  #copyModal .confirm-box{
+    padding:14px;
+  }
+
+  #copyModal .copy-split{
+    grid-template-columns:1fr 1fr;
+  }
+
+  #copyModal .confirm-actions{
+    flex-direction:row;
+  }
+}
   </style>
 </head>
 
@@ -508,7 +581,7 @@
 </div>
 <div id="copyModal" class="confirm-modal">
   <div class="confirm-box">
-    <h3>העתקת סיכום אירועים</h3>
+    <h3>לוח אירועים</h3>
 
     <div class="field">
      <label for="copyDateInput" id="copyDateLabel">
