@@ -358,6 +358,21 @@
   }
 
 }
+.event-tags{
+  margin-top:3px;
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+}
+
+.event-tag{
+  font-size:10.5px;
+  padding:2px 6px;
+  border-radius:999px;
+  background:#eef2ff;
+  color:#374151;
+  border:1px solid #e5e7eb;
+}
   </style>
 </head>
 
@@ -590,12 +605,17 @@ const returnNote =
     ? ` <span style="color:#b45309;font-weight:700;">(חוזר בתאריך ${returnMatch[1].split("-").reverse().join("/")})</span>`
     : "";
 
-    return `
+return `
 <div class="confirm-row compact-event">
-<strong>${cleanBand}${returnNote}</strong><br>        מפיק: ${e.producer || "-"}<br>
-        יציאה: ${e.departure || "-"} · חזרה: ${e.returnTime || "-"}
-      </div>
-    `;
+  <strong>${cleanBand}${returnNote}</strong><br>
+  מפיק: ${e.producer || "-"}<br>
+  יציאה: ${e.departure || "-"} · חזרה: ${e.returnTime || "-"}
+  <div class="event-tags">
+    <span class="event-tag">הגברה: ${e.sound || "-"}</span>
+    <span class="event-tag">כלים: ${e.instruments || "-"}</span>
+  </div>
+</div>
+`;
   }).join("");
 
   const returningHtml = returningEvents.map(e => {
@@ -681,24 +701,30 @@ async function fetchProducerPlannedRows(){
 
   producerPlannedRows = rows.map(r=>({
 
-    dateKey:
-      plannedDateToKey(r.c?.[1]),
+  dateKey:
+    plannedDateToKey(r.c?.[1]),
 
-    band:
-      plannedCellValue(r.c?.[2]),
+  band:
+    plannedCellValue(r.c?.[2]),
 
-    producer:
-      plannedCellValue(r.c?.[3]),
+  producer:
+    plannedCellValue(r.c?.[3]),
 
-    departure:
-      plannedCellValue(r.c?.[6]),
+  sound:
+    plannedCellValue(r.c?.[4]),
 
-    returnTime:
-      plannedCellValue(r.c?.[7])
+  instruments:
+    plannedCellValue(r.c?.[5]),
 
-  })).filter(e=>e.dateKey);
+  departure:
+    plannedCellValue(r.c?.[6]),
 
+  returnTime:
+    plannedCellValue(r.c?.[7])
+
+})).filter(e=>e.dateKey);
 }
+
 
 async function copyProducerSummary(type){
 
