@@ -317,15 +317,46 @@
   }
 }
 #copyModal .confirm-box{
-  max-height:85vh;
-  display:flex;
-  flex-direction:column;
+  max-height:95vh;
 }
 
 #copyModalEvents{
   overflow-y:auto;
   max-height:45vh;
   padding-left:4px;
+}
+.compact-event{
+  padding:5px 8px;
+  font-size:12px;
+  line-height:1.15;
+}
+
+.compact-event strong{
+  font-size:13px;
+}
+
+.confirm-summary{
+  gap:5px;
+}
+
+
+#copyModalEvents{
+  overflow-y:auto;
+  max-height:70vh;
+  gap:4px;
+}
+
+@media(max-width:768px){
+
+  .compact-event{
+    padding:6px 8px;
+    font-size:12px;
+  }
+
+  .compact-event strong{
+    font-size:13px;
+  }
+
 }
   </style>
 </head>
@@ -560,7 +591,7 @@ const returnNote =
     : "";
 
     return `
-      <div class="confirm-row">
+<div class="confirm-row compact-event">
 <strong>${cleanBand}${returnNote}</strong><br>        מפיק: ${e.producer || "-"}<br>
         יציאה: ${e.departure || "-"} · חזרה: ${e.returnTime || "-"}
       </div>
@@ -572,7 +603,8 @@ const returnNote =
       .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "");
 
     return `
-      <div class="confirm-row" style="background:#fff7ed;border-color:#fed7aa;">
+     <div class="confirm-row compact-event"
+style="background:#fff7ed;border-color:#fed7aa;">
         <strong>חוזר היום: ${cleanBand}</strong><br>
         מפיק: ${e.producer || "-"}<br>
         שעת חזרה משוערת: ${e.returnTime || "-"}
