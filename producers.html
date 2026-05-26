@@ -559,6 +559,34 @@
     flex-shrink:0;
   }
 }
+@media(max-width:768px){
+
+  #copyModalEvents:not(.many-events) .compact-event{
+    padding:8px 10px;
+    font-size:13px;
+    line-height:1.25;
+  }
+
+  #copyModalEvents:not(.many-events) .compact-event strong{
+    font-size:14px;
+  }
+
+  #copyModalEvents:not(.many-events) .event-tag{
+    font-size:11.5px;
+    padding:3px 7px;
+  }
+
+  #copyModalEvents.many-events .compact-event{
+    padding:5px 7px;
+    font-size:11.5px;
+    line-height:1.12;
+  }
+
+  #copyModalEvents.many-events .compact-event strong{
+    font-size:12.5px;
+  }
+
+}
   </style>
 </head>
 
@@ -776,6 +804,9 @@ function renderCopyModalEvents() {
     `;
     return;
   }
+  const totalEvents = regularEvents.length + returningEvents.length;
+
+box.classList.toggle("many-events", totalEvents >= 6);
 
   const regularHtml = regularEvents.map(e => {
    const bandText = String(e.band || "ללא שם הרכב");
