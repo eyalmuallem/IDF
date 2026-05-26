@@ -446,6 +446,119 @@
     flex-direction:row;
   }
 }
+@media(max-width:768px){
+
+  #copyModal{
+    padding:4px;
+    align-items:center;
+  }
+
+  #copyModal .confirm-box{
+    height:95dvh;
+    max-height:95dvh;
+
+    padding:10px;
+
+    display:flex;
+    flex-direction:column;
+
+    overflow:hidden;
+  }
+
+  #copyModal h3{
+
+    margin:0 0 5px;
+
+    font-size:16px;
+
+    flex-shrink:0;
+  }
+
+  #copyModal .field{
+
+    gap:4px;
+
+    margin-bottom:4px;
+
+    flex-shrink:0;
+  }
+
+  #copyModal label{
+
+    font-size:12px;
+
+  }
+
+  #copyModal input{
+
+    padding:8px 10px;
+
+    font-size:14px;
+
+  }
+
+  #copyModal .copy-split{
+
+    gap:4px;
+
+    margin-top:5px;
+
+    flex-shrink:0;
+  }
+
+  #copyModal .confirm-actions{
+
+    margin-top:5px;
+
+    flex-shrink:0;
+  }
+
+  #copyModal .copy-split button,
+  #copyModal .confirm-actions button{
+
+    padding:6px 8px;
+
+    font-size:11px;
+
+  }
+
+  #copyModalEvents{
+
+    flex:1;
+
+    min-height:0;
+
+    overflow-y:auto;
+
+    -webkit-overflow-scrolling:touch;
+  }
+
+
+}
+@media(min-width:769px){
+
+  #copyModal .confirm-box{
+    height:90vh;
+    max-height:90vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  #copyModalEvents{
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+    max-height:none !important;
+  }
+
+  #copyModal .field,
+  #copyModal .copy-split,
+  #copyModal .confirm-actions,
+  #copyModal h3{
+    flex-shrink:0;
+  }
+}
   </style>
 </head>
 
