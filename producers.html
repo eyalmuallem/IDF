@@ -980,8 +980,11 @@ producerPlannedRows = rows.map((r, index)=>({
   departure:
     plannedCellValue(r.c?.[6]),
 
-  returnTime:
-    plannedCellValue(r.c?.[7])
+ returnTime:
+  plannedCellValue(r.c?.[7]),
+
+contact:
+  plannedCellValue(r.c?.[8])
 
 })).filter(e=>e.dateKey);
 }
@@ -1133,7 +1136,7 @@ if (instrumentsText.startsWith("כן -")) {
 toggleInstrumentsDetails();
   document.getElementById("departureTime").value = event.departure || "";
   document.getElementById("returnTime").value = event.returnTime || "";
-  document.getElementById("contact").value = "ללא שינוי";
+  document.getElementById("contact").value = event.contact || "";
 
   document.getElementById("submitBtn").innerText = "שמור שינויים";
 }
