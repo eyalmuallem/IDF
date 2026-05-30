@@ -616,6 +616,59 @@ thead tr:hover {
 .zone.tools:hover {
   fill: #d1d5db;          /* אפור */
 }
+#plannedCalendarView {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  padding: 16px;
+}
+
+.planned-popup-card {
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  width: 95%;
+  max-width: 1100px;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.planned-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.planned-event-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  background: #f9fafb;
+  text-align: right;
+}
+
+.planned-event-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.planned-event-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.planned-event-grid strong {
+  color: #111827;
+}
 #plannedCalendarView .planned-toolbar {
   display:flex;
   gap:12px;
@@ -762,9 +815,13 @@ thead tr:hover {
     </div>
 
   </div>
- <div id="plannedCalendarView" class="table-card" style="padding:20px; margin-top:0; display:none;">
-
+<div id="plannedCalendarView">
+  <div class="planned-popup-card">
   <div class="planned-toolbar">
+      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:6px;">
+  <strong style="font-size:16px;">לוח אירועים מתוכננים</strong>
+  <button class="secondary" onclick="togglePlannedCalendar()">✕</button>
+</div>
     <label>תאריך אירועים מתוכננים:</label>
     <input type="date" id="plannedDateInput">
     <button class="primary" onclick="loadPlannedEventsByDate()">הצג</button>
@@ -776,21 +833,8 @@ thead tr:hover {
 </button>
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>שם הרכב</th>
-        <th>מפיק</th>
-        <th>הגברה</th>
-        <th>כלים</th>
-        <th>יציאה</th>
-        <th>חזרה משוערת</th>
-        <th>איש קשר</th>
-      </tr>
-    </thead>
-    <tbody id="plannedEventsBody"></tbody>
-  </table>
-
+  <div id="plannedEventsBody" class="planned-events-list"></div>
+  </div>
 </div>
 
 </div><!-- end .container -->
@@ -2022,8 +2066,7 @@ async function togglePlannedCalendar() {
   const warehouse = document.getElementById("warehouseView");
   const btn = document.getElementById("plannedCalendarBtn");
 
-  const isOpen = planned.style.display === "block";
-
+const isOpen = planned.style.display === "flex";
   if (isOpen) {
     planned.style.display = "none";
     tableCard.style.display = "block";
@@ -2039,7 +2082,7 @@ async function togglePlannedCalendar() {
   document.getElementById("statsBtn").innerText = "סטטיסטיקות";
   document.getElementById("calendarBtn").innerText = " לוח שנה";
 
-  planned.style.display = "block";
+  planned.style.display = "flex";
 btn.innerText = "✕ סגור אירועים מתוכננים";
 
 document.getElementById("plannedDateInput").value =
@@ -2055,16 +2098,21 @@ function loadPlannedEventsByDate() {
 
  const visibleRows = getLatestPlannedRows(plannedRowsCache);
 
-const events = visibleRows.filter(e => e.dateKey === selectedDate);
+const regularEvents = visibleRows.filter(e => e.dateKey === selectedDate);
+
+const returningEvents = visibleRows.filter(e => {
+  const match = String(e.band || "").match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
+  return match && match[1] === selectedDate;
+});
+
+const events = regularEvents.concat(returningEvents);
 
   if (!events.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="7" style="color:#6b7280;text-align:center;padding:18px;">
-          אין אירועים מתוכננים לתאריך שנבחר
-        </td>
-      </tr>
-    `;
+   tbody.innerHTML = `
+  <div style="color:#6b7280;text-align:center;padding:18px;">
+    אין אירועים מתוכננים לתאריך שנבחר
+  </div>
+`;
     return;
   }
 tbody.innerHTML = events.map(e => {
@@ -2072,22 +2120,30 @@ tbody.innerHTML = events.map(e => {
   const returnDate = getReturnDateFromBand(e.band);
 
   const returnNote = returnDate
-    ? `<div style="color:#b45309;font-size:12px;font-weight:700;">
-        חוזר בתאריך ${returnDate.split("-").reverse().join("/")}
-      </div>`
-    : "";
+  ? `<div style="color:#b45309;font-size:12px;font-weight:700;">
+      חוזר בתאריך ${returnDate.split("-").reverse().join("/")}
+    </div>`
+  : "";
 
-  return `
-    <tr>
-      <td>${cleanBand}${returnNote}</td>
-      <td>${e.producer}</td>
-      <td>${e.sound}</td>
-      <td>${e.instruments}</td>
-      <td>${e.departure}</td>
-      <td>${e.returnTime}</td>
-      <td>${e.contact}</td>
-    </tr>
-  `;
+const isReturningToday =
+  e.dateKey !== selectedDate && returnDate === selectedDate;
+
+return `
+  <div class="planned-event-card" style="${isReturningToday ? "background:#fff7ed;border-color:#fed7aa;" : ""}">
+    <div class="planned-event-title">
+  ${isReturningToday ? "חוזר היום: " : ""}${cleanBand}${!isReturningToday ? returnNote : ""}
+</div>
+
+    <div class="planned-event-grid">
+      <div><strong>מפיק:</strong> ${e.producer || "-"}</div>
+      <div><strong>הגברה:</strong> ${e.sound || "-"}</div>
+      <div><strong>כלים:</strong> ${e.instruments || "-"}</div>
+      <div><strong>יציאה:</strong> ${e.departure || "-"}</div>
+      <div><strong>חזרה משוערת:</strong> ${e.returnTime || "-"}</div>
+      <div><strong>איש קשר:</strong> ${e.contact || "-"}</div>
+    </div>
+  </div>
+`;
 }).join("");
   
 }
