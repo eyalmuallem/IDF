@@ -1474,17 +1474,16 @@ time: getTimeValue(r.c?.[6]) || getTimeValue(r.c?.[5])    });
   if (events.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5" style="color:#6b7280;text-align:center;padding:16px;">אין אירועים ביום זה</td></tr>`;
   } else {
-    tbody.innerHTML = events.map(e => `
-      <tr class="${e.status}">
-        <td>${e.docId}</td>
-        <td>${e.status}</td>
-        <td>${e.event}</td>
-        <td>${e.signer}</td>
-        <td>${e.time}</td>
-      </tr>
-    `).join("");
-  }
-
+  tbody.innerHTML = events.map(e => `
+    <tr class="${e.status}">
+      <td>${e.docId}</td>
+      <td>${e.status}</td>
+      <td>${e.event}</td>
+      <td>${e.signer}</td>
+      <td>${e.time}</td>
+    </tr>
+  `).join("");
+}
   panel.style.display = "block";
   panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
@@ -1954,14 +1953,44 @@ function plannedDateToKey(cell) {
 
   return v;
 }
+function stripHiddenMarkers(text) {
+  return String(text || "")
+    .replace(/⟦ID:[A-Z]{2}\d{5}[A-Z]⟧\s*/g, "")
+    .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "")
+    .trim();
+}
 
+function getReturnDateFromBand(text) {
+  const match = String(text || "").match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
+  return match ? match[1] : "";
+}
+
+function getLatestPlannedRows(rows) {
+  const map = new Map();
+
+  rows.forEach(e => {
+    const idMatch = String(e.band || "").match(/⟦ID:([A-Z]{2}\d{5}[A-Z])⟧/);
+    const cleanBand = stripHiddenMarkers(e.band);
+
+    const key = idMatch
+      ? idMatch[1]
+      : `${e.dateKey}|${cleanBand}|${e.producer || ""}`;
+
+    if (!map.has(key) || e.rowNumber > map.get(key).rowNumber) {
+      map.set(key, e);
+    }
+  });
+
+  return Array.from(map.values());
+}
 async function fetchPlannedRows() {
   const res = await fetch(PLANNED_URL);
   const text = await res.text();
   const json = parsePlannedGviz(text);
   const rows = json.table.rows || [];
 
-  plannedRowsCache = rows.map(r => ({
+ plannedRowsCache = rows.map((r, index) => ({
+  rowNumber: index + 2,
     dateKey: plannedDateToKey(r.c?.[1]),
     band: plannedCellValue(r.c?.[2]),
     producer: plannedCellValue(r.c?.[3]),
@@ -2024,7 +2053,9 @@ function loadPlannedEventsByDate() {
   const selectedDate = document.getElementById("plannedDateInput").value;
   const tbody = document.getElementById("plannedEventsBody");
 
-  const events = plannedRowsCache.filter(e => e.dateKey === selectedDate);
+ const visibleRows = getLatestPlannedRows(plannedRowsCache);
+
+const events = visibleRows.filter(e => e.dateKey === selectedDate);
 
   if (!events.length) {
     tbody.innerHTML = `
@@ -2036,10 +2067,19 @@ function loadPlannedEventsByDate() {
     `;
     return;
   }
+tbody.innerHTML = events.map(e => {
+  const cleanBand = stripHiddenMarkers(e.band);
+  const returnDate = getReturnDateFromBand(e.band);
 
-  tbody.innerHTML = events.map(e => `
+  const returnNote = returnDate
+    ? `<div style="color:#b45309;font-size:12px;font-weight:700;">
+        חוזר בתאריך ${returnDate.split("-").reverse().join("/")}
+      </div>`
+    : "";
+
+  return `
     <tr>
-      <td>${e.band}</td>
+      <td>${cleanBand}${returnNote}</td>
       <td>${e.producer}</td>
       <td>${e.sound}</td>
       <td>${e.instruments}</td>
@@ -2047,13 +2087,14 @@ function loadPlannedEventsByDate() {
       <td>${e.returnTime}</td>
       <td>${e.contact}</td>
     </tr>
-  `).join("");
+  `;
+}).join("");
   
 }
 function copyPlannedWhatsappSummary() {
   const selectedDate = document.getElementById("plannedDateInput").value;
-  const events = plannedRowsCache.filter(e => e.dateKey === selectedDate);
-
+const visibleRows = getLatestPlannedRows(plannedRowsCache);
+const events = visibleRows.filter(e => e.dateKey === selectedDate);
   if (!selectedDate) {
     alert("נא לבחור תאריך");
     return;
@@ -2070,7 +2111,14 @@ function copyPlannedWhatsappSummary() {
   let text = `סיכום אירועים מתוכננים לתאריך ${formattedDate}\n\n`;
 
   events.forEach((e, index) => {
-    text += `${index + 1}. ${e.band || "ללא שם הרכב"}\n`;
+   const cleanBand = stripHiddenMarkers(e.band);
+const returnDate = getReturnDateFromBand(e.band);
+
+text += `${index + 1}. ${cleanBand || "ללא שם הרכב"}\n`;
+
+if (returnDate) {
+  text += `חוזר בתאריך: ${returnDate.split("-").reverse().join("/")}\n`;
+}
     text += `מפיק: ${e.producer || "-"}\n`;
     text += `שעת יציאה: ${e.departure || "-"}\n`;
     text += `שעת חזרה משוערת: ${e.returnTime || "-"}\n\n`;
