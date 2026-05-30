@@ -766,7 +766,8 @@ const PLANNED_URL =
   `https://docs.google.com/spreadsheets/d/${PLANNED_SHEET_ID}/gviz/tq?tqx=out:json&gid=${PLANNED_GID}`;
 
 let producerPlannedRows = [];
-  function updateDateTime(){
+let editingRowNumber = null;
+let currentEditingEventId = null;  function updateDateTime(){
     const now = new Date();
     document.getElementById("datetime").innerText =
       now.toLocaleDateString("he-IL") + " | " + now.toLocaleTimeString("he-IL");
@@ -789,13 +790,45 @@ let producerPlannedRows = [];
 function closeCopyModal() {
   document.getElementById("copyModal").style.display = "none";
 }
+function generateEventId() {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const nums = String(Math.floor(Math.random() * 100000)).padStart(5, "0");
+  return letters[Math.floor(Math.random()*26)] +
+         letters[Math.floor(Math.random()*26)] +
+         nums +
+         letters[Math.floor(Math.random()*26)];
+}
+
+function stripHiddenMarkers(text) {
+  return String(text || "")
+    .replace(/⟦ID:[A-Z]{2}\d{5}[A-Z]⟧\s*/g, "")
+    .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "")
+    .trim();
+}
+
+function getLatestPlannedRows(rows) {
+  const map = new Map();
+
+  rows.forEach(e => {
+    const idMatch = String(e.band || "").match(/⟦ID:([A-Z]{2}\d{5}[A-Z])⟧/);
+    const key = idMatch ? idMatch[1] : stripHiddenMarkers(e.band);
+
+    if (!map.has(key) || e.rowNumber > map.get(key).rowNumber) {
+      map.set(key, e);
+    }
+  });
+
+  return Array.from(map.values());
+}
 function renderCopyModalEvents() {
   const selectedDate = document.getElementById("copyDateInput").value;
   const box = document.getElementById("copyModalEvents");
 
-  const regularEvents = producerPlannedRows.filter(e => e.dateKey === selectedDate);
+ const visibleRows = getLatestPlannedRows(producerPlannedRows);
 
-  const returningEvents = producerPlannedRows.filter(e => {
+const regularEvents = visibleRows.filter(e => e.dateKey === selectedDate);
+
+const returningEvents = visibleRows.filter(e => {
     const match = String(e.band || "").match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
     return match && match[1] === selectedDate;
   });
@@ -818,8 +851,7 @@ box.classList.toggle("many-events", totalEvents >= 6);
 const returnMatch =
   bandText.match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
 
-const cleanBand =
-  bandText.replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "");
+const cleanBand = stripHiddenMarkers(bandText);
 
 const returnNote =
   returnMatch
@@ -835,13 +867,21 @@ return `
     <span class="event-tag">הגברה: ${e.sound || "-"}</span>
     <span class="event-tag">כלים: ${e.instruments || "-"}</span>
   </div>
+
+  <button
+  type="button"
+  class="secondary"
+  style="margin-top:6px;padding:5px 10px;font-size:11px;"
+  onclick="requestEditCode(${e.rowNumber})">
+  ערוך
+</button>
+
 </div>
 `;
   }).join("");
 
   const returningHtml = returningEvents.map(e => {
-    const cleanBand = String(e.band || "ללא שם הרכב")
-      .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "");
+  const cleanBand = stripHiddenMarkers(e.band || "ללא שם הרכב");
 
     return `
      <div class="confirm-row compact-event"
@@ -920,8 +960,8 @@ async function fetchProducerPlannedRows(){
   const json = parsePlannedGviz(text);
   const rows = json.table.rows || [];
 
-  producerPlannedRows = rows.map(r=>({
-
+producerPlannedRows = rows.map((r, index)=>({
+  rowNumber: index + 2,
   dateKey:
     plannedDateToKey(r.c?.[1]),
 
@@ -961,13 +1001,14 @@ async function copyProducerSummary(type){
 
   await fetchProducerPlannedRows();
 
-  const events =
-    producerPlannedRows.filter(e=>
+ const visibleRows = getLatestPlannedRows(producerPlannedRows);
 
+const events =
+  visibleRows.filter(e=>
       e.dateKey===selectedDate &&
 
-      String(e.band)
-      .startsWith(type+" -")
+    stripHiddenMarkers(e.band)
+  .startsWith(type+" -")
 
     );
 
@@ -989,9 +1030,9 @@ async function copyProducerSummary(type){
   events.forEach((e,index)=>{
 
     const band =
-      e.band
-      .replace(type+" -","")
-      .trim();
+  stripHiddenMarkers(e.band)
+  .replace(type+" -","")
+  .trim();
 
     text +=
 `${index+1}. ${band}
@@ -1036,7 +1077,68 @@ function fallbackCopyText(text) {
 
   document.body.removeChild(textarea);
 }
+const EDIT_CODE = "1234";
+
+function requestEditCode(rowNumber) {
+  const code = prompt("הזן קוד גישה לעריכה:");
+
+  if (code !== EDIT_CODE) {
+    alert("קוד שגוי");
+    return;
+  }
+
+  startEditEvent(rowNumber);
+}
+function startEditEvent(rowNumber){
+  const event = producerPlannedRows.find(e => e.rowNumber === rowNumber);
+
+  if(!event){
+    alert("האירוע לא נמצא");
+    return;
+  }
+
+  editingRowNumber = rowNumber;
+
+  const bandText = String(event.band || "");
+  const idMatch = bandText.match(/⟦ID:([A-Z]{2}\d{5}[A-Z])⟧/);
+  currentEditingEventId = idMatch ? idMatch[1] : generateEventId();
+
+  closeCopyModal();
+
+  document.getElementById("eventDate").value = event.dateKey || "";
+
+  const cleanBand = stripHiddenMarkers(bandText);
+
+  if(cleanBand.startsWith("הופעה -")){
+    document.getElementById("eventType").value = "הופעה";
+    document.getElementById("bandName").value = cleanBand.replace("הופעה -", "").trim();
+  } else if(cleanBand.startsWith("חזרה -")){
+    document.getElementById("eventType").value = "חזרה";
+    document.getElementById("bandName").value = cleanBand.replace("חזרה -", "").trim();
+  }
+
+  document.getElementById("producerName").value = event.producer || "";
+  document.getElementById("sound").value = event.sound || "";
+  const instrumentsText = String(event.instruments || "");
+
+if (instrumentsText.startsWith("כן -")) {
+  document.getElementById("instruments").value = "כן";
+  document.getElementById("instrumentsDetails").value =
+    instrumentsText.replace("כן -", "").trim();
+} else {
+  document.getElementById("instruments").value = instrumentsText || "";
+  document.getElementById("instrumentsDetails").value = "";
+}
+
+toggleInstrumentsDetails();
+  document.getElementById("departureTime").value = event.departure || "";
+  document.getElementById("returnTime").value = event.returnTime || "";
+  document.getElementById("contact").value = "ללא שינוי";
+
+  document.getElementById("submitBtn").innerText = "שמור שינויים";
+}
  function collectFormData() {
+
   const eventType = document.getElementById("eventType").value;
   const bandRaw = document.getElementById("bandName").value.trim();
   const hasLodging = document.getElementById("hasLodging").value;
@@ -1047,18 +1149,39 @@ function fallbackCopyText(text) {
       ? ` ⟦חוזר:${returnDate}⟧`
       : "";
 
+  currentEditingEventId =
+    currentEditingEventId || generateEventId();
+
   return {
     eventDate: document.getElementById("eventDate").value,
-    bandName: eventType + " - " + bandRaw + lodgingMarker,
-    producerName: document.getElementById("producerName").value.trim(),
-    sound: document.getElementById("sound").value,
+
+    bandName:
+      `⟦ID:${currentEditingEventId}⟧ ` +
+      eventType +
+      " - " +
+      bandRaw +
+      lodgingMarker,
+
+    producerName:
+      document.getElementById("producerName").value.trim(),
+
+    sound:
+      document.getElementById("sound").value,
+
     instruments:
       document.getElementById("instruments").value === "כן"
-        ? "כן - " + document.getElementById("instrumentsDetails").value.trim()
+        ? "כן - " +
+          document.getElementById("instrumentsDetails").value.trim()
         : document.getElementById("instruments").value,
-    departureTime: document.getElementById("departureTime").value,
-    returnTime: document.getElementById("returnTime").value,
-    contact: document.getElementById("contact").value.trim()
+
+    departureTime:
+      document.getElementById("departureTime").value,
+
+    returnTime:
+      document.getElementById("returnTime").value,
+
+    contact:
+      document.getElementById("contact").value.trim()
   };
 }
 
@@ -1074,7 +1197,7 @@ function openConfirmModal() {
 
   document.getElementById("confirmSummary").innerHTML = `
     <div class="confirm-row"><strong>תאריך:</strong> ${data.eventDate}</div>
-    <div class="confirm-row"><strong>שם הרכב:</strong> ${data.bandName}</div>
+    <div class="confirm-row"><strong>שם הרכב:</strong> ${stripHiddenMarkers(data.bandName)}</div>
     <div class="confirm-row"><strong>שם מפיק:</strong> ${data.producerName}</div>
     <div class="confirm-row"><strong>הגברה שלנו:</strong> ${data.sound}</div>
     <div class="confirm-row"><strong>כלים שלנו:</strong> ${data.instruments}</div>
@@ -1121,6 +1244,8 @@ const data = collectFormData();
     document.getElementById("returnDateBox").style.display = "none";
 document.getElementById("returnDate").required = false;
 document.getElementById("returnDate").value = "";
+editingRowNumber = null;
+currentEditingEventId = null;
 
   } catch (err) {
     statusBox.className = "status error";
@@ -1151,6 +1276,9 @@ document.getElementById("returnDate").value = "";
 
   statusBox.className = "status";
   statusBox.innerText = "";
+  editingRowNumber = null;
+currentEditingEventId = null;
+document.getElementById("submitBtn").innerText = "שלח אירוע";
 
 }
   function toggleInstrumentsDetails() {
