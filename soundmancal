@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Digicare - יומן סאונדמנים</title>
+
+  <link rel="manifest" href="/IDF/manifest-producer.json">
+  <link rel="apple-touch-icon" href="/IDF/dashboard.png">
+  <link rel="icon" href="/IDF/dashboard.png">
+
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --primary:#1f2937;
+      --secondary:#374151;
+      --accent:#2563eb;
+      --accent-dark:#1e40af;
+      --border:#e5e7eb;
+      --muted:#6b7280;
+      --success:#16a34a;
+      --warning:#b45309;
+      --warning-bg:#fff7ed;
+      --warning-border:#fed7aa;
+      --danger:#dc2626;
+      --shadow:0 10px 28px rgba(15,23,42,.10);
+    }
+
+    *{box-sizing:border-box;}
+
+    html,body{
+      margin:0;
+      min-height:100%;
+      font-family:Arial, sans-serif;
+      background:linear-gradient(180deg,#f3f4f6 0%,#eef2f7 100%);
+      color:#111827;
+    }
+
+body{
+  padding-bottom:20px;
+}
+    .app-header{
+      position:sticky;
+      top:0;
+      z-index:50;
+      background:var(--primary);
+      color:white;
+      padding:12px 14px;
+      box-shadow:0 8px 24px rgba(0,0,0,.16);
+    }
+
+.header-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  max-width:980px;
+  margin:0 auto;
+}
+
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .logo{
+      width:48px;
+      height:48px;
+      object-fit:contain;
+      background:white;
+      padding:3px;
+      border-radius:10px;
+      box-shadow:0 4px 12px rgba(0,0,0,.25);
+      flex:0 0 auto;
+    }
+
+    .title-wrap{min-width:0;}
+
+    h1{
+      margin:0;
+      font-size:18px;
+      line-height:1.1;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .subtitle{
+      margin-top:3px;
+      font-size:12px;
+      opacity:.82;
+    }
+
+    .clock{
+      font-size:12px;
+      opacity:.9;
+      font-variant-numeric:tabular-nums;
+      white-space:nowrap;
+    }
+
+    .page{
+      max-width:980px;
+      margin:0 auto;
+      padding:14px 12px 24px;
+    }
+
+    .toolbar{
+      background:rgba(255,255,255,.96);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:12px;
+      display:grid;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .date-line{
+      display:grid;
+      grid-template-columns:44px 1fr 44px;
+      gap:8px;
+      align-items:center;
+    }
+
+    input[type="date"], select{
+      width:100%;
+      padding:11px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      font-size:16px;
+      background:white;
+      color:#111827;
+      outline:none;
+    }
+
+    input[type="date"]:focus, select:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    button{
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      cursor:pointer;
+      transition:.18s ease;
+      font-family:inherit;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+      color:white;
+      box-shadow:0 4px 10px rgba(37,99,235,.25);
+      font-weight:700;
+    }
+
+    .btn-secondary{
+      background:#f3f4f6;
+      color:#374151;
+      border:1px solid var(--border);
+      font-weight:700;
+    }
+
+    .btn-icon{
+      width:44px;
+      height:44px;
+      padding:0;
+      font-size:22px;
+      line-height:1;
+    }
+
+    .chips{
+      display:flex;
+      gap:7px;
+      overflow-x:auto;
+      padding-bottom:2px;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    .chip{
+      flex:0 0 auto;
+      border:1px solid var(--border);
+      background:white;
+      color:#374151;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .chip.active{
+      background:#eef2ff;
+      color:#1e40af;
+      border-color:#bfdbfe;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .stat-card{
+      background:white;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:10px 8px;
+      text-align:center;
+      box-shadow:0 4px 14px rgba(15,23,42,.06);
+    }
+
+    .stat-number{
+      font-size:20px;
+      font-weight:800;
+      color:var(--primary);
+      line-height:1;
+    }
+
+    .stat-label{
+      margin-top:5px;
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin:14px 2px 8px;
+      color:#374151;
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .section-title span:last-child{
+      color:#6b7280;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .events-list{
+      display:grid;
+      gap:9px;
+    }
+
+    .event-card{
+      background:white;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:11px 12px;
+      box-shadow:0 4px 14px rgba(15,23,42,.06);
+      overflow:hidden;
+    }
+
+    .event-card.returning{
+      background:var(--warning-bg);
+      border-color:var(--warning-border);
+    }
+
+    .event-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .event-name{
+      font-size:15px;
+      font-weight:800;
+      color:#111827;
+      line-height:1.25;
+      overflow-wrap:anywhere;
+    }
+
+    .event-type{
+      flex:0 0 auto;
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#1e40af;
+      border:1px solid #bfdbfe;
+      font-weight:800;
+    }
+
+    .event-type.rehearsal{
+      background:#ecfdf5;
+      color:#166534;
+      border-color:#bbf7d0;
+    }
+
+    .event-type.returning{
+      background:#ffedd5;
+      color:#9a3412;
+      border-color:#fed7aa;
+    }
+
+    .event-meta{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:7px;
+      margin-top:9px;
+    }
+
+    .meta-item{
+      background:#f9fafb;
+      border:1px solid #edf0f3;
+      border-radius:11px;
+      padding:7px 8px;
+      min-width:0;
+    }
+
+    .meta-label{
+      display:block;
+      font-size:10.5px;
+      color:#6b7280;
+      font-weight:700;
+      margin-bottom:2px;
+    }
+
+    .meta-value{
+      display:block;
+      font-size:12.5px;
+      color:#1f2937;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+      margin-top:8px;
+    }
+
+    .tag{
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#f3f4f6;
+      color:#374151;
+      border:1px solid var(--border);
+      font-weight:700;
+    }
+
+    .return-note{
+      margin-top:8px;
+      color:#b45309;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .empty{
+      background:white;
+      border:1px dashed #cbd5e1;
+      border-radius:18px;
+      padding:28px 14px;
+      text-align:center;
+      color:#6b7280;
+      font-weight:700;
+      box-shadow:0 4px 14px rgba(15,23,42,.04);
+    }
+
+    .loader{
+      padding:22px;
+      text-align:center;
+      color:#6b7280;
+      font-weight:700;
+    }
+
+   
+
+    .toast{
+      position:fixed;
+      bottom:calc(88px + env(safe-area-inset-bottom));
+      left:50%;
+      transform:translateX(-50%);
+      z-index:70;
+      background:#111827;
+      color:white;
+      padding:10px 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:700;
+      display:none;
+      box-shadow:0 10px 24px rgba(0,0,0,.25);
+      white-space:nowrap;
+    }
+
+@media(min-width:769px){
+  body{padding-bottom:20px;}
+      .app-header{padding:16px 22px;}
+      .logo{width:62px;height:62px;}
+      h1{font-size:24px;}
+      .subtitle{font-size:13px;}
+      .clock{font-size:15px;}
+      .page{padding:22px 18px 34px;}
+      .toolbar{grid-template-columns:1.2fr 1fr;align-items:center;padding:16px;}
+      .chips{justify-content:flex-end;}
+      .event-meta{grid-template-columns:repeat(4,1fr);}
+      .event-name{font-size:17px;}
+      .events-list{grid-template-columns:1fr 1fr;}
+      .empty{grid-column:1/-1;}
+    }
+    
+    @media(max-width:768px){
+
+  .header-row{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    text-align:center;
+  }
+  
+
+  .brand{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+  }
+
+  .title-wrap{
+    text-align:center;
+  }
+
+  .logo{
+    width:auto;
+    height:48px;
+  }
+
+  h1{
+    font-size:18px;
+    text-align:center;
+  }
+
+  .subtitle{
+    text-align:center;
+  }
+
+  .clock{
+    font-size:14px;
+    text-align:center;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+  <header class="app-header">
+    <div class="header-row">
+      <div class="brand">
+        <img
+          src="https://i.postimg.cc/C10KTLTh/Chat-GPT-Image-Feb-13-2026-05-05-23-PM-(1).png"
+          alt="Digicare Logo"
+          class="logo"
+        >
+        <div class="title-wrap">
+          <h1>Digicare - לוח אירועים</h1>
+          <div class="subtitle" id="selectedDateTitle">אירועים מתוכננים</div>
+        </div>
+      </div>
+      <div class="clock" id="clock"></div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="toolbar">
+      <div class="date-line">
+        <button class="btn-secondary btn-icon" type="button" onclick="changeDate(1)">‹</button>
+        <input type="date" id="dateInput" onchange="render()">
+        <button class="btn-secondary btn-icon" type="button" onclick="changeDate(-1)">›</button>
+      </div>
+
+      <div class="chips" aria-label="סינון אירועים">
+        <button class="chip active" type="button" data-filter="all" onclick="setFilter('all')">הכול</button>
+        <button class="chip" type="button" data-filter="הופעה" onclick="setFilter('הופעה')">הופעות</button>
+        <button class="chip" type="button" data-filter="חזרה" onclick="setFilter('חזרה')">חזרות</button>
+        <button class="chip" type="button" data-filter="returning" onclick="setFilter('returning')">חוזרים</button>
+      </div>
+    </section>
+
+    <section class="stats" id="stats"></section>
+
+    <div id="content" class="events-list">
+      <div class="loader">טוען אירועים...</div>
+    </div>
+  </main>
+
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const PLANNED_SHEET_ID = "1NBR5PefJjwTUacYjLtOYZdh9v70rzSOTLW1q7JrhDBc";
+    const PLANNED_GID = "0";
+    const PLANNED_URL =
+      `https://docs.google.com/spreadsheets/d/${PLANNED_SHEET_ID}/gviz/tq?tqx=out:json&gid=${PLANNED_GID}`;
+
+    let allRows = [];
+    let currentFilter = "all";
+
+    const $ = (id) => document.getElementById(id);
+
+    function todayKey(){
+      return new Date().toISOString().split("T")[0];
+    }
+
+    function displayDate(key){
+      if(!key) return "";
+      const [y,m,d] = key.split("-");
+      return `${d}/${m}/${y}`;
+    }
+
+    function updateClock(){
+      const now = new Date();
+      $("clock").innerText =
+        now.toLocaleDateString("he-IL") + " | " + now.toLocaleTimeString("he-IL", {hour:"2-digit", minute:"2-digit"});
+    }
+
+    function parseGviz(text){
+      return JSON.parse(text.substring(47).slice(0, -2));
+    }
+
+    function cellValue(cell){
+      if(!cell) return "";
+      return cell.f || cell.v || "";
+    }
+
+    function dateToKey(cell){
+      if(!cell) return "";
+
+      if(cell.f && cell.f.includes("/")){
+        const [dd,mm,yyyy] = cell.f.split("/");
+        return `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
+      }
+
+      const raw = String(cell.v || "");
+      const match = raw.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if(match){
+        const y = Number(match[1]);
+        const m = Number(match[2]) + 1;
+        const d = Number(match[3]);
+        return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      }
+
+      return raw;
+    }
+
+    function stripHiddenMarkers(text){
+      return String(text || "")
+        .replace(/⟦ID:[A-Z]{2}\d{5}[A-Z]⟧\s*/g, "")
+        .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "")
+        .trim();
+    }
+
+    function returnDateFromBand(text){
+      const match = String(text || "").match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
+      return match ? match[1] : "";
+    }
+
+    function eventIdFromBand(text){
+      const match = String(text || "").match(/⟦ID:([A-Z]{2}\d{5}[A-Z])⟧/);
+      return match ? match[1] : "";
+    }
+
+    function eventTypeFromBand(text){
+      const clean = stripHiddenMarkers(text);
+      if(clean.startsWith("הופעה -")) return "הופעה";
+      if(clean.startsWith("חזרה -")) return "חזרה";
+      return "אירוע";
+    }
+
+    function eventNameFromBand(text){
+      const clean = stripHiddenMarkers(text);
+      return clean
+        .replace(/^הופעה\s*-\s*/, "")
+        .replace(/^חזרה\s*-\s*/, "")
+        .trim() || "ללא שם אירוע";
+    }
+
+    function getLatestRows(rows){
+      const map = new Map();
+      rows.forEach(row => {
+        const key = row.eventId || stripHiddenMarkers(row.band);
+        if(!map.has(key) || row.rowNumber > map.get(key).rowNumber){
+          map.set(key, row);
+        }
+      });
+      return Array.from(map.values());
+    }
+
+    async function fetchRows(){
+      const res = await fetch(PLANNED_URL, {cache:"no-store"});
+      const text = await res.text();
+      const json = parseGviz(text);
+      const rows = json.table.rows || [];
+
+      allRows = rows.map((r, index) => {
+        const band = cellValue(r.c?.[2]);
+        return {
+          rowNumber:index + 2,
+          dateKey:dateToKey(r.c?.[1]),
+          band,
+          eventId:eventIdFromBand(band),
+          type:eventTypeFromBand(band),
+          name:eventNameFromBand(band),
+          returnDate:returnDateFromBand(band),
+          producer:cellValue(r.c?.[3]),
+          sound:cellValue(r.c?.[4]),
+          instruments:cellValue(r.c?.[5]),
+          departure:cellValue(r.c?.[6]),
+          returnTime:cellValue(r.c?.[7]),
+          contact:cellValue(r.c?.[8])
+        };
+      }).filter(row => row.dateKey);
+    }
+
+    function rowsForSelectedDate(){
+      const selected = $("dateInput").value;
+      const latest = getLatestRows(allRows);
+
+      const regular = latest
+        .filter(row => row.dateKey === selected)
+        .map(row => ({...row, isReturning:false}));
+
+      const returning = latest
+        .filter(row => row.returnDate === selected)
+        .map(row => ({...row, isReturning:true, type:"returning"}));
+
+      return [...regular, ...returning];
+    }
+
+    function filteredRows(){
+      const rows = rowsForSelectedDate();
+      if(currentFilter === "all") return rows;
+      if(currentFilter === "returning") return rows.filter(row => row.isReturning);
+      return rows.filter(row => !row.isReturning && row.type === currentFilter);
+    }
+
+    function renderStats(){
+      const rows = rowsForSelectedDate();
+      const shows = rows.filter(r => !r.isReturning && r.type === "הופעה").length;
+      const rehearsals = rows.filter(r => !r.isReturning && r.type === "חזרה").length;
+      const returning = rows.filter(r => r.isReturning).length;
+
+      $("stats").innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${shows}</div>
+          <div class="stat-label">הופעות</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${rehearsals}</div>
+          <div class="stat-label">חזרות</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${returning}</div>
+          <div class="stat-label">חוזרים היום</div>
+        </div>
+      `;
+    }
+
+    function renderTitle(){
+      const selected = $("dateInput").value;
+      const todayText = selected === todayKey() ? " · היום" : "";
+      $("selectedDateTitle").innerText = `אירועים לתאריך ${displayDate(selected)}${todayText}`;
+    }
+
+    function tagHtml(label, value){
+      return `<span class="tag">${label}: ${value || "-"}</span>`;
+    }
+
+    function eventCard(row){
+      const isReturn = row.isReturning;
+      const typeLabel = isReturn ? "חוזר היום" : row.type;
+      const typeClass = isReturn ? "returning" : row.type === "חזרה" ? "rehearsal" : "";
+      const cardClass = isReturn ? "event-card returning" : "event-card";
+
+      const returnNote = !isReturn && row.returnDate
+        ? `<div class="return-note">כולל לינה · חוזר בתאריך ${displayDate(row.returnDate)}</div>`
+        : "";
+
+      return `
+        <article class="${cardClass}">
+          <div class="event-top">
+            <div class="event-name">${isReturn ? "חוזר היום: " : ""}${row.name}</div>
+            <div class="event-type ${typeClass}">${typeLabel}</div>
+          </div>
+
+          <div class="event-meta">
+            <div class="meta-item">
+              <span class="meta-label">מפיק</span>
+              <span class="meta-value">${row.producer || "-"}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">יציאה</span>
+              <span class="meta-value">${isReturn ? "-" : (row.departure || "-")}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">חזרה</span>
+              <span class="meta-value">${row.returnTime || "-"}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">איש קשר</span>
+              <span class="meta-value">${row.contact || "-"}</span>
+            </div>
+          </div>
+
+          <div class="tags">
+            ${tagHtml("הגברה", row.sound)}
+            ${tagHtml("כלים", row.instruments)}
+          </div>
+
+          ${returnNote}
+        </article>
+      `;
+    }
+
+    function render(){
+      renderTitle();
+      renderStats();
+
+      document.querySelectorAll(".chip").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.filter === currentFilter);
+      });
+
+      const rows = filteredRows();
+      if(!rows.length){
+        $("content").innerHTML = `<div class="empty">אין אירועים להצגה בתאריך ובסינון שנבחרו</div>`;
+        return;
+      }
+
+      const regularRows = rows.filter(r => !r.isReturning);
+      const returningRows = rows.filter(r => r.isReturning);
+
+      let html = "";
+
+      if(regularRows.length){
+        html += `
+          <div class="section-title" style="grid-column:1/-1;">
+            <span>אירועים מתוכננים</span>
+            <span>${regularRows.length}</span>
+          </div>
+        `;
+        html += regularRows.map(eventCard).join("");
+      }
+
+      if(returningRows.length){
+        html += `
+          <div class="section-title" style="grid-column:1/-1;">
+            <span>חוזרים היום</span>
+            <span>${returningRows.length}</span>
+          </div>
+        `;
+        html += returningRows.map(eventCard).join("");
+      }
+
+      $("content").innerHTML = html;
+    }
+
+    function setFilter(filter){
+      currentFilter = filter;
+      render();
+    }
+
+    function changeDate(days){
+      const input = $("dateInput");
+      const current = input.value ? new Date(input.value + "T12:00:00") : new Date();
+      current.setDate(current.getDate() + days);
+      input.value = current.toISOString().split("T")[0];
+      render();
+    }
+
+    function summaryRows(type){
+      const selected = $("dateInput").value;
+      return getLatestRows(allRows)
+        .filter(row => row.dateKey === selected && row.type === type);
+    }
+
+    function copySummary(type){
+      const selected = $("dateInput").value;
+      const rows = summaryRows(type);
+
+      if(!rows.length){
+        showToast(`אין ${type === "חזרה" ? "חזרות" : "הופעות"} בתאריך הזה`);
+        return;
+      }
+
+      let text = `${type === "חזרה" ? "חזרות" : "הופעות"} ${displayDate(selected)}\n\n`;
+
+      rows.forEach((row, index) => {
+        const lodging = row.returnDate ? `\nחוזר בתאריך: ${displayDate(row.returnDate)}` : "";
+        text += `${index + 1}. ${row.name}\nמפיק: ${row.producer || "-"}\nיציאה: ${row.departure || "-"}\nחזרה: ${row.returnTime || "-"}${lodging}\n\n`;
+      });
+
+      copyText(text);
+    }
+
+    function copyText(text){
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text)
+          .then(() => showToast("הועתק ללוח"))
+          .catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text){
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      try{
+        document.execCommand("copy");
+        showToast("הועתק ללוח");
+      } catch(e){
+        prompt("העתק ידנית:", text);
+      }
+
+      document.body.removeChild(textarea);
+    }
+
+    function showToast(message){
+      const toast = $("toast");
+      toast.innerText = message;
+      toast.style.display = "block";
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        toast.style.display = "none";
+      }, 1800);
+    }
+
+    async function init(){
+      updateClock();
+      setInterval(updateClock, 1000);
+
+      $("dateInput").value = todayKey();
+
+      try{
+        await fetchRows();
+        render();
+      } catch(err){
+        console.error(err);
+        $("content").innerHTML = `<div class="empty">אירעה שגיאה בטעינת האירועים</div>`;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
