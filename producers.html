@@ -1099,9 +1099,30 @@ function getDailyAccessCode() {
   );
 }
 function isLockedTime() {
-  const hour = new Date().getHours();
+  const now = new Date();
+  const hour = now.getHours();
 
-  return hour >= 20 || hour < 7;
+  const selectedDate =
+    document.getElementById("eventDate").value;
+
+  const todayKey =
+    now.toISOString().split("T")[0];
+
+  const tomorrow = new Date();
+  tomorrow.setDate(now.getDate() + 1);
+
+  const tomorrowKey =
+    tomorrow.toISOString().split("T")[0];
+
+  if (hour >= 20) {
+    return selectedDate === tomorrowKey;
+  }
+
+  if (hour < 7) {
+    return selectedDate === todayKey;
+  }
+
+  return false;
 }
 
 function validateNightAccess() {
@@ -1110,9 +1131,9 @@ function validateNightAccess() {
     return true;
   }
 
-  const code = prompt(
-    "המערכת נעולה לאחר 20:00.\nהזן קוד גישה:"
-  );
+ const code = prompt(
+  "הדיווח לתאריך שנבחר נעול בשעה זו.\nהזן קוד גישה:"
+);
 
   if (code === getDailyAccessCode()) {
     return true;
