@@ -305,10 +305,12 @@
 }
 
 .copy-split{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
+  display:block;
   margin-top:12px;
+}
+
+.copy-split button{
+  width:100%;
 }
 
 @media(max-width:768px){
@@ -434,12 +436,12 @@
 
 }
 @media(max-width:768px){
-  #copyModal .confirm-box{
-    padding:14px;
+  #copyModal .copy-split{
+    display:block;
   }
 
-  #copyModal .copy-split{
-    grid-template-columns:1fr 1fr;
+  #copyModal .copy-split button{
+    width:100%;
   }
 
   #copyModal .confirm-actions{
@@ -727,6 +729,7 @@
 <div id="copyModal" class="confirm-modal">
   <div class="confirm-box">
     <h3>לוח אירועים</h3>
+    
 
     <div class="field">
      <label for="copyDateInput" id="copyDateLabel">
@@ -740,18 +743,19 @@
 >
 </div>
 <div id="copyModalEvents" class="confirm-summary" style="margin-top:14px;"></div>
+<div class="copy-split">
 
-    <div class="copy-split">
-      <button type="button" class="primary" onclick="copyProducerSummary('חזרה')">
-        העתק חזרות
-      </button>
+  <button
+    type="button"
+    class="primary"
+    onclick="showDailyCode()">
+    קוד גישה
+  </button>
 
-      <button type="button" class="primary" onclick="copyProducerSummary('הופעה')">
-        העתק הופעות
-      </button>
-    </div>
+</div>
 
     <div class="confirm-actions">
+        
       <button type="button" class="secondary" onclick="closeCopyModal()">
         סגור
       </button>
@@ -1081,6 +1085,42 @@ function fallbackCopyText(text) {
   document.body.removeChild(textarea);
 }
 const EDIT_CODE = "10203040";
+function getDailyAccessCode() {
+  const now = new Date();
+
+  const day =
+    String(now.getDate()).padStart(2, "0");
+
+  const month =
+    String(now.getMonth() + 1).padStart(2, "0");
+
+  return String(
+    Number(day + month) + 347
+  );
+}
+function isLockedTime() {
+  const hour = new Date().getHours();
+
+  return hour >= 19 || hour < 7;
+}
+
+function validateNightAccess() {
+
+  if (!isLockedTime()) {
+    return true;
+  }
+
+  const code = prompt(
+    "המערכת נעולה לאחר 19:00.\nהזן קוד גישה:"
+  );
+
+  if (code === getDailyAccessCode()) {
+    return true;
+  }
+
+  alert("קוד שגוי");
+  return false;
+}
 
 function requestEditCode(rowNumber) {
   const code = prompt("הזן קוד גישה לעריכה:");
@@ -1189,6 +1229,9 @@ toggleInstrumentsDetails();
 }
 
 function openConfirmModal() {
+    if (!validateNightAccess()) {
+  return;
+}
   const form = document.getElementById("eventForm");
 
   if (!form.checkValidity()) {
@@ -1309,6 +1352,20 @@ function toggleReturnDateBox() {
     input.required = false;
     input.value = "";
   }
+}
+function showDailyCode() {
+
+  const code = prompt("הזן קוד מנהל");
+
+  if (code !== EDIT_CODE) {
+    alert("קוד שגוי");
+    return;
+  }
+
+  alert(
+    "קוד הגישה להיום:\n\n" +
+    getDailyAccessCode()
+  );
 }
 
 </script>
