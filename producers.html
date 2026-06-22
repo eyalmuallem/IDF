@@ -1101,7 +1101,7 @@ function getDailyAccessCode() {
 function isLockedTime() {
   const hour = new Date().getHours();
 
-  return hour >= 19 || hour < 7;
+  return hour >= 20 || hour < 7;
 }
 
 function validateNightAccess() {
@@ -1111,7 +1111,7 @@ function validateNightAccess() {
   }
 
   const code = prompt(
-    "המערכת נעולה לאחר 19:00.\nהזן קוד גישה:"
+    "המערכת נעולה לאחר 20:00.\nהזן קוד גישה:"
   );
 
   if (code === getDailyAccessCode()) {
