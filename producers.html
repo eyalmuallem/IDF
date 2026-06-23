@@ -1088,15 +1088,20 @@ const EDIT_CODE = "10203040";
 function getDailyAccessCode() {
   const now = new Date();
 
-  const day =
-    String(now.getDate()).padStart(2, "0");
+  const day = now.getDate();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
 
-  const month =
-    String(now.getMonth() + 1).padStart(2, "0");
+  const raw =
+    (day * 9283) +
+    (month * 3571) +
+    (year * 197) +
+    6767;
 
-  return String(
-    Number(day + month) + 6767
-  );
+  const code =
+    (raw % 9000) + 1000;
+
+  return String(code);
 }
 function isLockedTime() {
   const now = new Date();
@@ -1118,7 +1123,7 @@ function isLockedTime() {
     return selectedDate === tomorrowKey;
   }
 
-  if (hour < 7) {
+  if (hour < 11) {
     return selectedDate === todayKey;
   }
 
