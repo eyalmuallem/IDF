@@ -284,12 +284,16 @@ const EQUIPMENT_LOG_API =
         <input type="text" id="soundman_id" placeholder="הכנס מספר אישי">
         <label>שם האירוע:</label>
 <input type="text" id="band_name" placeholder="הכנס את שם האירוע">
-<label>תאריך משיכת ציוד:</label>
-<input type="text" id="pickup_date" placeholder="הכנס תאריך משיכה">
+<label>האם חוזר היום?</label>
+<select id="returns_today" onchange="toggleReturnDate()">
+  <option value="yes" selected>כן</option>
+  <option value="no">לא</option>
+</select>
 
-<label>תאריך החזרת ציוד:</label>
-<input type="text" id="return_date" placeholder="הכנס תאריך החזרה">
-<label>שעת החזרת ציוד צפויה:</label>
+<div id="return_date_wrap" style="display:none;">
+  <label>תאריך חזרה:</label>
+  <input type="date" id="return_date">
+</div>
 <input type="text" id="returno_time" placeholder="הכנס שעת החזרה">
 <label>הערות המחתים:</label>
 <input type="text" id="signer_notes" placeholder="הערות / חריגים">
@@ -825,7 +829,6 @@ window._isPrinting = false;
 const soundman_name = document.getElementById("soundman_name");
 const soundman_id   = document.getElementById("soundman_id");
 const band_name     = document.getElementById("band_name");
-const pickup_date   = document.getElementById("pickup_date");
 const return_date   = document.getElementById("return_date");
 const returno_time  = document.getElementById("returno_time");
 const signer_notes  = document.getElementById("signer_notes");
@@ -854,8 +857,7 @@ function printList() {
 
   p_soundman.textContent = soundman_name.value || "—";
   p_id.textContent       = soundman_id.value || "—";
-  p_band.textContent     = band_name.value || "—";
-  p_pickup.textContent  = pickup_date.value || "—";
+ p_band.textContent = getFinalEventName() || "—";
   p_return.textContent  = return_date.value || "—";
   p_returno.textContent = returno_time.value || "—";
   p_notes.textContent   = signer_notes.value || "";
@@ -868,7 +870,7 @@ const items = collectEquipmentItems();
 fetch(
   EQUIPMENT_LOG_API +
     "?doc=" + encodeURIComponent(docId) +
-    "&event=" + encodeURIComponent(band_name.value) +
+    "&event=" + encodeURIComponent(getFinalEventName()) +
     "&signer=" + encodeURIComponent(soundman_name.value) +
     "&items=" + encodeURIComponent(JSON.stringify(items)) +
     "&_=" + Date.now(),
@@ -879,7 +881,7 @@ fetch(
   API_URL +
     "?action=out" +
     "&doc=" + encodeURIComponent(docId) +
-    "&event=" + encodeURIComponent(band_name.value) +
+    "&event=" + encodeURIComponent(getFinalEventName()) +
     "&signer=" + encodeURIComponent(soundman_name.value) +
     "&return_time=" + encodeURIComponent(returno_time.value) +
     "&_=" + Date.now(),
@@ -894,8 +896,32 @@ fetch(
   }
 }, 4000);
 }
+function toggleReturnDate() {
+  const returnsToday = document.getElementById("returns_today").value;
+  const wrap = document.getElementById("return_date_wrap");
+  const returnDate = document.getElementById("return_date");
 
- 
+  if (returnsToday === "no") {
+    wrap.style.display = "block";
+  } else {
+    wrap.style.display = "none";
+    returnDate.value = "";
+  }
+}
+function getFinalEventName() {
+  const eventName = band_name.value.trim();
+  const returnDateValue = return_date.value;
+
+  if (returnDateValue) {
+    const [year, month, day] = returnDateValue.split("-");
+    const formattedDate = `${day}/${month}/${year}`;
+
+    return `${eventName} (חוזר בתאריך ${formattedDate})`;
+  }
+
+  return eventName;
+}
+ toggleReturnDate();
 
 
 </script>
