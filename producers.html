@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
@@ -110,7 +111,7 @@
 
     input, select{
       width:100%;
-      padding:11px 12px;
+      padding:8px 10px;
       border:1px solid var(--border);
       border-radius:10px;
       font-size:15px;
@@ -273,7 +274,7 @@
   background:#f9fafb;
   border:1px solid var(--border);
   border-radius:10px;
-  padding:10px 12px;
+  padding:8px 10px;
 }
 
 .confirm-row strong{
@@ -593,7 +594,244 @@
   align-content:start;
   grid-auto-rows:max-content;
 }
-  </style>
+  
+
+/* לוח זמינות חדרי חזרות - מותאם מובייל */
+.rehearsal-availability{
+  display:none;
+  grid-column:1 / -1;
+  margin-top:2px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#f8fafc;
+}
+
+.rehearsal-availability.visible{
+  display:block;
+}
+
+.availability-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:7px;
+}
+
+.availability-head h3{
+  margin:0;
+  font-size:16px;
+  color:var(--primary);
+}
+
+.availability-head p{
+  margin:4px 0 0;
+  font-size:12px;
+  color:#6b7280;
+}
+
+.availability-refresh{
+  flex-shrink:0;
+  padding:7px 10px;
+  font-size:12px;
+}
+
+.availability-summary{
+  margin-bottom:10px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:white;
+  border:1px solid var(--border);
+  color:#475569;
+  font-size:13px;
+}
+
+.room-availability-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.room-card{
+  width:100%;
+  text-align:right;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(15,23,42,.04);
+}
+
+.room-card:hover{
+  transform:none;
+  box-shadow:0 4px 12px rgba(15,23,42,.08);
+}
+
+.room-card.selected{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+
+.room-card.available-now{
+  border-color:#86efac;
+  background:#f0fdf4;
+}
+
+.room-card.busy-now{
+  border-color:#fecaca;
+  background:#fff7f7;
+}
+
+.room-card.neutral-now{
+  background:white;
+}
+
+.room-card-title{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  align-items:center;
+  font-weight:700;
+  color:#1f2937;
+  margin-bottom:7px;
+}
+
+.room-state{
+  font-size:11px;
+  border-radius:999px;
+  padding:3px 7px;
+  white-space:nowrap;
+}
+
+.room-state.free{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.room-state.busy{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.room-state.unknown{
+  background:#e5e7eb;
+  color:#4b5563;
+}
+
+.room-bookings{
+  display:grid;
+  gap:6px;
+}
+
+.room-booking{
+  padding:7px 8px;
+  border-radius:8px;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  font-size:11.5px;
+  line-height:1.35;
+  color:#475569;
+}
+
+.room-booking strong{
+  color:#1f2937;
+}
+
+.room-empty{
+  font-size:12px;
+  color:#15803d;
+  font-weight:600;
+}
+
+.availability-loading,
+.availability-error{
+  grid-column:1 / -1;
+  padding:14px;
+  text-align:center;
+  border-radius:10px;
+  background:white;
+  border:1px solid var(--border);
+  color:#64748b;
+  font-size:13px;
+}
+
+.availability-error{
+  color:#991b1b;
+  background:#fff7f7;
+  border-color:#fecaca;
+}
+
+@media(max-width:768px){
+  .rehearsal-availability{
+    padding:11px;
+  }
+
+  .availability-head{
+    align-items:center;
+  }
+
+  .room-availability-list{
+    grid-template-columns:1fr;
+  }
+
+  .room-card{
+    padding:13px;
+  }
+}
+
+
+/* מבט חודשי על חדרי החזרות */
+.monthly-overview-modal{position:fixed;inset:0;z-index:10000;display:none;background:rgba(15,23,42,.58);padding:14px;align-items:center;justify-content:center}
+.monthly-overview-modal.visible{display:flex}
+.monthly-overview-box{width:min(1100px,100%);height:min(94vh,900px);background:white;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden}
+.monthly-overview-head{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
+.monthly-overview-head h3{margin:0;font-size:20px;color:var(--primary)}
+.monthly-overview-close{padding:7px 12px}
+.monthly-controls{
+  padding:8px 14px;
+  border-bottom:1px solid var(--border);
+  background:#f8fafc;
+  display:block;
+  flex-shrink:0;
+}
+
+
+
+
+.monthly-content{flex:1;min-height:0;overflow:auto;padding:8px 10px 12px;background:#f8fafc;-webkit-overflow-scrolling:touch}
+.monthly-day{
+  background:white;
+  border:1px solid #d7dee8;
+  border-radius:14px;
+  margin-bottom:16px;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(15,23,42,.07);
+}
+.monthly-day-head{
+  padding:10px 12px;
+  background:#eef2f7;
+  border-bottom:1px solid #d7dee8;
+  display:flex;
+  align-items:center;
+  min-height:42px;
+}
+.monthly-room-group{
+  padding:9px 10px;
+  border-bottom:1px solid #e8edf3;
+}.monthly-room-group:last-child{border-bottom:none}
+.monthly-room-title{
+  font-weight:700;
+  color:#334155;
+  margin-bottom:7px;
+  display:block;
+}
+.monthly-booking{padding:8px 9px;border-radius:9px;background:#f8fafc;border:1px solid #e2e8f0;margin-top:6px;font-size:12.5px;line-height:1.45}
+.monthly-booking-time{font-weight:700;color:#111827}.monthly-empty,.monthly-loading{background:white;border:1px dashed #cbd5e1;color:#64748b;border-radius:12px;padding:24px;text-align:center}
+@media(max-width:768px){.monthly-overview-modal{padding:0;align-items:stretch}.monthly-overview-box{width:100%;height:100dvh;border-radius:0}.monthly-overview-head{padding:12px}.monthly-overview-head h3{font-size:17px}.monthly-controls{display:block;padding:7px 10px}.monthly-content{padding:10px 10px 18px}}
+
+</style>
 </head>
 
 <body>
@@ -623,7 +861,7 @@
 
           <div class="field">
             <label for="eventDate">תאריך</label>
-            <input type="date" id="eventDate" name="eventDate" required>
+            <input type="date" id="eventDate" name="eventDate" required onchange="handleRehearsalAvailabilityChange()">
           </div>
           <div class="field">
   <label for="hasLodging">האם כולל לינה?</label>
@@ -639,11 +877,38 @@
 </div>
           <div class="field full">
   <label for="eventType">סוג אירוע</label>
-  <select id="eventType" name="eventType" required>
+  <select id="eventType" name="eventType" required onchange="toggleRehearsalRoom(); handleRehearsalAvailabilityChange();">
     <option value="">בחר</option>
     <option value="הופעה">הופעה</option>
     <option value="חזרה">חזרה</option>
   </select>
+</div>
+
+<div class="field full" id="rehearsalRoomBox" style="display:none;">
+  <label for="rehearsalRoom">חדר חזרות</label>
+  <select id="rehearsalRoom" onchange="renderRehearsalAvailability()">
+    <option value="">בחר חדר</option>
+    <option value="צפוני">צפוני</option>
+    <option value="מזרחי">מזרחי</option>
+    <option value="בית להקות">בית להקות</option>
+    <option value="משקיות">משקיות</option>
+  </select>
+</div>
+
+<div id="rehearsalAvailability" class="rehearsal-availability">
+  <div class="availability-head">
+    <div>
+      <h3>זמינות חדרי חזרות</h3>
+      <p>בחר תאריך, ולאחר מכן חדר פנוי. לאחר בחירת שעות תוצג זמינות מדויקת לטווח שבחרת.</p>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+      <button type="button" class="secondary availability-refresh" onclick="loadRehearsalAvailability(true)">רענן</button>
+      <button type="button" class="primary availability-refresh" onclick="openMonthlyOverview()">מבט חודשי</button>
+    </div>
+  </div>
+
+  <div id="availabilitySummary" class="availability-summary"></div>
+  <div id="roomAvailabilityList" class="room-availability-list"></div>
 </div>
 
           <div class="field">
@@ -681,12 +946,12 @@
 
           <div class="field">
             <label for="departureTime">שעת יציאה</label>
-            <input type="time" id="departureTime" name="departureTime" required>
+            <input type="time" id="departureTime" name="departureTime" required onchange="renderRehearsalAvailability()">
           </div>
 
           <div class="field">
             <label for="returnTime">שעת חזרה משוערת</label>
-            <input type="time" id="returnTime" name="returnTime" required>
+            <input type="time" id="returnTime" name="returnTime" required onchange="renderRehearsalAvailability()">
           </div>
 
           <div class="field full">
@@ -762,6 +1027,25 @@
     </div>
   </div>
 </div>
+
+<div id="monthlyOverviewModal" class="monthly-overview-modal" onclick="handleMonthlyBackdropClick(event)">
+  <div class="monthly-overview-box">
+    <div class="monthly-overview-head">
+      <h3>מבט חודשי על חדרי החזרות</h3>
+      <button type="button" class="secondary monthly-overview-close" onclick="closeMonthlyOverview()">סגור</button>
+    </div>
+
+    <div class="monthly-controls monthly-controls-only-month">
+      <div class="field monthly-month-field">
+        <label for="monthlyOverviewMonth">בחר חודש</label>
+        <input type="month" id="monthlyOverviewMonth" onchange="renderMonthlyOverview()">
+      </div>
+    </div>
+
+    <div id="monthlyOverviewContent" class="monthly-content"></div>
+  </div>
+</div>
+
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTcwOI9gIQYt5KNmeN0h1apiXtR9J7pLlElI_18VoziFNbQDuIbv3ktO1HZstAuuR3/exec";
 const PLANNED_SHEET_ID = "1NBR5PefJjwTUacYjLtOYZdh9v70rzSOTLW1q7JrhDBc";
@@ -771,7 +1055,30 @@ const PLANNED_URL =
 
 let producerPlannedRows = [];
 let editingRowNumber = null;
-let currentEditingEventId = null;  function updateDateTime(){
+let currentEditingEventId = null;
+let plannedRowsFetchPromise = null;
+
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+function updateDateTime(){
     const now = new Date();
     document.getElementById("datetime").innerText =
       now.toLocaleDateString("he-IL") + " | " + now.toLocaleTimeString("he-IL");
@@ -781,14 +1088,26 @@ let currentEditingEventId = null;  function updateDateTime(){
   updateDateTime();
 
   document.getElementById("eventDate").value =
-    new Date().toISOString().split("T")[0];
+    getLocalDateKey();
     document.getElementById("copyDateInput").value =
-  new Date().toISOString().split("T")[0];
-  async function openCopyModal() {
-  document.getElementById("copyModal").style.display = "flex";
-  await fetchProducerPlannedRows();
-  renderCopyModalEvents();
-  updateTodayLabel();
+  getLocalDateKey();
+async function openCopyModal() {
+  const modal = document.getElementById("copyModal");
+  const eventsBox = document.getElementById("copyModalEvents");
+
+  modal.style.display = "flex";
+  eventsBox.innerHTML =
+    '<div class="confirm-row" style="text-align:center;color:#6b7280;">טוען אירועים...</div>';
+
+  try {
+    await fetchProducerPlannedRows();
+    renderCopyModalEvents();
+    updateTodayLabel();
+  } catch (error) {
+    console.error(error);
+    eventsBox.innerHTML =
+      '<div class="confirm-row" style="text-align:center;color:#991b1b;">לא ניתן היה לטעון את לוח האירועים</div>';
+  }
 }
 
 function closeCopyModal() {
@@ -807,7 +1126,234 @@ function stripHiddenMarkers(text) {
   return String(text || "")
     .replace(/⟦ID:[A-Z]{2}\d{5}[A-Z]⟧\s*/g, "")
     .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "")
+    .replace(/ ⟦חדר:[^⟧]+⟧/g, "")
     .trim();
+}
+
+function getRoomFromBand(text) {
+  const match = String(text || "").match(/⟦חדר:([^⟧]+)⟧/);
+  return match ? match[1].trim() : "";
+}
+
+function getEventIdFromBand(text) {
+  const match = String(text || "").match(/⟦ID:([A-Z]{2}\d{5}[A-Z])⟧/);
+  return match ? match[1] : "";
+}
+
+function formatBandForDisplay(text) {
+  const clean = stripHiddenMarkers(text);
+  const room = getRoomFromBand(text);
+  return room ? `${clean} (${room})` : clean;
+}
+
+function timesOverlap(startA, endA, startB, endB) {
+  if (!startA || !endA || !startB || !endB) return false;
+  return startA < endB && endA > startB;
+}
+
+function findRehearsalConflict(data) {
+  if (data.eventType !== "חזרה" || !data.rehearsalRoom) return null;
+
+  const visibleRows = getLatestPlannedRows(producerPlannedRows);
+
+  return visibleRows.find(event => {
+    const existingId = getEventIdFromBand(event.band);
+    if (existingId && existingId === currentEditingEventId) return false;
+
+    const cleanBand = stripHiddenMarkers(event.band);
+    const existingRoom = getRoomFromBand(event.band);
+
+    return cleanBand.startsWith("חזרה -") &&
+      event.dateKey === data.eventDate &&
+      existingRoom === data.rehearsalRoom &&
+      timesOverlap(
+        data.departureTime,
+        data.returnTime,
+        event.departure,
+        event.returnTime
+      );
+  }) || null;
+}
+
+
+const REHEARSAL_ROOMS = ["צפוני", "מזרחי", "בית להקות", "משקיות"];
+
+function formatDateHebrew(dateKey) {
+  if (!dateKey) return "";
+  const [year, month, day] = dateKey.split("-");
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  const weekday = date.toLocaleDateString("he-IL", { weekday: "long" });
+  return `${weekday}, ${day}/${month}/${year}`;
+}
+
+function handleRehearsalAvailabilityChange() {
+  const eventType = document.getElementById("eventType").value;
+  const board = document.getElementById("rehearsalAvailability");
+
+  if (eventType === "חזרה") {
+    board.classList.add("visible");
+    loadRehearsalAvailability();
+  } else {
+    board.classList.remove("visible");
+  }
+}
+
+async function loadRehearsalAvailability(forceRefresh = false) {
+  const eventType = document.getElementById("eventType").value;
+  const selectedDate = document.getElementById("eventDate").value;
+  const list = document.getElementById("roomAvailabilityList");
+  const summary = document.getElementById("availabilitySummary");
+
+  if (eventType !== "חזרה") return;
+
+  document.getElementById("rehearsalAvailability").classList.add("visible");
+
+  if (!selectedDate) {
+    summary.innerText = "בחר תאריך כדי לראות את זמינות החדרים";
+    list.innerHTML = "";
+    return;
+  }
+
+  summary.innerText = `טוען זמינות עבור ${formatDateHebrew(selectedDate)}...`;
+  list.innerHTML = '<div class="availability-loading">טוען אירועים קיימים...</div>';
+
+  try {
+    await fetchProducerPlannedRows();
+    renderRehearsalAvailability();
+  } catch (error) {
+    console.error(error);
+    summary.innerText = `לא ניתן היה לטעון את הזמינות עבור ${formatDateHebrew(selectedDate)}`;
+    list.innerHTML = '<div class="availability-error">אירעה שגיאה בטעינת לוח החדרים. נסה לרענן.</div>';
+  }
+}
+
+function selectRehearsalRoom(roomName) {
+  const departure = document.getElementById("departureTime").value;
+  const returnTime = document.getElementById("returnTime").value;
+  const roomEvents = getRoomEventsForSelectedDate(roomName);
+
+  if (departure && returnTime) {
+    const conflict = roomEvents.find(event =>
+      timesOverlap(departure, returnTime, event.departure, event.returnTime)
+    );
+
+    if (conflict) {
+      alert(
+        `החדר ${roomName} תפוס בטווח השעות שנבחר.\n\n` +
+        `אירוע: ${formatBandForDisplay(conflict.band)}\n` +
+        `מפיק: ${conflict.producer || "-"}\n` +
+        `שעות: ${conflict.departure || "-"}–${conflict.returnTime || "-"}`
+      );
+      return;
+    }
+  }
+
+  document.getElementById("rehearsalRoom").value = roomName;
+  renderRehearsalAvailability();
+}
+
+function getRoomEventsForSelectedDate(roomName) {
+  const selectedDate = document.getElementById("eventDate").value;
+  const visibleRows = getLatestPlannedRows(producerPlannedRows);
+
+  return visibleRows
+    .filter(event => {
+      const existingId = getEventIdFromBand(event.band);
+      if (existingId && existingId === currentEditingEventId) return false;
+
+      return event.dateKey === selectedDate &&
+        stripHiddenMarkers(event.band).startsWith("חזרה -") &&
+        getRoomFromBand(event.band) === roomName;
+    })
+    .sort((a, b) => String(a.departure).localeCompare(String(b.departure)));
+}
+
+function renderRehearsalAvailability() {
+  const board = document.getElementById("rehearsalAvailability");
+  const list = document.getElementById("roomAvailabilityList");
+  const summary = document.getElementById("availabilitySummary");
+  const eventType = document.getElementById("eventType").value;
+  const selectedDate = document.getElementById("eventDate").value;
+  const departure = document.getElementById("departureTime").value;
+  const returnTime = document.getElementById("returnTime").value;
+  const selectedRoom = document.getElementById("rehearsalRoom").value;
+
+  if (eventType !== "חזרה") {
+    board.classList.remove("visible");
+    return;
+  }
+
+  board.classList.add("visible");
+
+  if (!selectedDate) {
+    summary.innerText = "בחר תאריך כדי לראות את זמינות החדרים";
+    list.innerHTML = "";
+    return;
+  }
+
+  const hasValidTimeRange = departure && returnTime && returnTime > departure;
+  let freeCount = 0;
+
+  const cards = REHEARSAL_ROOMS.map(roomName => {
+    const events = getRoomEventsForSelectedDate(roomName);
+    const conflict = hasValidTimeRange
+      ? events.find(event => timesOverlap(departure, returnTime, event.departure, event.returnTime))
+      : null;
+
+    if (hasValidTimeRange && !conflict) freeCount++;
+
+    let stateClass = "unknown";
+    let stateText = events.length ? `${events.length} חזרות` : "פנוי כל היום";
+    let cardClass = "neutral-now";
+
+    if (hasValidTimeRange) {
+      if (conflict) {
+        stateClass = "busy";
+        stateText = "תפוס בטווח";
+        cardClass = "busy-now";
+      } else {
+        stateClass = "free";
+        stateText = "פנוי בטווח";
+        cardClass = "available-now";
+      }
+    } else if (!events.length) {
+      stateClass = "free";
+    }
+
+    const bookingsHtml = events.length
+      ? events.map(event => `
+          <div class="room-booking">
+            <strong>${escapeHtml(event.departure || "-")}–${escapeHtml(event.returnTime || "-")}</strong><br>
+            ${escapeHtml(stripHiddenMarkers(event.band).replace("חזרה -", "").trim() || "ללא שם")}<br>
+            מפיק: ${escapeHtml(event.producer || "-")}
+          </div>
+        `).join("")
+      : '<div class="room-empty">אין חזרות מתוכננות בחדר זה</div>';
+
+    return `
+      <button
+        type="button"
+        class="room-card ${cardClass} ${selectedRoom === roomName ? "selected" : ""}"
+        onclick="selectRehearsalRoom('${roomName.replace(/'/g, "\\'")}')"
+      >
+        <div class="room-card-title">
+          <span>${roomName}</span>
+          <span class="room-state ${stateClass}">${stateText}</span>
+        </div>
+        <div class="room-bookings">${bookingsHtml}</div>
+      </button>
+    `;
+  }).join("");
+
+  list.innerHTML = cards;
+
+  if (departure && returnTime && returnTime <= departure) {
+    summary.innerText = `${formatDateHebrew(selectedDate)} · שעת הסיום חייבת להיות מאוחרת משעת ההתחלה`;
+  } else if (hasValidTimeRange) {
+    summary.innerText = `${formatDateHebrew(selectedDate)} · ${departure}–${returnTime} · ${freeCount} מתוך 4 חדרים פנויים`;
+  } else {
+    summary.innerText = `${formatDateHebrew(selectedDate)} · בחר שעות כדי לראות אילו חדרים פנויים בטווח המבוקש`;
+  }
 }
 
 function getLatestPlannedRows(rows) {
@@ -815,7 +1361,15 @@ function getLatestPlannedRows(rows) {
 
   rows.forEach(e => {
     const idMatch = String(e.band || "").match(/⟦ID:([A-Z]{2}\d{5}[A-Z])⟧/);
-    const key = idMatch ? idMatch[1] : stripHiddenMarkers(e.band);
+    const key = idMatch
+      ? idMatch[1]
+      : [
+          e.dateKey || "",
+          stripHiddenMarkers(e.band),
+          e.departure || "",
+          e.returnTime || "",
+          getRoomFromBand(e.band)
+        ].join("|");
 
     if (!map.has(key) || e.rowNumber > map.get(key).rowNumber) {
       map.set(key, e);
@@ -855,7 +1409,7 @@ box.classList.toggle("many-events", totalEvents >= 6);
 const returnMatch =
   bandText.match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
 
-const cleanBand = stripHiddenMarkers(bandText);
+const cleanBand = formatBandForDisplay(bandText);
 
 const returnNote =
   returnMatch
@@ -864,9 +1418,9 @@ const returnNote =
 
 return `
 <div class="confirm-row compact-event">
-  <strong>${cleanBand}${returnNote}</strong><br>
-  מפיק: ${e.producer || "-"}<br>
-  יציאה: ${e.departure || "-"} · חזרה: ${e.returnTime || "-"}
+  <strong>${escapeHtml(cleanBand)}${returnNote}</strong><br>
+  מפיק: ${escapeHtml(e.producer || "-")}<br>
+  יציאה: ${escapeHtml(e.departure || "-")} · חזרה: ${escapeHtml(e.returnTime || "-")}
   <div class="event-tags">
     <span class="event-tag">הגברה: ${e.sound || "-"}</span>
     <span class="event-tag">כלים: ${e.instruments || "-"}</span>
@@ -885,14 +1439,14 @@ return `
   }).join("");
 
   const returningHtml = returningEvents.map(e => {
-  const cleanBand = stripHiddenMarkers(e.band || "ללא שם הרכב");
+  const cleanBand = formatBandForDisplay(e.band || "ללא שם הרכב");
 
     return `
      <div class="confirm-row compact-event"
 style="background:#fff7ed;border-color:#fed7aa;">
-        <strong>חוזר היום: ${cleanBand}</strong><br>
-        מפיק: ${e.producer || "-"}<br>
-        שעת חזרה משוערת: ${e.returnTime || "-"}
+        <strong>חוזר היום: ${escapeHtml(cleanBand)}</strong><br>
+        מפיק: ${escapeHtml(e.producer || "-")}<br>
+        שעת חזרה משוערת: ${escapeHtml(e.returnTime || "-")}
       </div>
     `;
   }).join("");
@@ -909,7 +1463,7 @@ function updateTodayLabel(){
     document.getElementById("copyDateLabel");
 
   const today =
-    new Date().toISOString().split("T")[0];
+    getLocalDateKey();
 
   if(input.value === today){
 
@@ -926,12 +1480,24 @@ function updateTodayLabel(){
 }
     
 function parsePlannedGviz(text) {
-  return JSON.parse(text.substring(47).slice(0,-2));
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error("תגובת Google Sheets אינה בפורמט תקין");
+  }
+
+  return JSON.parse(text.slice(start, end + 1));
 }
 
 function plannedCellValue(cell){
-  if(!cell) return "";
-  return cell.f || cell.v || "";
+  if (!cell) return "";
+
+  if (cell.f !== undefined && cell.f !== null && cell.f !== "") {
+    return cell.f;
+  }
+
+  return cell.v ?? "";
 }
 
 function plannedDateToKey(cell){
@@ -957,40 +1523,50 @@ function plannedDateToKey(cell){
 }
 
 async function fetchProducerPlannedRows(){
+  /*
+    אם שתי פעולות מבקשות את השיטס באותו רגע, משתמשים באותה בקשה
+    במקום לבצע שתי קריאות מקבילות.
+  */
+  if (plannedRowsFetchPromise) {
+    return plannedRowsFetchPromise;
+  }
 
-  const res = await fetch(PLANNED_URL);
-  const text = await res.text();
+  plannedRowsFetchPromise = (async () => {
+    const separator = PLANNED_URL.includes("?") ? "&" : "?";
+    const requestUrl = `${PLANNED_URL}${separator}_=${Date.now()}`;
 
-  const json = parsePlannedGviz(text);
-  const rows = json.table.rows || [];
+    const res = await fetch(requestUrl, {
+      cache: "no-store"
+    });
 
-producerPlannedRows = rows.map((r, index)=>({
-  rowNumber: index + 2,
-  dateKey:
-    plannedDateToKey(r.c?.[1]),
+    if (!res.ok) {
+      throw new Error(`טעינת Google Sheets נכשלה: ${res.status}`);
+    }
 
-  band:
-    plannedCellValue(r.c?.[2]),
+    const responseText = await res.text();
+    const json = parsePlannedGviz(responseText);
+    const rows = json.table?.rows || [];
 
-  producer:
-    plannedCellValue(r.c?.[3]),
+    producerPlannedRows = rows.map((r, index) => ({
+      rowNumber: index + 2,
+      dateKey: plannedDateToKey(r.c?.[1]),
+      band: plannedCellValue(r.c?.[2]),
+      producer: plannedCellValue(r.c?.[3]),
+      sound: plannedCellValue(r.c?.[4]),
+      instruments: plannedCellValue(r.c?.[5]),
+      departure: plannedCellValue(r.c?.[6]),
+      returnTime: plannedCellValue(r.c?.[7]),
+      contact: plannedCellValue(r.c?.[8])
+    })).filter(event => event.dateKey);
 
-  sound:
-    plannedCellValue(r.c?.[4]),
+    return producerPlannedRows;
+  })();
 
-  instruments:
-    plannedCellValue(r.c?.[5]),
-
-  departure:
-    plannedCellValue(r.c?.[6]),
-
- returnTime:
-  plannedCellValue(r.c?.[7]),
-
-contact:
-  plannedCellValue(r.c?.[8])
-
-})).filter(e=>e.dateKey);
+  try {
+    return await plannedRowsFetchPromise;
+  } finally {
+    plannedRowsFetchPromise = null;
+  }
 }
 
 
@@ -1110,14 +1686,12 @@ function isLockedTime() {
   const selectedDate =
     document.getElementById("eventDate").value;
 
-  const todayKey =
-    now.toISOString().split("T")[0];
+  const todayKey = getLocalDateKey(now);
 
-  const tomorrow = new Date();
+  const tomorrow = new Date(now);
   tomorrow.setDate(now.getDate() + 1);
 
-  const tomorrowKey =
-    tomorrow.toISOString().split("T")[0];
+  const tomorrowKey = getLocalDateKey(tomorrow);
 
   if (hour >= 20) {
     return selectedDate === tomorrowKey;
@@ -1149,7 +1723,53 @@ function validateNightAccess() {
 }
 
 function requestEditCode(rowNumber) {
-  const code = prompt("הזן קוד גישה לעריכה:");
+  const event = producerPlannedRows.find(e => e.rowNumber === rowNumber);
+
+  if (!event) {
+    alert("האירוע לא נמצא");
+    return;
+  }
+
+  const cleanBand = stripHiddenMarkers(event.band || "");
+  const isRehearsal = cleanBand.startsWith("חזרה -");
+
+  // הופעה תמיד דורשת קוד מפקד
+  if (!isRehearsal) {
+    const code = prompt("הזן קוד מפקד לעריכת ההופעה:");
+
+    if (code !== EDIT_CODE) {
+      alert("קוד שגוי");
+      return;
+    }
+
+    startEditEvent(rowNumber);
+    return;
+  }
+
+  /*
+    חזרה:
+    - ניתנת לעריכה ללא קוד עד 20:00 ביום שלפני.
+    - החל מ-20:00 ביום שלפני, ביום החזרה ולאחריו נדרש קוד מפקד.
+  */
+  const now = new Date();
+
+  const [year, month, day] = String(event.dateKey || "").split("-").map(Number);
+  const eventDate = new Date(year, month - 1, day);
+  eventDate.setHours(0, 0, 0, 0);
+
+  const editLockTime = new Date(eventDate);
+  editLockTime.setDate(eventDate.getDate() - 1);
+  editLockTime.setHours(20, 0, 0, 0);
+
+  if (now < editLockTime) {
+    startEditEvent(rowNumber);
+    return;
+  }
+
+  const code = prompt(
+    "העריכה החופשית לחזרה זו נסגרה בשעה 20:00 ביום שלפני.\n" +
+    "הזן קוד מפקד לעריכה:"
+  );
 
   if (code !== EDIT_CODE) {
     alert("קוד שגוי");
@@ -1186,6 +1806,10 @@ function startEditEvent(rowNumber){
     document.getElementById("bandName").value = cleanBand.replace("חזרה -", "").trim();
   }
 
+  toggleRehearsalRoom();
+  document.getElementById("rehearsalRoom").value = getRoomFromBand(bandText);
+  loadRehearsalAvailability();
+
   document.getElementById("producerName").value = event.producer || "";
   document.getElementById("sound").value = event.sound || "";
   const instrumentsText = String(event.instruments || "");
@@ -1212,6 +1836,12 @@ toggleInstrumentsDetails();
   const bandRaw = document.getElementById("bandName").value.trim();
   const hasLodging = document.getElementById("hasLodging").value;
   const returnDate = document.getElementById("returnDate").value;
+  const rehearsalRoom = document.getElementById("rehearsalRoom").value;
+
+  const roomMarker =
+    eventType === "חזרה" && rehearsalRoom
+      ? ` ⟦חדר:${rehearsalRoom}⟧`
+      : "";
 
   const lodgingMarker =
     hasLodging === "כן" && returnDate
@@ -1229,7 +1859,11 @@ toggleInstrumentsDetails();
       eventType +
       " - " +
       bandRaw +
+      roomMarker +
       lodgingMarker,
+
+    eventType,
+    rehearsalRoom,
 
     producerName:
       document.getElementById("producerName").value.trim(),
@@ -1254,7 +1888,7 @@ toggleInstrumentsDetails();
   };
 }
 
-function openConfirmModal() {
+async function openConfirmModal() {
     if (!validateNightAccess()) {
   return;
 }
@@ -1267,15 +1901,42 @@ function openConfirmModal() {
 
   const data = collectFormData();
 
+  if (data.eventType === "חזרה" && !data.rehearsalRoom) {
+    alert("בחר חדר חזרות מתוך לוח הזמינות");
+    document.getElementById("rehearsalAvailability").scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  if (data.returnTime <= data.departureTime) {
+    alert("שעת החזרה חייבת להיות מאוחרת משעת היציאה");
+    return;
+  }
+
+  if (data.eventType === "חזרה") {
+    await fetchProducerPlannedRows();
+    const conflict = findRehearsalConflict(data);
+
+    if (conflict) {
+      alert(
+        "לא ניתן להכניס את החזרה הבאה.\n\n" +
+        `החדר ${data.rehearsalRoom} כבר תפוס בטווח השעות שנבחר.\n` +
+        `אירוע: ${formatBandForDisplay(conflict.band)}\n` +
+        `מפיק: ${conflict.producer || "-"}`
+      );
+      return;
+    }
+  }
+
   document.getElementById("confirmSummary").innerHTML = `
-    <div class="confirm-row"><strong>תאריך:</strong> ${data.eventDate}</div>
-    <div class="confirm-row"><strong>שם הרכב:</strong> ${stripHiddenMarkers(data.bandName)}</div>
-    <div class="confirm-row"><strong>שם מפיק:</strong> ${data.producerName}</div>
-    <div class="confirm-row"><strong>הגברה שלנו:</strong> ${data.sound}</div>
-    <div class="confirm-row"><strong>כלים שלנו:</strong> ${data.instruments}</div>
-    <div class="confirm-row"><strong>שעת יציאה:</strong> ${data.departureTime}</div>
-    <div class="confirm-row"><strong>שעת חזרה משוערת:</strong> ${data.returnTime}</div>
-    <div class="confirm-row"><strong>איש קשר:</strong> ${data.contact}</div>
+    <div class="confirm-row"><strong>תאריך:</strong> ${escapeHtml(data.eventDate)}</div>
+    <div class="confirm-row"><strong>שם הרכב:</strong> ${escapeHtml(formatBandForDisplay(data.bandName))}</div>
+    ${data.eventType === "חזרה" ? `<div class="confirm-row"><strong>חדר חזרות:</strong> ${escapeHtml(data.rehearsalRoom)}</div>` : ""}
+    <div class="confirm-row"><strong>שם מפיק:</strong> ${escapeHtml(data.producerName)}</div>
+    <div class="confirm-row"><strong>הגברה שלנו:</strong> ${escapeHtml(data.sound)}</div>
+    <div class="confirm-row"><strong>כלים שלנו:</strong> ${escapeHtml(data.instruments)}</div>
+    <div class="confirm-row"><strong>שעת יציאה:</strong> ${escapeHtml(data.departureTime)}</div>
+    <div class="confirm-row"><strong>שעת חזרה משוערת:</strong> ${escapeHtml(data.returnTime)}</div>
+    <div class="confirm-row"><strong>איש קשר:</strong> ${escapeHtml(data.contact)}</div>
   `;
 
   document.getElementById("confirmModal").style.display = "flex";
@@ -1285,17 +1946,65 @@ function closeConfirmModal() {
   document.getElementById("confirmModal").style.display = "none";
 }
 
+function submittedEventAppearsAfterRow(data, minimumRowNumber) {
+  const submittedId = getEventIdFromBand(data.bandName);
+
+  return producerPlannedRows.some(event =>
+    event.rowNumber > minimumRowNumber &&
+    getEventIdFromBand(event.band) === submittedId &&
+    event.dateKey === data.eventDate &&
+    String(event.producer || "") === String(data.producerName || "") &&
+    String(event.departure || "") === String(data.departureTime || "") &&
+    String(event.returnTime || "") === String(data.returnTime || "")
+  );
+}
+
+async function waitForSubmittedEvent(data, minimumRowNumber) {
+  const attempts = 10;
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    if (attempt > 1) {
+      await wait(900);
+    }
+
+    try {
+      await fetchProducerPlannedRows();
+
+      if (submittedEventAppearsAfterRow(data, minimumRowNumber)) {
+        return true;
+      }
+    } catch (error) {
+      console.warn(`ניסיון אימות ${attempt} נכשל`, error);
+    }
+  }
+
+  throw new Error(
+    "השליחה בוצעה, אך האירוע לא הופיע בשיטס בזמן האימות"
+  );
+}
+
 async function submitConfirmedEvent() {
   closeConfirmModal();
 
- const submitBtn = document.getElementById("submitBtn");
-const statusBox = document.getElementById("statusBox");
-const data = collectFormData();
+  const submitBtn = document.getElementById("submitBtn");
+  const statusBox = document.getElementById("statusBox");
+  const data = collectFormData();
 
   submitBtn.disabled = true;
   submitBtn.innerText = "שולח...";
 
   try {
+    /*
+      טוענים מצב עדכני לפני השליחה, כדי שנוכל לזהות בוודאות
+      שנוספה שורה חדשה ולא להתבלבל עם גרסה ישנה של אותו אירוע.
+    */
+    await fetchProducerPlannedRows();
+
+    const previousMaxRow = producerPlannedRows.reduce(
+      (max, event) => Math.max(max, Number(event.rowNumber) || 0),
+      0
+    );
+
     await fetch(SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
@@ -1305,28 +2014,42 @@ const data = collectFormData();
       body: JSON.stringify(data)
     });
 
+    submitBtn.innerText = "מאמת שמירה...";
+
+    /*
+      בגלל no-cors אי אפשר לקרוא את תשובת Apps Script.
+      לכן הצלחה מוצגת רק אחרי שהשורה החדשה מופיעה בפועל בשיטס.
+    */
+    await waitForSubmittedEvent(data, previousMaxRow);
+
     statusBox.className = "status success";
-    statusBox.innerText = `האירוע של ${data.bandName} נשלח בהצלחה`;
+    statusBox.innerText =
+      `האירוע של ${stripHiddenMarkers(data.bandName)} נשמר בהצלחה`;
 
     document.getElementById("eventForm").reset();
-    document.getElementById("eventDate").value =
-      new Date().toISOString().split("T")[0];
+    document.getElementById("eventDate").value = getLocalDateKey();
 
     document.getElementById("instrumentsDetailsBox").style.display = "none";
+    document.getElementById("rehearsalRoomBox").style.display = "none";
+    document.getElementById("rehearsalRoom").required = false;
+    document.getElementById("rehearsalAvailability").classList.remove("visible");
+
     document.getElementById("returnDateBox").style.display = "none";
-document.getElementById("returnDate").required = false;
-document.getElementById("returnDate").value = "";
-editingRowNumber = null;
-currentEditingEventId = null;
+    document.getElementById("returnDate").required = false;
+    document.getElementById("returnDate").value = "";
 
-  } catch (err) {
+    editingRowNumber = null;
+    currentEditingEventId = null;
+
+  } catch (error) {
     statusBox.className = "status error";
-    statusBox.innerText = "אירעה שגיאה בשליחה";
-    console.error(err);
+    statusBox.innerText =
+      "לא ניתן היה לאמת שהאירוע נשמר. בדוק בלוח האירועים לפני שליחה חוזרת.";
+    console.error(error);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerText = editingRowNumber ? "שמור שינויים" : "שלח אירוע";
   }
-
-  submitBtn.disabled = false;
-  submitBtn.innerText = "שלח אירוע";
 }
 
  function resetForm(){
@@ -1334,7 +2057,7 @@ currentEditingEventId = null;
   document.getElementById("eventForm").reset();
 
   document.getElementById("eventDate").value =
-    new Date().toISOString().split("T")[0];
+    getLocalDateKey();
 
   document.getElementById("returnDateBox").style.display = "none";
   document.getElementById("returnDate").required = false;
@@ -1342,6 +2065,11 @@ currentEditingEventId = null;
 
   document.getElementById("instrumentsDetailsBox").style.display = "none";
   document.getElementById("instrumentsDetails").value = "";
+
+  document.getElementById("rehearsalRoomBox").style.display = "none";
+  document.getElementById("rehearsalAvailability").classList.remove("visible");
+  document.getElementById("rehearsalRoom").required = false;
+  document.getElementById("rehearsalRoom").value = "";
 
   const statusBox =
     document.getElementById("statusBox");
@@ -1353,6 +2081,24 @@ currentEditingEventId = null;
 document.getElementById("submitBtn").innerText = "שלח אירוע";
 
 }
+  function toggleRehearsalRoom() {
+  const eventType = document.getElementById("eventType").value;
+  const box = document.getElementById("rehearsalRoomBox");
+  const select = document.getElementById("rehearsalRoom");
+  const board = document.getElementById("rehearsalAvailability");
+
+  if (eventType === "חזרה") {
+    box.style.display = "none";
+    select.required = false;
+    board.classList.add("visible");
+  } else {
+    box.style.display = "none";
+    select.required = false;
+    select.value = "";
+    board.classList.remove("visible");
+  }
+}
+
   function toggleInstrumentsDetails() {
   const value = document.getElementById("instruments").value;
   const box = document.getElementById("instrumentsDetailsBox");
@@ -1393,6 +2139,161 @@ function showDailyCode() {
     getDailyAccessCode()
   );
 }
+
+
+
+function getLocalMonthKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+async function openMonthlyOverview() {
+  const modal = document.getElementById("monthlyOverviewModal");
+  const input = document.getElementById("monthlyOverviewMonth");
+  const content = document.getElementById("monthlyOverviewContent");
+
+  if (!input.value) {
+    input.value = getLocalMonthKey();
+  }
+
+  modal.classList.add("visible");
+  document.body.style.overflow = "hidden";
+  content.innerHTML =
+    '<div class="monthly-loading">טוען את לוח החזרות החודשי...</div>';
+
+  try {
+    await fetchProducerPlannedRows();
+    renderMonthlyOverview();
+  } catch (error) {
+    console.error("Monthly overview error:", error);
+    content.innerHTML =
+      '<div class="monthly-empty">לא ניתן היה לטעון את לוח החזרות. נסה שוב.</div>';
+  }
+}
+
+function closeMonthlyOverview() {
+  document.getElementById("monthlyOverviewModal").classList.remove("visible");
+  document.body.style.overflow = "";
+}
+
+function handleMonthlyBackdropClick(event) {
+  if (event.target.id === "monthlyOverviewModal") {
+    closeMonthlyOverview();
+  }
+}
+
+function getMonthlyRehearsals(monthKey) {
+  return getLatestPlannedRows(producerPlannedRows)
+    .filter(event =>
+      String(event.dateKey || "").startsWith(monthKey + "-") &&
+      stripHiddenMarkers(event.band || "").startsWith("חזרה -") &&
+      getRoomFromBand(event.band)
+    )
+    .sort((a, b) => {
+      const dateCompare =
+        String(a.dateKey || "").localeCompare(String(b.dateKey || ""));
+
+      if (dateCompare !== 0) {
+        return dateCompare;
+      }
+
+      return String(a.departure || "").localeCompare(
+        String(b.departure || "")
+      );
+    });
+}
+
+function formatMonthlyDayHeader(dateKey) {
+  const [year, month, day] = String(dateKey).split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  const weekday = date.toLocaleDateString("he-IL", { weekday: "long" });
+
+  return `${weekday} · ${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}`;
+}
+
+function renderMonthlyOverview() {
+  const monthInput = document.getElementById("monthlyOverviewMonth");
+  const content = document.getElementById("monthlyOverviewContent");
+
+  if (!monthInput || !content) {
+    console.error("Monthly overview elements are missing");
+    return;
+  }
+
+  const monthKey = monthInput.value || getLocalMonthKey();
+  const events = getMonthlyRehearsals(monthKey);
+
+  if (!events.length) {
+    content.innerHTML =
+      '<div class="monthly-empty">אין חזרות בחודש שנבחר.</div>';
+    return;
+  }
+
+  const eventsByDate = new Map();
+
+  events.forEach(event => {
+    if (!eventsByDate.has(event.dateKey)) {
+      eventsByDate.set(event.dateKey, []);
+    }
+
+    eventsByDate.get(event.dateKey).push(event);
+  });
+
+  content.innerHTML = Array.from(eventsByDate.entries())
+    .map(([dateKey, dayEvents]) => {
+      const eventsByRoom = new Map();
+
+      dayEvents.forEach(event => {
+        const room = getRoomFromBand(event.band);
+
+        if (!eventsByRoom.has(room)) {
+          eventsByRoom.set(room, []);
+        }
+
+        eventsByRoom.get(room).push(event);
+      });
+
+      const roomsHtml = Array.from(eventsByRoom.entries())
+        .map(([room, roomEvents]) => {
+          const bookingsHtml = roomEvents.map(event => {
+            const bandName =
+              stripHiddenMarkers(event.band || "")
+                .replace("חזרה -", "")
+                .trim() || "ללא שם";
+
+            return `
+              <div class="monthly-booking">
+                <div class="monthly-booking-time">
+                  ${escapeHtml(event.departure || "-")}–${escapeHtml(event.returnTime || "-")}
+                </div>
+                <div>${escapeHtml(bandName)}</div>
+                <div>מפיק: ${escapeHtml(event.producer || "-")}</div>
+              </div>
+            `;
+          }).join("");
+
+          return `
+            <div class="monthly-room-group">
+              <div class="monthly-room-title">
+                <span>${room}</span>
+              </div>
+              ${bookingsHtml}
+            </div>
+          `;
+        }).join("");
+
+      return `
+        <section class="monthly-day">
+          <div class="monthly-day-head">
+            <strong>${formatMonthlyDayHeader(dateKey)}</strong>
+          </div>
+          ${roomsHtml}
+        </section>
+      `;
+    })
+    .join("");
+}
+
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMonthlyOverview();});
 
 </script>
 
