@@ -1864,6 +1864,8 @@ toggleInstrumentsDetails();
 
     eventType,
     rehearsalRoom,
+    hasLodging,
+    returnDate,
 
     producerName:
       document.getElementById("producerName").value.trim(),
@@ -1907,10 +1909,27 @@ async function openConfirmModal() {
     return;
   }
 
-  if (data.returnTime <= data.departureTime) {
-    alert("שעת החזרה חייבת להיות מאוחרת משעת היציאה");
-    return;
-  }
+ const isNextDayReturn =
+  data.eventType === "הופעה" &&
+  data.hasLodging === "כן" &&
+  data.returnDate &&
+  data.returnDate > data.eventDate;
+
+if (
+  data.hasLodging === "כן" &&
+  data.returnDate <= data.eventDate
+) {
+  alert("תאריך החזרה חייב להיות מאוחר מתאריך היציאה");
+  return;
+}
+
+if (
+  data.returnTime <= data.departureTime &&
+  !isNextDayReturn
+) {
+  alert("שעת החזרה חייבת להיות מאוחרת משעת היציאה");
+  return;
+}
 
   if (data.eventType === "חזרה") {
     await fetchProducerPlannedRows();
