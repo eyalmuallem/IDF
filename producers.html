@@ -1797,6 +1797,18 @@ function startEditEvent(rowNumber){
   document.getElementById("eventDate").value = event.dateKey || "";
 
   const cleanBand = stripHiddenMarkers(bandText);
+  const returnDateMatch =
+  bandText.match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
+
+if (returnDateMatch) {
+  document.getElementById("hasLodging").value = "כן";
+  document.getElementById("returnDate").value = returnDateMatch[1];
+} else {
+  document.getElementById("hasLodging").value = "לא";
+  document.getElementById("returnDate").value = "";
+}
+
+toggleReturnDateBox();
 
   if(cleanBand.startsWith("הופעה -")){
     document.getElementById("eventType").value = "הופעה";
