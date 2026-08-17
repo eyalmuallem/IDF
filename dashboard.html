@@ -2009,6 +2009,7 @@ function stripHiddenMarkers(text) {
   return String(text || "")
     .replace(/⟦ID:[A-Z]{2}\d{5}[A-Z]⟧\s*/g, "")
     .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "")
+    .replace(/\s*⟦DELETED⟧/g, "")
     .trim();
 }
 
@@ -2033,7 +2034,9 @@ function getLatestPlannedRows(rows) {
     }
   });
 
-  return Array.from(map.values());
+  return Array.from(map.values()).filter(event =>
+    !String(event.band || "").includes("⟦DELETED⟧")
+  );
 }
 async function fetchPlannedRows() {
   const res = await fetch(PLANNED_URL);
