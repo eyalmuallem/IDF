@@ -1901,30 +1901,20 @@ function requestEditCode(rowNumber) {
     return;
   }
 
-  const cleanBand = stripHiddenMarkers(event.band || "");
-  const isRehearsal = cleanBand.startsWith("חזרה -");
-
-  // הופעה תמיד דורשת קוד מפקד
-  if (!isRehearsal) {
-    const code = prompt("הזן קוד מפקד לעריכת ההופעה:");
-
-    if (code !== EDIT_CODE) {
-      alert("קוד שגוי");
-      return;
-    }
-
-    startEditEvent(rowNumber);
-    return;
-  }
-
   /*
-    חזרה:
-    - ניתנת לעריכה ללא קוד עד 20:00 ביום שלפני.
-    - החל מ-20:00 ביום שלפני, ביום החזרה ולאחריו נדרש קוד מפקד.
+    הופעה וחזרה:
+    - ניתנות לעריכה ללא קוד עד 20:00 ביום שלפני האירוע.
+    - החל מ-20:00 ביום שלפני, ביום האירוע ולאחריו נדרש קוד מפקד.
   */
   const now = new Date();
 
   const [year, month, day] = String(event.dateKey || "").split("-").map(Number);
+
+  if (!year || !month || !day) {
+    alert("לא ניתן לזהות את תאריך האירוע");
+    return;
+  }
+
   const eventDate = new Date(year, month - 1, day);
   eventDate.setHours(0, 0, 0, 0);
 
@@ -1932,13 +1922,15 @@ function requestEditCode(rowNumber) {
   editLockTime.setDate(eventDate.getDate() - 1);
   editLockTime.setHours(20, 0, 0, 0);
 
+  // עד 20:00 ביום שלפני - עריכה חופשית
   if (now < editLockTime) {
     startEditEvent(rowNumber);
     return;
   }
 
+  // מ-20:00 ביום שלפני והלאה - נדרש קוד מפקד
   const code = prompt(
-    "העריכה החופשית לחזרה זו נסגרה בשעה 20:00 ביום שלפני.\n" +
+    "העריכה החופשית לאירוע זה נסגרה בשעה 20:00 ביום שלפני.\n" +
     "הזן קוד מפקד לעריכה:"
   );
 
