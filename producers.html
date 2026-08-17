@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
@@ -164,6 +163,28 @@
 
     .secondary:hover{
       background:#e5e7eb;
+    }
+
+    .danger{
+      background:#fee2e2;
+      color:#991b1b;
+      border:1px solid #fecaca;
+    }
+
+    .danger:hover{
+      background:#fecaca;
+    }
+
+    .event-action-buttons{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-top:6px;
+    }
+
+    .event-action-buttons button{
+      padding:5px 10px;
+      font-size:11px;
     }
 
     .status{
@@ -1127,6 +1148,7 @@ function stripHiddenMarkers(text) {
     .replace(/⟦ID:[A-Z]{2}\d{5}[A-Z]⟧\s*/g, "")
     .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "")
     .replace(/ ⟦חדר:[^⟧]+⟧/g, "")
+    .replace(/\s*⟦DELETED⟧/g, "")
     .trim();
 }
 
@@ -1356,28 +1378,42 @@ function renderRehearsalAvailability() {
   }
 }
 
+function isDeletedPlannedEvent(event) {
+  return String(event?.band || "").includes("⟦DELETED⟧");
+}
+
+function getPlannedEventKey(event) {
+  const eventId = getEventIdFromBand(event?.band || "");
+
+  if (eventId) {
+    return eventId;
+  }
+
+  return [
+    event?.dateKey || "",
+    stripHiddenMarkers(event?.band || ""),
+    event?.departure || "",
+    event?.returnTime || "",
+    getRoomFromBand(event?.band || "")
+  ].join("|");
+}
+
 function getLatestPlannedRows(rows) {
   const map = new Map();
 
-  rows.forEach(e => {
-    const idMatch = String(e.band || "").match(/⟦ID:([A-Z]{2}\d{5}[A-Z])⟧/);
-    const key = idMatch
-      ? idMatch[1]
-      : [
-          e.dateKey || "",
-          stripHiddenMarkers(e.band),
-          e.departure || "",
-          e.returnTime || "",
-          getRoomFromBand(e.band)
-        ].join("|");
+  rows.forEach(event => {
+    const key = getPlannedEventKey(event);
 
-    if (!map.has(key) || e.rowNumber > map.get(key).rowNumber) {
-      map.set(key, e);
+    if (!map.has(key) || event.rowNumber > map.get(key).rowNumber) {
+      map.set(key, event);
     }
   });
 
-  return Array.from(map.values());
+  return Array.from(map.values()).filter(event =>
+    !isDeletedPlannedEvent(event)
+  );
 }
+
 function renderCopyModalEvents() {
   const selectedDate = document.getElementById("copyDateInput").value;
   const box = document.getElementById("copyModalEvents");
@@ -1426,13 +1462,21 @@ return `
     <span class="event-tag">כלים: ${e.instruments || "-"}</span>
   </div>
 
-  <button
-  type="button"
-  class="secondary"
-  style="margin-top:6px;padding:5px 10px;font-size:11px;"
-  onclick="requestEditCode(${e.rowNumber})">
-  ערוך
-</button>
+  <div class="event-action-buttons">
+    <button
+      type="button"
+      class="secondary"
+      onclick="requestEditCode(${e.rowNumber})">
+      ערוך
+    </button>
+
+    <button
+      type="button"
+      class="danger"
+      onclick="requestDeleteCode(${e.rowNumber})">
+      הסר אירוע
+    </button>
+  </div>
 
 </div>
 `;
@@ -1720,6 +1764,133 @@ function validateNightAccess() {
 
   alert("קוד שגוי");
   return false;
+}
+
+
+function requestDeleteCode(rowNumber) {
+  const event = producerPlannedRows.find(e => e.rowNumber === rowNumber);
+
+  if (!event) {
+    alert("האירוע לא נמצא");
+    return;
+  }
+
+  const code = prompt("הזן קוד מפקד להסרת האירוע:");
+
+  if (code !== EDIT_CODE) {
+    alert("קוד שגוי");
+    return;
+  }
+
+  const eventName = formatBandForDisplay(event.band || "האירוע");
+
+  const approved = confirm(
+    `האם אתה בטוח שברצונך להסיר את האירוע?\n\n${eventName}\n\n` +
+    "האירוע ייעלם מהלוחות, ואם זו חזרה - החדר ישוחרר."
+  );
+
+  if (!approved) {
+    return;
+  }
+
+  deletePlannedEvent(rowNumber);
+}
+
+function buildDeletedEventPayload(event) {
+  const bandText = String(event.band || "").trim();
+  const cleanBand = stripHiddenMarkers(bandText);
+  const isRehearsal = cleanBand.startsWith("חזרה -");
+  const returnDateMatch =
+    bandText.match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
+
+  return {
+    eventDate: event.dateKey || "",
+    bandName: `${bandText} ⟦DELETED⟧`.trim(),
+    eventType: isRehearsal ? "חזרה" : "הופעה",
+    rehearsalRoom: getRoomFromBand(bandText),
+    hasLodging: returnDateMatch ? "כן" : "לא",
+    returnDate: returnDateMatch ? returnDateMatch[1] : "",
+    producerName: event.producer || "",
+    sound: event.sound || "",
+    instruments: event.instruments || "",
+    departureTime: event.departure || "",
+    returnTime: event.returnTime || "",
+    contact: event.contact || ""
+  };
+}
+
+async function waitForDeletedEvent(originalEvent, minimumRowNumber) {
+  const targetKey = getPlannedEventKey(originalEvent);
+  const attempts = 10;
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    if (attempt > 1) {
+      await wait(900);
+    }
+
+    try {
+      await fetchProducerPlannedRows();
+
+      const deletionRow = producerPlannedRows.find(event =>
+        event.rowNumber > minimumRowNumber &&
+        isDeletedPlannedEvent(event) &&
+        getPlannedEventKey(event) === targetKey
+      );
+
+      if (deletionRow) {
+        return true;
+      }
+    } catch (error) {
+      console.warn(`ניסיון אימות מחיקה ${attempt} נכשל`, error);
+    }
+  }
+
+  throw new Error("המחיקה נשלחה, אך לא ניתן היה לאמת אותה בשיטס");
+}
+
+async function deletePlannedEvent(rowNumber) {
+  const originalEvent = producerPlannedRows.find(e => e.rowNumber === rowNumber);
+
+  if (!originalEvent) {
+    alert("האירוע לא נמצא");
+    return;
+  }
+
+  const payload = buildDeletedEventPayload(originalEvent);
+  const originalName = formatBandForDisplay(originalEvent.band || "האירוע");
+
+  try {
+    await fetchProducerPlannedRows();
+
+    const previousMaxRow = producerPlannedRows.reduce(
+      (max, event) => Math.max(max, Number(event.rowNumber) || 0),
+      0
+    );
+
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    await waitForDeletedEvent(originalEvent, previousMaxRow);
+
+    renderCopyModalEvents();
+
+    if (document.getElementById("eventType").value === "חזרה") {
+      renderRehearsalAvailability();
+    }
+
+    alert(`האירוע "${originalName}" הוסר בהצלחה`);
+  } catch (error) {
+    console.error("Delete planned event failed:", error);
+    alert(
+      "לא ניתן היה לאמת שהאירוע הוסר. בדוק בלוח האירועים לפני ניסיון נוסף."
+    );
+  }
 }
 
 function requestEditCode(rowNumber) {
