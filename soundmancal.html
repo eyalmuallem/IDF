@@ -567,6 +567,7 @@ body{
       return String(text || "")
         .replace(/⟦ID:[A-Z]{2}\d{5}[A-Z]⟧\s*/g, "")
         .replace(/ ⟦חוזר:\d{4}-\d{2}-\d{2}⟧/g, "")
+        .replace(/\s*⟦DELETED⟧/g, "")
         .trim();
     }
 
@@ -597,13 +598,18 @@ body{
 
     function getLatestRows(rows){
       const map = new Map();
+
       rows.forEach(row => {
         const key = row.eventId || stripHiddenMarkers(row.band);
+
         if(!map.has(key) || row.rowNumber > map.get(key).rowNumber){
           map.set(key, row);
         }
       });
-      return Array.from(map.values());
+
+      return Array.from(map.values()).filter(row =>
+        !String(row.band || "").includes("⟦DELETED⟧")
+      );
     }
 
     async function fetchRows(){
