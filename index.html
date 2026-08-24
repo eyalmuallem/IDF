@@ -317,12 +317,8 @@ const EQUIPMENT_LOG_API =
         <select id="equipment_select">
             <option value="">בחר ציוד...</option>
         </select>
-        <label>הכנס מק"ט ישירות:</label>
-<input type="text" id="code_input" placeholder="הקלד מקט / סרוק ברקוד / הצמד NFC">
-
-<button id="nfc-start-btn" type="button" onclick="startNfcScan()">הפעל קורא NFC בטלפון</button>
-<div id="nfc-status" style="display:none; margin:0 0 10px; padding:10px; border-radius:5px; background:#eef6ff; text-align:center; font-weight:bold;"></div>
-
+        <label>הכנס מק"ט ישירות (סורק ברקוד):</label>
+<input type="text" id="code_input" placeholder="הקלד מקט או סרוק ברקוד">
 <button onclick="startScan()">📷 סרוק ברקוד</button>
 <div id="reader-wrapper" style="position: relative; width: 100%; margin-top: 10px;">
   <div id="reader" style="width: 100%;"></div>
@@ -705,248 +701,18 @@ function addEquipment() {
     cell3.appendChild(deleteButton);
 
         }
-const codeInput = document.getElementById("code_input");
+        document.getElementById("code_input").addEventListener("change", function() {
+    let code = this.value.trim();
+    this.value = ""; // נקה את השדה לאחר ההקלדה
 
-/* =========================================================
-   קליטת מק"ט - הקלדה / ברקוד / NFC
-   ========================================================= */
-function normalizeEquipmentCode(rawValue) {
-    let value = String(rawValue ?? "")
-        .replace(/\u0000/g, "")
-        .replace(/^\uFEFF/, "")
-        .trim();
-
-    if (!value) return "";
-
-    // אם ה-NFC מכיל URL עם ?code=..., נוציא ממנו את המק"ט
-    try {
-        if (/^https?:\/\//i.test(value)) {
-            const url = new URL(value);
-            value = (
-                url.searchParams.get("code") ||
-                url.searchParams.get("sku") ||
-                url.searchParams.get("makat") ||
-                value
-            ).trim();
-        }
-    } catch (_) {}
-
-    // התאמה מדויקת למה שכבר קיים במערכת
-    if (equipmentList.some(item => item.code === value)) {
-        return value;
-    }
-
-    // מאפשר גם לסרוק 420106 ולקבל 00420106
-    if (/^\d+$/.test(value)) {
-        const eightDigits = value.padStart(8, "0");
-        if (equipmentList.some(item => item.code === eightDigits)) {
-            return eightDigits;
-        }
-
-        // מאפשר גם 1 / 0001 עבור פריטים שמוגדרים כ-#0001
-        const hashCode = "#" + value.padStart(4, "0");
-        if (equipmentList.some(item => item.code === hashCode)) {
-            return hashCode;
-        }
-    }
-
-    return value;
-}
-
-function processEquipmentCode(rawCode, options = {}) {
-    const { playSound = true, clearInput = true } = options;
-    const code = normalizeEquipmentCode(rawCode);
-
-    if (!code) return false;
-
-    const foundItem = equipmentList.find(item => item.code === code);
-
-    if (!foundItem) {
-        if (clearInput) codeInput.value = "";
-        alert("מקט לא מוכר: " + code);
-        setTimeout(() => codeInput.focus(), 0);
-        return false;
-    }
-
-    select.value = code;
-    addEquipment();
-
-    if (clearInput) codeInput.value = "";
-
-    if (playSound) {
-        document.getElementById("ding-sound").play().catch(() => {});
-    }
-
-    setTimeout(() => codeInput.focus(), 0);
-    return true;
-}
-
-function handleCodeInput() {
-    processEquipmentCode(codeInput.value);
-}
-
-// מקלדת / קורא ברקוד USB-Bluetooth ששולח Enter
-codeInput.addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        handleCodeInput();
-    }
-});
-
-// תאימות לסורק המצלמה הקיים
-codeInput.addEventListener("change", function() {
-    handleCodeInput();
-});
-
-/* =========================================================
-   Web NFC - הטלפון עצמו הוא הקורא
-   עובד בדפדפנים שתומכים ב-NDEFReader וב-HTTPS
-   ========================================================= */
-let nfcReader = null;
-let nfcScanStarted = false;
-let lastNfcCode = "";
-let lastNfcTime = 0;
-
-function setNfcStatus(message, type = "info") {
-    const status = document.getElementById("nfc-status");
-    status.style.display = "block";
-    status.textContent = message;
-
-    if (type === "error") {
-        status.style.background = "#ffeaea";
-        status.style.color = "#a40000";
-    } else if (type === "success") {
-        status.style.background = "#e9f8ee";
-        status.style.color = "#176b35";
+    let foundItem = equipmentList.find(item => item.code === code);
+    if (foundItem) {
+        select.value = code;
+        addEquipment();
     } else {
-        status.style.background = "#eef6ff";
-        status.style.color = "#174a7c";
-    }
-}
-
-function decodeNfcRecord(record) {
-    try {
-        if (!record || !record.data) return "";
-        const decoder = new TextDecoder(record.encoding || "utf-8");
-        return decoder.decode(record.data).trim();
-    } catch (err) {
-        console.error("NFC decode error:", err);
-        return "";
-    }
-}
-
-async function startNfcScan() {
-    if (!("NDEFReader" in window)) {
-        setNfcStatus(
-            "הדפדפן הזה לא תומך בקריאת NFC ישירה מהאתר. נסה Chrome בטלפון Android.",
-            "error"
-        );
-        return;
-    }
-
-    if (!window.isSecureContext) {
-        setNfcStatus(
-            "קריאת NFC מהדפדפן דורשת שהאתר ייפתח ב-HTTPS.",
-            "error"
-        );
-        return;
-    }
-
-    if (nfcScanStarted) {
-        setNfcStatus("קורא ה-NFC כבר פעיל — הצמד תג לטלפון.", "success");
-        return;
-    }
-
-    try {
-        setNfcStatus("מבקש הרשאת NFC…");
-
-        nfcReader = new NDEFReader();
-        await nfcReader.scan();
-        nfcScanStarted = true;
-
-        document.getElementById("nfc-start-btn").textContent = "NFC פעיל — הצמד תג";
-        setNfcStatus("NFC פעיל. הצמד מדבקה לגב הטלפון.", "success");
-
-        nfcReader.addEventListener("readingerror", () => {
-            setNfcStatus("התג זוהה אבל לא ניתן היה לקרוא אותו. נסה להצמיד שוב.", "error");
-        });
-
-        nfcReader.addEventListener("reading", ({ message }) => {
-            let rawValue = "";
-
-            for (const record of message.records) {
-                // תגי NDEF שהוגדרו כ-Text הם המקרה המרכזי אצלך.
-                // אנחנו מאפשרים גם URL ו-records טקסטואליים נוספים.
-                if (
-                    record.recordType === "text" ||
-                    record.recordType === "url" ||
-                    record.recordType === "absolute-url" ||
-                    record.recordType === "mime"
-                ) {
-                    const decoded = decodeNfcRecord(record);
-                    if (decoded) {
-                        rawValue = decoded;
-                        break;
-                    }
-                }
-            }
-
-            if (!rawValue) {
-                setNfcStatus("נקרא תג NFC, אבל לא נמצא בו טקסט של מק״ט.", "error");
-                return;
-            }
-
-            const normalized = normalizeEquipmentCode(rawValue);
-            const now = Date.now();
-
-            // מונע הוספה כפולה כאשר הטלפון נשאר על אותו תג לשבריר שנייה
-            if (normalized === lastNfcCode && now - lastNfcTime < 1500) {
-                return;
-            }
-
-            lastNfcCode = normalized;
-            lastNfcTime = now;
-
-            codeInput.value = normalized;
-            const ok = processEquipmentCode(normalized);
-
-            if (ok) {
-                setNfcStatus("נקרא NFC: " + normalized + " — הפריט נוסף.", "success");
-                if (navigator.vibrate) navigator.vibrate(80);
-            } else {
-                setNfcStatus("נקרא NFC: " + normalized + " — המק״ט לא נמצא במערכת.", "error");
-            }
-        });
-
-    } catch (err) {
-        console.error("Web NFC error:", err);
-        nfcScanStarted = false;
-
-        let message = "לא ניתן להפעיל NFC.";
-        if (err?.name === "NotAllowedError") {
-            message = "לא ניתנה הרשאה ל-NFC. אשר את ההרשאה בדפדפן ונסה שוב.";
-        } else if (err?.name === "NotSupportedError") {
-            message = "המכשיר או הדפדפן אינם תומכים ב-Web NFC.";
-        } else if (err?.name === "NotReadableError") {
-            message = "לא ניתן לגשת כרגע לקורא ה-NFC של הטלפון.";
-        }
-
-        setNfcStatus(message, "error");
-    }
-}
-
-// כשנכנסים לעמוד, הסמן עובר אוטומטית לשדה המק"ט
-window.addEventListener("load", function() {
-    codeInput.focus();
-
-    if (!("NDEFReader" in window)) {
-        setNfcStatus(
-            "קריאת NFC ישירה מהדפדפן אינה זמינה במכשיר/דפדפן הזה. סריקת הברקוד במצלמה עדיין זמינה.",
-            "error"
-        );
+        alert("מקט לא מוכר: " + code);
     }
 });
-
 function startScan() {
     const html5QrCode = new Html5Qrcode("reader");
 
@@ -965,6 +731,7 @@ function startScan() {
                 document.getElementById("scan-line").style.display = "none"; // הסתרת הקו
             });
 
+            document.getElementById("ding-sound").play();
             document.getElementById("code_input").value = decodedText;
             document.getElementById("code_input").dispatchEvent(new Event('change'));
         },
