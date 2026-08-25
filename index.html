@@ -949,6 +949,22 @@ function getFinalEventName() {
 
 </script>
 <script>
+window.addEventListener("load", function () {
+    const params = new URLSearchParams(window.location.search);
+
+    const signer = params.get("signer");
+    const eventName = params.get("event");
+
+    if (signer) {
+        document.getElementById("soundman_name").value = signer;
+    }
+
+    if (eventName) {
+        document.getElementById("band_name").value = eventName;
+    }
+});
+</script>
+<script>
 window.addEventListener("afterprint", () => {
   const loader = document.getElementById("print-loading");
   loader.style.display = "none";
