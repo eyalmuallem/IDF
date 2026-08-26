@@ -954,6 +954,7 @@ window.addEventListener("load", function () {
 
     const signer = params.get("signer");
     const eventName = params.get("event");
+    const returnTime = params.get("return_time");
 
     if (signer) {
         document.getElementById("soundman_name").value = signer;
@@ -961,6 +962,10 @@ window.addEventListener("load", function () {
 
     if (eventName) {
         document.getElementById("band_name").value = eventName;
+    }
+
+    if (returnTime) {
+        document.getElementById("returno_time").value = returnTime;
     }
 });
 </script>
