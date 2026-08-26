@@ -2137,8 +2137,7 @@ function openPlannedEventInCheckout(rowNumber) {
   const returnTime = normalizePlannedTimeForUrl(eventRow.returnTime);
 
   // כתובת מלאה וקבועה - אמין גם באייפון / Safari / PWA
-  const checkoutUrl = new URL("https://eyalmuallem.github.io/IDF/index.html");
-
+const checkoutUrl = new window.URL("https://eyalmuallem.github.io/IDF/index.html");
   checkoutUrl.searchParams.set("event", cleanBand);
 
   if (returnTime) {
