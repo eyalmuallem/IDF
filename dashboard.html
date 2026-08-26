@@ -2126,7 +2126,7 @@ function normalizePlannedTimeForUrl(value) {
 
 function openPlannedEventInCheckout(rowNumber) {
   const visibleRows = getLatestPlannedRows(plannedRowsCache);
-  const eventRow = visibleRows.find(e => e.rowNumber === rowNumber);
+  const eventRow = visibleRows.find(e => Number(e.rowNumber) === Number(rowNumber));
 
   if (!eventRow) {
     alert("לא ניתן למצוא את האירוע המתוכנן. נסה לרענן את הלוח.");
@@ -2134,19 +2134,23 @@ function openPlannedEventInCheckout(rowNumber) {
   }
 
   const cleanBand = stripHiddenMarkers(eventRow.band);
-  const checkoutUrl = new URL("index.html", window.location.href);
+  const returnTime = normalizePlannedTimeForUrl(eventRow.returnTime);
+
+  // כתובת מלאה וקבועה - אמין גם באייפון / Safari / PWA
+  const checkoutUrl = new URL("https://eyalmuallem.github.io/IDF/index.html");
 
   checkoutUrl.searchParams.set("event", cleanBand);
 
-  const returnTime = normalizePlannedTimeForUrl(eventRow.returnTime);
   if (returnTime) {
     checkoutUrl.searchParams.set("return_time", returnTime);
   }
 
-  // נשמר לצורך זיהוי/דיבוג עתידי; index מתעלם ממנו כרגע.
-  checkoutUrl.searchParams.set("planned_date", eventRow.dateKey);
+  if (eventRow.dateKey) {
+    checkoutUrl.searchParams.set("planned_date", eventRow.dateKey);
+  }
 
-  window.open(checkoutUrl.toString(), "_blank");
+  // מעבר באותו חלון - לא נחסם כ-popup באייפון
+  window.location.href = checkoutUrl.toString();
 }
 
 function parsePlannedGviz(text) {
@@ -2350,6 +2354,7 @@ async function loadPlannedEventsByDate() {
     const createButton = !isReturningToday
       ? `<button type="button"
                  class="create-event-btn"
+                 title="פתח טופס רישום ציוד עם פרטי האירוע"
                  onclick="openPlannedEventInCheckout(${e.rowNumber})">
           צור אירוע
          </button>`
