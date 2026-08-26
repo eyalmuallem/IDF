@@ -649,6 +649,70 @@ thead tr:hover {
   padding: 12px;
   background: #f9fafb;
   text-align: right;
+  transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+/* אירוע מתוכנן שעדיין לא הופק, אבל מוצג ביום החזרה שלו */
+.planned-event-card.returning-today {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+/* צבעים זהים ללוגיקת OUT / IN בדשבורד */
+.planned-event-card.actual-OUT {
+  background: linear-gradient(90deg, rgba(239,68,68,0.12), rgba(239,68,68,0.05));
+  border-color: rgba(239,68,68,0.30);
+}
+
+.planned-event-card.actual-IN {
+  background: linear-gradient(90deg, rgba(16,185,129,0.10), rgba(16,185,129,0.04));
+  border-color: rgba(16,185,129,0.28);
+}
+
+.planned-event-actions {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.create-event-btn {
+  border:none;
+  border-radius:8px;
+  padding:8px 14px;
+  background:linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color:#fff;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 2px 5px rgba(37,99,235,.20);
+}
+
+.create-event-btn:hover {
+  transform:translateY(-1px);
+  box-shadow:0 5px 12px rgba(37,99,235,.28);
+}
+
+.planned-status-badge {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:58px;
+  border-radius:999px;
+  padding:5px 9px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.planned-status-badge.OUT {
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.planned-status-badge.IN {
+  background:#d1fae5;
+  color:#065f46;
 }
 
 .planned-event-title {
@@ -1972,6 +2036,118 @@ const PLANNED_URL =
   `https://docs.google.com/spreadsheets/d/${PLANNED_SHEET_ID}/gviz/tq?tqx=out:json&gid=${PLANNED_GID}`;
 
 let plannedRowsCache = [];
+let actualPlannedStatusMap = new Map();
+
+/*
+  התאמה בין אירוע מתוכנן לאירוע שהופק בפועל:
+  שם אירוע + תאריך האירוע.
+  כך אותו שם יכול להופיע בתאריכים שונים בלי להתנגש.
+*/
+function normalizeEventTitleForMatch(value) {
+  return String(value || "")
+    .replace(/\s*\(חוזר בתאריך\s+\d{1,2}\/\d{1,2}\/\d{4}\)\s*$/i, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function makePlannedMatchKey(dateKey, eventTitle) {
+  return `${dateKey}|${normalizeEventTitleForMatch(eventTitle)}`;
+}
+
+function actualDateCellToKey(cell) {
+  if (!cell) return "";
+
+  const formatted = String(cell.f || "").trim();
+  if (formatted) {
+    if (formatted.includes("/")) return normalizeDate(formatted);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(formatted)) return formatted;
+  }
+
+  const raw = String(cell.v || "").trim();
+  const dateMatch = raw.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (dateMatch) {
+    const y = Number(dateMatch[1]);
+    const m = Number(dateMatch[2]) + 1;
+    const d = Number(dateMatch[3]);
+    return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  }
+
+  if (raw.includes("/")) return normalizeDate(raw);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
+  return "";
+}
+
+async function refreshActualPlannedStatuses() {
+  try {
+    const res = await fetch(URL + "&_=" + Date.now());
+    const text = await res.text();
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    const rows = json.table.rows || [];
+    const map = new Map();
+
+    // אם קיימות כמה רשומות לאותו שם+תאריך, האחרונה בגיליון קובעת.
+    rows.slice(1).forEach((r, index) => {
+      const status = String(r.c?.[1]?.v || "").trim().toUpperCase();
+      if (status !== "OUT" && status !== "IN") return;
+
+      const eventTitle = r.c?.[2]?.v || "";
+      const dateKey = actualDateCellToKey(r.c?.[4]);
+      if (!eventTitle || !dateKey) return;
+
+      map.set(makePlannedMatchKey(dateKey, eventTitle), {
+        status,
+        docId: r.c?.[0]?.v || "",
+        rowIndex: index
+      });
+    });
+
+    actualPlannedStatusMap = map;
+  } catch (err) {
+    console.warn("Failed to refresh planned event statuses:", err);
+  }
+}
+
+function getActualStatusForPlannedEvent(eventRow) {
+  const cleanBand = stripHiddenMarkers(eventRow.band);
+  return actualPlannedStatusMap.get(
+    makePlannedMatchKey(eventRow.dateKey, cleanBand)
+  ) || null;
+}
+
+function normalizePlannedTimeForUrl(value) {
+  const s = String(value || "").trim();
+  const match = s.match(/(\d{1,2}):(\d{2})/);
+  if (!match) return s;
+
+  return `${String(match[1]).padStart(2,"0")}:${match[2]}`;
+}
+
+function openPlannedEventInCheckout(rowNumber) {
+  const visibleRows = getLatestPlannedRows(plannedRowsCache);
+  const eventRow = visibleRows.find(e => e.rowNumber === rowNumber);
+
+  if (!eventRow) {
+    alert("לא ניתן למצוא את האירוע המתוכנן. נסה לרענן את הלוח.");
+    return;
+  }
+
+  const cleanBand = stripHiddenMarkers(eventRow.band);
+  const checkoutUrl = new URL("index.html", window.location.href);
+
+  checkoutUrl.searchParams.set("event", cleanBand);
+
+  const returnTime = normalizePlannedTimeForUrl(eventRow.returnTime);
+  if (returnTime) {
+    checkoutUrl.searchParams.set("return_time", returnTime);
+  }
+
+  // נשמר לצורך זיהוי/דיבוג עתידי; index מתעלם ממנו כרגע.
+  checkoutUrl.searchParams.set("planned_date", eventRow.dateKey);
+
+  window.open(checkoutUrl.toString(), "_blank");
+}
 
 function parsePlannedGviz(text) {
   return JSON.parse(text.substring(47).slice(0, -2));
@@ -2100,64 +2276,109 @@ document.getElementById("plannedDateInput").value =
   new Date().toISOString().split("T")[0];
 
 await fetchPlannedRows();
-loadPlannedEventsByDate();
+await loadPlannedEventsByDate();
 }
 
-function loadPlannedEventsByDate() {
+async function loadPlannedEventsByDate() {
   const selectedDate = document.getElementById("plannedDateInput").value;
   const tbody = document.getElementById("plannedEventsBody");
 
- const visibleRows = getLatestPlannedRows(plannedRowsCache);
-
-const regularEvents = visibleRows.filter(e => e.dateKey === selectedDate);
-
-const returningEvents = visibleRows.filter(e => {
-  const match = String(e.band || "").match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
-  return match && match[1] === selectedDate;
-});
-
-const events = regularEvents.concat(returningEvents);
-
-  if (!events.length) {
-   tbody.innerHTML = `
-  <div style="color:#6b7280;text-align:center;padding:18px;">
-    אין אירועים מתוכננים לתאריך שנבחר
-  </div>
-`;
+  if (!selectedDate) {
+    tbody.innerHTML = `
+      <div style="color:#6b7280;text-align:center;padding:18px;">
+        נא לבחור תאריך
+      </div>
+    `;
     return;
   }
-tbody.innerHTML = events.map(e => {
-  const cleanBand = stripHiddenMarkers(e.band);
-  const returnDate = getReturnDateFromBand(e.band);
 
-  const returnNote = returnDate
-  ? `<div style="color:#b45309;font-size:12px;font-weight:700;">
-      חוזר בתאריך ${returnDate.split("-").reverse().join("/")}
-    </div>`
-  : "";
+  // מביא את סטטוסי OUT / IN העדכניים לפני ציור הלוח.
+  await refreshActualPlannedStatuses();
 
-const isReturningToday =
-  e.dateKey !== selectedDate && returnDate === selectedDate;
+  const visibleRows = getLatestPlannedRows(plannedRowsCache);
 
-return `
-  <div class="planned-event-card" style="${isReturningToday ? "background:#fff7ed;border-color:#fed7aa;" : ""}">
-    <div class="planned-event-title">
-  ${isReturningToday ? "חוזר היום: " : ""}${cleanBand}${!isReturningToday ? returnNote : ""}
-</div>
+  const regularEvents = visibleRows.filter(e => e.dateKey === selectedDate);
 
-    <div class="planned-event-grid">
-      <div><strong>מפיק:</strong> ${e.producer || "-"}</div>
-      <div><strong>הגברה:</strong> ${e.sound || "-"}</div>
-      <div><strong>כלים:</strong> ${e.instruments || "-"}</div>
-      <div><strong>יציאה:</strong> ${e.departure || "-"}</div>
-      <div><strong>חזרה משוערת:</strong> ${e.returnTime || "-"}</div>
-      <div><strong>איש קשר:</strong> ${e.contact || "-"}</div>
-    </div>
-  </div>
-`;
-}).join("");
-  
+  const returningEvents = visibleRows.filter(e => {
+    const match = String(e.band || "").match(/⟦חוזר:(\d{4}-\d{2}-\d{2})⟧/);
+    return match && match[1] === selectedDate && e.dateKey !== selectedDate;
+  });
+
+  const events = regularEvents.concat(returningEvents);
+
+  if (!events.length) {
+    tbody.innerHTML = `
+      <div style="color:#6b7280;text-align:center;padding:18px;">
+        אין אירועים מתוכננים לתאריך שנבחר
+      </div>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = events.map(e => {
+    const cleanBand = stripHiddenMarkers(e.band);
+    const returnDate = getReturnDateFromBand(e.band);
+
+    const returnNote = returnDate
+      ? `<div style="color:#b45309;font-size:12px;font-weight:700;">
+          חוזר בתאריך ${returnDate.split("-").reverse().join("/")}
+        </div>`
+      : "";
+
+    const isReturningToday =
+      e.dateKey !== selectedDate && returnDate === selectedDate;
+
+    const actual = getActualStatusForPlannedEvent(e);
+    const actualStatus = actual?.status || "";
+
+    const cardClasses = [
+      "planned-event-card",
+      isReturningToday ? "returning-today" : "",
+      actualStatus ? `actual-${actualStatus}` : ""
+    ].filter(Boolean).join(" ");
+
+    const statusBadge = actualStatus
+      ? `<span class="planned-status-badge ${actualStatus}">
+          ${actualStatus}
+         </span>`
+      : "";
+
+    /*
+      "חוזר היום" הוא תצוגה נוספת של אירוע שנוצר בתאריך המקורי,
+      לכן לא מציגים בו כפתור "צור אירוע" נוסף.
+    */
+    const createButton = !isReturningToday
+      ? `<button type="button"
+                 class="create-event-btn"
+                 onclick="openPlannedEventInCheckout(${e.rowNumber})">
+          צור אירוע
+         </button>`
+      : "";
+
+    return `
+      <div class="${cardClasses}">
+        <div class="planned-event-title">
+          ${isReturningToday ? "חוזר היום: " : ""}${cleanBand}${!isReturningToday ? returnNote : ""}
+        </div>
+
+        <div class="planned-event-grid">
+          <div><strong>מפיק:</strong> ${e.producer || "-"}</div>
+          <div><strong>הגברה:</strong> ${e.sound || "-"}</div>
+          <div><strong>כלים:</strong> ${e.instruments || "-"}</div>
+          <div><strong>יציאה:</strong> ${e.departure || "-"}</div>
+          <div><strong>חזרה משוערת:</strong> ${e.returnTime || "-"}</div>
+          <div><strong>איש קשר:</strong> ${e.contact || "-"}</div>
+        </div>
+
+        <div class="planned-event-actions">
+          ${createButton}
+          ${statusBadge}
+        </div>
+      </div>
+    `;
+  }).join("");
 }
+
 function copyPlannedWhatsappSummary() {
   const selectedDate = document.getElementById("plannedDateInput").value;
 const visibleRows = getLatestPlannedRows(plannedRowsCache);
@@ -2197,6 +2418,30 @@ if (returnDate) {
     prompt("העתק את הסיכום ידנית:", text);
   });
 }
+
+/* ===== רענון סטטוס אירועים מתוכננים =====
+   כאשר חוזרים מה-index או משאירים את חלון האירועים פתוח,
+   הצבע מתעדכן אוטומטית לפי OUT / IN.
+*/
+async function refreshPlannedViewIfOpen() {
+  const planned = document.getElementById("plannedCalendarView");
+  if (!planned || planned.style.display !== "flex") return;
+  await loadPlannedEventsByDate();
+}
+
+window.addEventListener("focus", refreshPlannedViewIfOpen);
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) refreshPlannedViewIfOpen();
+});
+
+setInterval(() => {
+  const planned = document.getElementById("plannedCalendarView");
+  if (planned?.style.display === "flex") {
+    refreshPlannedViewIfOpen();
+  }
+}, 10000);
+
 </script>
 </body>
 </html>
