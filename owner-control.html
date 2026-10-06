@@ -1,81 +1,54 @@
 <!doctype html>
-
 <html lang="he" dir="rtl">
 
 <head>
-
 <meta charset="utf-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1">
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Master Control</title>
 
 <script src="master-control-config.js"></script>
 
 <style>
-
 body {
   margin: 0;
   min-height: 100vh;
-
   display: grid;
   place-items: center;
-
   background: #07111f;
-
   color: white;
-
   font-family: Arial, sans-serif;
 }
 
 .box {
   text-align: center;
 }
-
 </style>
-
 </head>
 
 <body>
 
 <div class="box">
-
-<h2>
-פותח Master Control...
-</h2>
-
-<p>
-מעביר אותך לאזור הניהול המאובטח
-</p>
-
+  <h2>פותח Master Control...</h2>
+  <p>מעביר אותך לאזור הניהול המאובטח</p>
 </div>
 
-
 <script>
-
 const endpoint =
-  String(
-    window.DIGICARE_MASTER_CONTROL_URL || ''
-  ).trim();
+  String(window.DIGICARE_MASTER_CONTROL_URL || '').trim();
 
-if (endpoint) {
-
+if (
+  endpoint &&
+  endpoint !==
+  "https://script.google.com/macros/s/AKfycbwsYyETwoos3Wot8I5Pf4N2QAtKTfQwyZGgBNi0ASheG60n22daai7Hpg9qDpRYnq0p/exec"
+) {
   window.location.replace(
-    endpoint +
-    '?action=admin'
+    endpoint + '?action=admin'
   );
-
 } else {
-
   document.body.innerHTML =
-    '<h2>Master Control לא הוגדר</h2>';
-
+    '<h2>כתובת Master Control לא הוגדרה</h2>';
 }
-
 </script>
 
 </body>
-
 </html>
