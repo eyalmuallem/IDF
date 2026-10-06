@@ -1,94 +1,81 @@
 <!doctype html>
+
 <html lang="he" dir="rtl">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Master Control</title>
-  <style>
-    *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#07111f;color:#f8fafc;font-family:Arial,sans-serif}
-    .panel{width:min(620px,100%);background:#0f1b2d;border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:28px;box-shadow:0 25px 70px rgba(0,0,0,.42)}
-    h1{margin:0 0 6px;font-size:30px}.sub{margin:0 0 26px;color:#9fb1c8;line-height:1.5}
-    label{display:block;margin:0 0 8px;font-weight:700}.secret-row{display:flex;gap:10px}.secret-row input{flex:1}
-    input,textarea{width:100%;border:1px solid #31445f;border-radius:12px;padding:13px 14px;background:#091525;color:#fff;font-size:16px;outline:none} input:focus,textarea:focus{border-color:#60a5fa}
-    button{border:0;border-radius:12px;padding:13px 18px;font-size:16px;font-weight:700;cursor:pointer}.unlock{background:#2563eb;color:white;min-width:120px}.unlock:disabled,.actions button:disabled{opacity:.45;cursor:not-allowed}
-    .status{margin:24px 0 18px;padding:16px;border-radius:14px;background:#091525;border:1px solid #243750;display:flex;justify-content:space-between;gap:18px;align-items:center}.badge{padding:7px 12px;border-radius:999px;font-weight:700;background:#334155}.badge.on{background:#14532d;color:#bbf7d0}.badge.off{background:#7f1d1d;color:#fecaca}
-    .controls{display:none}.controls.open{display:block}.msg-label{margin-top:18px}.hint{font-size:13px;color:#8ea0b6;margin-top:7px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.stop{background:#dc2626;color:#fff}.start{background:#16a34a;color:#fff}.feedback{min-height:24px;margin-top:16px;color:#cbd5e1}.warning{margin-top:22px;padding:13px;border-radius:12px;background:#28150b;color:#fed7aa;font-size:13px;line-height:1.5}
-  </style>
-  <script src="master-control-config.js"></script>
+
+<meta charset="utf-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>Master Control</title>
+
+<script src="master-control-config.js"></script>
+
+<style>
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  display: grid;
+  place-items: center;
+
+  background: #07111f;
+
+  color: white;
+
+  font-family: Arial, sans-serif;
+}
+
+.box {
+  text-align: center;
+}
+
+</style>
+
 </head>
+
 <body>
-  <main class="panel">
-    <h1>Master Control</h1>
-    <p class="sub">אזור בעלים נסתר. רק לאחר אימות הקוד הסודי ייפתחו פעולות ההפעלה וההשבתה.</p>
 
-    <label for="secret">קוד בעלים</label>
-    <div class="secret-row">
-      <input id="secret" type="password" autocomplete="current-password" placeholder="הזן קוד סודי" />
-      <button id="unlock" class="unlock">פתח</button>
-    </div>
+<div class="box">
 
-    <section id="controls" class="controls" aria-live="polite">
-      <div class="status">
-        <div><strong>מצב המערכת</strong><div class="hint" id="updatedAt"></div></div>
-        <span id="badge" class="badge">בודק…</span>
-      </div>
-      <label class="msg-label" for="message">הודעה שתוצג למשתמשים בזמן השבתה</label>
-      <textarea id="message" rows="3" maxlength="250">השירות הושבת זמנית על ידי מנהל המערכת.</textarea>
-      <div class="actions">
-        <button id="stop" class="stop">השבת את השירות</button>
-        <button id="start" class="start">הפעל את השירות</button>
-      </div>
-      <div id="feedback" class="feedback"></div>
-      <div class="warning">הקוד הסודי אינו נשמר בקובץ הזה. האימות מתבצע בצד Google Apps Script מול Script Properties.</div>
-    </section>
-  </main>
+<h2>
+פותח Master Control...
+</h2>
+
+<p>
+מעביר אותך לאזור הניהול המאובטח
+</p>
+
+</div>
+
+
 <script>
-(() => {
-  const endpoint = String(window.DIGICARE_MASTER_CONTROL_URL || '').trim();
-  const secretEl = document.getElementById('secret');
-  const unlockBtn = document.getElementById('unlock');
-  const controls = document.getElementById('controls');
-  const badge = document.getElementById('badge');
-  const updatedAt = document.getElementById('updatedAt');
-  const feedback = document.getElementById('feedback');
-  const messageEl = document.getElementById('message');
-  let secret = '';
 
-  function configured(){ return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/i.test(endpoint); }
-  function setFeedback(t){ feedback.textContent = t || ''; }
-  function showStatus(data){
-    const on = data.enabled !== false;
-    badge.textContent = on ? 'פעיל' : 'מושבת';
-    badge.className = 'badge ' + (on ? 'on' : 'off');
-    if(data.updatedAt) updatedAt.textContent = 'עודכן: ' + new Date(data.updatedAt).toLocaleString('he-IL');
-    if(data.message) messageEl.value = data.message;
-  }
-  async function post(action){
-    if(!configured()) throw new Error('כתובת Master Control עדיין לא הוגדרה בקובץ master-control-config.js');
-    const body = new URLSearchParams({action, secret, message: messageEl.value.trim()});
-    const res = await fetch(endpoint, {method:'POST', body, redirect:'follow'});
-    const data = await res.json();
-    if(!data.ok) throw new Error(data.error || 'הפעולה נכשלה');
-    showStatus(data);
-    return data;
-  }
-  unlockBtn.addEventListener('click', async () => {
-    secret = secretEl.value;
-    if(!secret){ setFeedback('יש להזין קוד.'); return; }
-    unlockBtn.disabled = true; setFeedback('מאמת…');
-    try { await post('auth'); controls.classList.add('open'); setFeedback('הקוד אומת.'); secretEl.value=''; }
-    catch(e){ secret=''; controls.classList.remove('open'); setFeedback(e.message); }
-    finally { unlockBtn.disabled=false; }
-  });
-  secretEl.addEventListener('keydown', e => { if(e.key==='Enter') unlockBtn.click(); });
-  document.getElementById('stop').addEventListener('click', async () => {
-    if(!confirm('להשבית עכשיו את השירות לכל המשתמשים?')) return;
-    try { setFeedback('משבית…'); await post('disable'); setFeedback('השירות הושבת.'); } catch(e){ setFeedback(e.message); }
-  });
-  document.getElementById('start').addEventListener('click', async () => {
-    try { setFeedback('מפעיל…'); await post('enable'); setFeedback('השירות הופעל.'); } catch(e){ setFeedback(e.message); }
-  });
-})();
+const endpoint =
+  String(
+    window.DIGICARE_MASTER_CONTROL_URL || ''
+  ).trim();
+
+if (endpoint) {
+
+  window.location.replace(
+    endpoint +
+    '?action=admin'
+  );
+
+} else {
+
+  document.body.innerHTML =
+    '<h2>Master Control לא הוגדר</h2>';
+
+}
+
 </script>
+
 </body>
+
 </html>
