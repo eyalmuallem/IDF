@@ -63,10 +63,28 @@
       margin: 0 0 15px;
     }
 
-    #${LOCK_ID} p {
-      font-size: 18px;
-      line-height: 1.6;
-    }
+    
+#${LOCK_ID} p {
+  font-size: 18px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+  max-width: 100%;
+}
+
+#${LOCK_ID} a {
+  color: #93c5fd;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#${LOCK_ID} .lock-card {
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+}
+
   `;
 
   (document.head || document.documentElement)
@@ -92,9 +110,37 @@
       document.body.appendChild(overlay);
     }
 
-    overlay.querySelector(".lock-message").textContent =
-      message ||
-      "הגישה למערכת נחסמה על ידי מנהל המערכת.";
+    
+const messageElement =
+  overlay.querySelector(".lock-message");
+
+const messageText =
+  message ||
+  "הגישה למערכת נחסמה על ידי מנהל המערכת.";
+
+messageElement.replaceChildren();
+
+const parts = messageText.split(
+  /(https?:\/\/[^\s<>"']+)/gi
+);
+
+parts.forEach(part => {
+  if (/^https?:\/\//i.test(part)) {
+    const link = document.createElement("a");
+    link.href = part;
+    link.textContent = part;
+    link.className = "lock-link";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+
+    messageElement.appendChild(link);
+  } else {
+    messageElement.appendChild(
+      document.createTextNode(part)
+    );
+  }
+});
+
   }
 
   function setLocked(value, message) {
@@ -170,10 +216,35 @@
       document.addEventListener(
         eventName,
         event => {
-          if (locked) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-          }
+         
+if (locked) {
+  const isLockLink =
+    event.target instanceof Element &&
+    event.target.closest(
+      `#${LOCK_ID} a.lock-link`
+    );
+
+  if (
+    isLockLink &&
+    (
+      eventName !== "keydown" ||
+      event.key === "Enter"
+    )
+  ) {
+    return;
+  }
+
+  if (
+    eventName === "keydown" &&
+    event.key === "Tab"
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
         },
         true
       );
