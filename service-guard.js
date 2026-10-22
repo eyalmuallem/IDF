@@ -1,73 +1,207 @@
+
 (() => {
   "use strict";
 
-  const POLL_MS = 30000;
-  const url = String(window.DIGICARE_MASTER_CONTROL_URL || "").trim();
-  const configured = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/i.test(url);
-  if (!configured) return; // Fail open until the owner finishes one-time setup.
+  const URL = String(
+    window.DIGICARE_MASTER_CONTROL_URL || ""
+  ).trim();
 
-  let overlay = null;
-  let lastLocked = false;
+  const VALID_URL =
+    /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/i.test(URL);
 
-  function buildOverlay(message) {
-    if (overlay) return overlay;
-    overlay = document.createElement("div");
-    overlay.id = "digicare-master-lock";
-    overlay.setAttribute("role", "alert");
-    overlay.innerHTML = `
-      <div class="digicare-master-lock-card">
-        <div class="digicare-master-lock-icon">🔒</div>
-        <h1>השירות הושבת זמנית</h1>
-        <p class="digicare-master-lock-message"></p>
-        <p class="digicare-master-lock-note">לפרטים יש לפנות למנהל המערכת.</p>
-      </div>`;
-    const style = document.createElement("style");
-    style.textContent = `
-      #digicare-master-lock{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(5,10,20,.96);font-family:Arial,sans-serif;direction:rtl;text-align:center;color:#fff}
-      #digicare-master-lock .digicare-master-lock-card{width:min(520px,100%);padding:36px 28px;border-radius:24px;background:#111827;border:1px solid rgba(255,255,255,.12);box-shadow:0 24px 70px rgba(0,0,0,.45)}
-      #digicare-master-lock .digicare-master-lock-icon{font-size:46px;margin-bottom:12px}
-      #digicare-master-lock h1{margin:0 0 14px;font-size:30px}
-      #digicare-master-lock p{margin:8px 0;line-height:1.6}
-      #digicare-master-lock .digicare-master-lock-message{font-size:18px}
-      #digicare-master-lock .digicare-master-lock-note{opacity:.7;font-size:14px}
-    `;
-    document.head.appendChild(style);
-    document.body.appendChild(overlay);
-    return overlay;
+  const POLL_MS = 10000;
+  const TIMEOUT_MS = 8000;
+  const LOCK_ID = "digicare-master-lock";
+  const LOCK_CLASS = "digicare-master-locked";
+
+  let locked = true;
+  let requestId = 0;
+
+  // Block the screen immediately, including on refresh.
+  document.documentElement.classList.add(LOCK_CLASS);
+
+  const style = document.createElement("style");
+
+  style.textContent = `
+    html.${LOCK_CLASS},
+    html.${LOCK_CLASS} body {
+      overflow: hidden !important;
+    }
+
+    html.${LOCK_CLASS} body > :not(#${LOCK_ID}) {
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    #${LOCK_ID} {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #07111f;
+      color: white;
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      text-align: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    #${LOCK_ID} .lock-card {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 20px;
+      padding: 35px;
+      width: min(500px, 100%);
+      box-sizing: border-box;
+    }
+
+    #${LOCK_ID} h1 {
+      font-size: 28px;
+      margin: 0 0 15px;
+    }
+
+    #${LOCK_ID} p {
+      font-size: 18px;
+      line-height: 1.6;
+    }
+  `;
+
+  (document.head || document.documentElement)
+    .appendChild(style);
+
+  function showLock(message) {
+    if (!document.body) return;
+
+    let overlay = document.getElementById(LOCK_ID);
+
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = LOCK_ID;
+
+      overlay.innerHTML = `
+        <div class="lock-card">
+          <h1>השירות הושבת זמנית</h1>
+          <p class="lock-message"></p>
+          <p>לפרטים יש לפנות למנהל המערכת.</p>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+    }
+
+    overlay.querySelector(".lock-message").textContent =
+      message ||
+      "הגישה למערכת נחסמה על ידי מנהל המערכת.";
   }
 
-  function setLocked(locked, message) {
-    lastLocked = !!locked;
+  function setLocked(value, message) {
+    locked = Boolean(value);
+
     if (locked) {
-      const el = buildOverlay(message);
-      el.querySelector('.digicare-master-lock-message').textContent = message || 'הגישה למערכת נחסמה על ידי מנהל המערכת.';
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overflow = 'hidden';
-    } else if (overlay) {
-      overlay.remove();
-      overlay = null;
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
+      document.documentElement.classList.add(LOCK_CLASS);
+      showLock(message);
+    } else {
+      document.getElementById(LOCK_ID)?.remove();
+      document.documentElement.classList.remove(LOCK_CLASS);
     }
   }
 
-  async function check() {
+  async function checkStatus() {
+    const currentRequest = ++requestId;
+
+    if (!VALID_URL) {
+      setLocked(true, "שרת הבקרה אינו מוגדר.");
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      TIMEOUT_MS
+    );
+
     try {
-      const res = await fetch(url + '?action=status&_=' + Date.now(), { cache: 'no-store', redirect: 'follow' });
-      if (!res.ok) throw new Error('status ' + res.status);
-      const data = await res.json();
-      setLocked(data.enabled === false, data.message);
-    } catch (err) {
-      // Network/control-service failures do not lock the product automatically.
-      console.warn('[Master Control] status check failed:', err);
-      if (lastLocked) setLocked(true, 'הגישה למערכת נחסמה על ידי מנהל המערכת.');
+      const response = await fetch(
+        URL + "?action=status&_=" + Date.now(),
+        {
+          cache: "no-store",
+          credentials: "omit",
+          redirect: "follow",
+          signal: controller.signal
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Status check failed");
+      }
+
+      const data = await response.json();
+
+      if (currentRequest !== requestId) return;
+
+      // Only an explicit approval from the server unlocks.
+      if (data && data.enabled === true) {
+        setLocked(false);
+      } else {
+        setLocked(true, data?.message);
+      }
+
+    } catch (error) {
+      if (currentRequest !== requestId) return;
+
+      setLocked(
+        true,
+        "לא ניתן לאמת את מצב המערכת. הגישה חסומה."
+      );
+
+      console.warn("Master Control:", error);
+
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', check, { once: true });
-  } else {
-    check();
+  // Block ordinary interactions while locked.
+  ["click", "submit", "keydown", "pointerdown"].forEach(
+    eventName => {
+      document.addEventListener(
+        eventName,
+        event => {
+          if (locked) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        },
+        true
+      );
+    }
+  );
+
+  function initialize() {
+    setLocked(true);
+    checkStatus();
+    setInterval(checkStatus, POLL_MS);
   }
-  setInterval(check, POLL_MS);
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      initialize,
+      { once: true }
+    );
+  } else {
+    initialize();
+  }
+
+  window.addEventListener("pageshow", checkStatus);
+  window.addEventListener("focus", checkStatus);
+  window.addEventListener("online", checkStatus);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) checkStatus();
+  });
+
 })();
